@@ -1,0 +1,61 @@
+{
+  "domain_name": "Foglia",
+  "domain_bounding_box" : {
+    "degree": {
+      "epsg" : 4326,
+      "coord_right": 12.9290,
+      "coord_left": 12.4850,
+      "coord_top": 43.9260,
+      "coord_bottom": 43.7760,
+      "cell_size" : null,
+      "reference": "https://epsg.io/4326"
+    },
+    "meters": {
+      "epsg" : 32633,
+      "coord_right": 333740,
+      "coord_left": 297590,
+      "coord_top": 4865800,
+      "coord_bottom": 4850200,
+      "cell_size" : 400,
+      "reference": "https://epsg.io/32633"
+    }
+  },
+  "domain_sections_db": {
+  	"section_1": {
+      "n": 1,
+      "section_code": "102",
+      "name_point_outlet": "102",
+      "name_point_upstream": null,
+      "name_point_downstream": ["Foglia_Bronzo"],
+      "name_point_obs": "Foglia_Bronzo",
+      "description": "Foglia_Bronzo",
+      "idx_data_terrain": [25,6],
+      "idx_data_hydraulic": null,
+      "drainage_area" : 238.3
+    },
+  	"section_2": {
+      "n": 2,
+      "section_code": "174",
+      "name_point_outlet": "174",
+      "name_point_upstream": ["Foglia_Bronzo"],
+      "name_point_downstream": ["Foglia_Montecchio"],
+      "name_point_obs": "Foglia_Montecchio",
+      "description": "Foglia_Montecchio",
+      "idx_data_terrain": [17,57],
+      "idx_data_hydraulic": null,
+      "drainage_area" : 605.6
+    },
+    "section_3": {
+      "n": 3,
+      "section_code": "29",
+      "name_point_outlet": "29",
+      "name_point_upstream": ["Foglia_Montecchio"],
+      "name_point_downstream": null,
+      "name_point_obs": "Foglia3",
+      "description": "Foglia3",
+      "idx_data_terrain": [5,84],
+      "idx_data_hydraulic": null,
+      "drainage_area" : 698.7
+    }
+  }
+}
