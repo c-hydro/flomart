@@ -11,6 +11,10 @@ Version:       '1.0.0'
 # Library
 import logging
 import numpy as np
+import operator
+
+from functools import reduce  # forward compatibility for Python 3
+from copy import deepcopy
 
 from lib_info_args import logger_name
 
@@ -20,6 +24,36 @@ log_stream = logging.getLogger(logger_name)
 # Debug
 # import matplotlib.pylab as plt
 #######################################################################################
+
+
+# -------------------------------------------------------------------------------------
+# Method to convert array 2 list
+def convert_array_2_list(data_in):
+    data_out = None
+    if data_in.ndim == 1 or data_in.shape[0] == 1:
+        for data in data_in[0]:
+
+            if data_out is None:
+                data_out = []
+            if isinstance(data, np.ndarray):
+                data_filter = data[0]
+            else:
+                data_filter = data
+
+            if isinstance(data_filter, str):
+                data_tmp = str(data_filter)
+            elif isinstance(data_filter, (int, np.integer)):
+                data_tmp = int(data_filter)
+            elif isinstance(data_filter, (float, np.floating)):
+                data_tmp = float(data_filter)
+            else:
+                log_stream.error(' ===> Error in parsering data value')
+                raise NotImplementedError('Case not implemented yet')
+            data_out.append(data_tmp)
+    else:
+        data_out = deepcopy(data_in)
+    return data_out
+# -------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------
@@ -74,6 +108,7 @@ def get_dict_value(d, key, value=[]):
                     vf_end = vf.tolist()
                 else:
                     vf_end = vf
+
                 if (vf_end is not None) and (vf_end not in value):
 
                     if not isinstance(vf_end, bool):

@@ -159,7 +159,7 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
                         if isinstance(value_step, pd.Timestamp):
                             value_obj = value_step.strftime(time_format_algorithm)
                         elif isinstance(value_step, bool):
-                            value_obj = deepcopy(value_step)
+                            value_obj = str(deepcopy(value_step))
                         elif isinstance(value_step, np.int):
                             if np.isnan(value_step):
                                 value_step = file_nodata
@@ -170,6 +170,9 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
                             value_obj = str(round(value_step, file_float_decimals))
                         elif isinstance(value_step, str):
                             value_obj = deepcopy(value_step)
+                        elif isinstance(value_step, list):
+                            value_tmp = [str(i) for i in value_step]
+                            value_obj = file_sep.join(value_tmp)
                         else:
                             log_stream.error(' ===> Type of dict element is not supported')
                             raise NotImplementedError('Format not implemented yet')

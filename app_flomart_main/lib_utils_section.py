@@ -12,8 +12,9 @@ Version:       '1.0.0'
 import logging
 import os
 import json
+
 import pandas as pd
-import geopandas as gpd # package added by M. Darienzo on 03/03/2022 for reading .shp
+
 from lib_info_args import logger_name
 
 # Logging
@@ -48,15 +49,6 @@ obj_section_fields_default = {
 def map_info_section(section_data_in, section_fields_map=None, section_fields_excluded=None):
 
     if section_fields_map is not None:
-        # Modification added by M. Darienzo on 03/03/2022:
-        # two cases to account for:
-        # 1. all columns of sections file are needed and inserted in the json file of fields
-        # 2. only some specific columns of sections file are needed by the .json file of fields
-        # if len(section_fields_excluded) + len(section_fields_map) < len(section_data_in):
-        #     section_data_tmp = section_data_in.rename(columns=section_fields_map)
-        # else:
-        #     section_data_tmp = section_data_in.rename(columns=section_fields_map)
-
         section_data_tmp = section_data_in.rename(columns=section_fields_map)
     else:
         log_stream.error(' ===> Section map fields obj is not defined')
@@ -115,21 +107,7 @@ def read_file_river_station_lut(file_name, file_cols_name=None):
 
 # -------------------------------------------------------------------------------------
 # Method to read section file in csv format
-# This function has been modified by M. Darienzo on 02/03/2022
 def read_file_section(file_name, file_sep=';'):
-    namefile, extension = os.path.splitext(file_name)
-    if extension == '.csv':
-        file_data = pd.read_csv(file_name, sep=file_sep)
-        log_stream.info(' ===> DONE')
-
-    elif extension == '.shp':
-        file_data = gpd.read_file(file_name)
-        log_stream.info(' ===> DONE')
-        ###########
-        # TO DO !!!!
-        ###########
-    else:
-        log_stream.error(' ===> Input file with Sections info has not correct format (formats available .csv or .shp)')
-        raise RuntimeError('Input file with sections info has not correct format (formats available .csv or .shp)')
+    file_data = pd.read_csv(file_name, sep=file_sep)
     return file_data
 # -------------------------------------------------------------------------------------
