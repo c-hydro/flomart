@@ -37,6 +37,13 @@ def convert_array_2_list(data_in):
                 data_out = []
             if isinstance(data, np.ndarray):
                 data_filter = data[0]
+
+                if isinstance(data_filter, np.ndarray):
+                    if data_filter.shape[0] == 1:
+                        data_filter = data_filter[0]
+                    else:
+                        log_stream.error(' ===> Error in getting data value')
+                        raise NotImplementedError('Case not implemented yet')
             else:
                 data_filter = data
 

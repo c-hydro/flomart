@@ -22,8 +22,8 @@ time_format_algorithm = '%Y-%m-%d %H:%M'
 time_machine = pd.Timestamp.now
 
 # Logging information
-logger_name = 'app_flood_scenario_logger'
-logger_file = 'app_flood_scenario_file.txt'
+logger_name = 'app_flomart_logger'
+logger_file = 'app_flomart_file.txt'
 logger_handle = 'file'  # 'file' or 'stream'
 logger_format = '%(asctime)s %(name)-12s %(levelname)-8s %(message)-80s %(filename)s:[%(lineno)-6s - %(funcName)-20s()] '
 

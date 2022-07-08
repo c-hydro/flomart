@@ -1,0 +1,173 @@
+{
+  "algorithm": {
+    "general": {
+      "title": "FLOMART - FLOod MAp in Real Time",
+      "web-site": "",
+      "source": "Python application developed by CIMA Research Foundation",
+      "history": "2.0.0 [20220701]",
+      "project-info": "flomart",
+      "algorithm": ""
+    },
+    "flags": {
+      "cleaning_static_data": false,
+      "cleaning_ancillary_data_discharge_obs": false,
+      "cleaning_ancillary_data_discharge_sim": false,
+      "cleaning_ancillary_data_scenario_info": true,
+      "cleaning_ancillary_data_scenario_file": true,
+      "cleaning_ancillary_data_scenario_maps": true,
+      "cleaning_dynamic_plot": true,
+      "cleaning_dynamic_data": true
+    },
+    "ancillary": {
+      "__comment__": "scenario_analysis: [max_period, all_period], scenario_tiling: [rounded, weighted], scenario_type: [observed, simulated, mixed], scenario_method: [max]",
+      "domain_name" : ["Entella"],
+      "tr_min" : 1,
+      "tr_max" : 500,
+      "tr_freq": 1,
+      "scenario_tiling": "rounded",
+      "scenario_boundary": "both",
+      "scenario_analysis": "all_period",
+      "scenario_type": "observed"
+    },
+    "template": {
+      "tr": "string_tr",
+      "section_name": "string_section",
+      "mask_name": "string_mask",
+      "domain_name": "string_domain",
+      "scenario_discharge" : "string_discharge",
+      "source_sub_path_time_discharge_sim": "%Y%m%d",
+      "source_datetime_discharge_sim": "%Y%m%d%H%M",
+      "source_datetime_to_discharge_sim": "%y%j",
+      "source_datetime_from_discharge_sim": "%y",
+      "source_sub_path_time_discharge_obs": "%Y%m%d",
+      "source_datetime_discharge_obs": "%Y%m%d%H%M",
+      "source_datetime_to_discharge_obs": "%Y%m%d*",
+      "source_datetime_from_discharge_obs": "%Y%m%d%H%M",
+      "ancillary_sub_path_time_discharge": "%Y%m%d",
+      "ancillary_datetime_discharge": "%Y%m%d%H%M",
+      "ancillary_sub_path_time_scenario": "%Y/%m/%d/",
+      "ancillary_datetime_scenario": "%Y%m%d%H%M",
+      "destination_sub_path_time_scenario_plot": "%Y/%m/%d/",
+      "destination_datetime_scenario_plot": "%Y%m%d%H%M",
+      "destination_sub_path_time_scenario_data": "%Y/%m/%d/",
+      "destination_datetime_scenario_data": "%Y%m%d%H%M"
+    }
+  },
+  "data": {
+    "static" : {
+      "source" : {
+        "geo_data": {
+          "generic": {
+            "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_static/geo_data/",
+            "file_name": "info_{domain_name}.mat"
+          },
+          "hydraulic": {
+            "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_static/geo_data/",
+            "file_name": "info_{domain_name}.json"
+          }
+        },
+        "hazard_data": {
+          "__comment__": "filename: {domain_name}_hazmap_T{tr}.mat, {domain_name}_WD_max_T{tr}.mat, {domain_name}_WD_max_T{tr}.tif",
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_static/hazard_data/Abaco_{domain_name}Completo_TIF/",
+          "file_name": "{domain_name}Completo_WD_max_T{tr}.tif"
+        }
+      },
+      "destination": {
+        "geo_data": {
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_static/geo_data/",
+          "file_name": "info_{domain_name}.workspace"
+        }
+      }
+    },
+    "dynamic": {
+      "source": {
+        "discharge_data_simulated": {
+          "_comment" : "file_name_string: [idro_{source_datetime_from_discharge_sim}_{source_datetime_to_discharge_sim}{mask_discharge}.txt]",
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/source/run_osservato_pluviometri/{source_sub_path_time_discharge_sim}/",
+          "file_name": "idro_{source_datetime_from_discharge_sim}_{source_datetime_to_discharge_sim}{mask_discharge}.txt",
+          "type": "ascii_arpal_sim",
+          "variables": {"time":  "a1sDateVet", "discharge":  "a1dQOssMean", "water_level": null},
+          "method_data_occurrence": "all",
+          "method_data_analysis" : "max",
+          "method_data_filling": null,
+          "method_data_null": null,
+          "time_period": 48,
+          "time_frequency": "H",
+          "time_rounding": "D"
+        },
+        "discharge_data_observed": {
+          "__comment__": "mat_file: {section_name}_{source_datetime_from_discharge_obs}_{source_datetime_to_discharge_obs}_1H.mat",
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/source/discharge_observed/{source_sub_path_time_discharge_obs}/",
+          "file_name": "{section_name}_{source_datetime_from_discharge_obs}_{source_datetime_to_discharge_obs}_1H.mat",
+          "type": "matlab",
+          "variables": {"time":  "a1sDateVet", "discharge":  "a1dQOss", "water_level": "a1dLivOssMean" },
+          "method_data_occurrence": "all",
+          "method_data_analysis" : null,
+          "method_data_filling": "interpolate",
+          "method_data_null": "links",
+          "time_period": 48,
+          "time_frequency": "H",
+          "time_rounding": "D"
+        }
+      },
+      "ancillary": {
+        "discharge_data_simulated": {
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/ancillary/discharge_run_obs_ws/{ancillary_sub_path_time_discharge}/",
+          "file_name": "discharge_{domain_name}_{ancillary_datetime_discharge}_simulated.workspace"
+        },
+        "discharge_data_observed": {
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/ancillary/discharge_run_obs_ws/{ancillary_sub_path_time_discharge}/",
+          "file_name": "discharge_{domain_name}_{ancillary_datetime_discharge}_observed.workspace"
+        },
+        "scenario_data_info": {
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario_{domain_name}_{ancillary_datetime_scenario}_info.workspace"
+        },
+        "scenario_data_file": {
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario_{domain_name}_{ancillary_datetime_scenario}_file.workspace"
+        },
+        "scenario_data_map": {
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario_{domain_name}_{ancillary_datetime_scenario}_map.tiff"
+        }
+      },
+      "destination" : {
+        "plot": {
+          "scenario_tiff": {
+            "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
+            "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.tiff",
+            "save_status": true
+          },
+          "scenario_png": {
+            "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
+            "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.png",
+            "save_status": false
+          },
+          "scenario_info": {
+            "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
+            "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.json",
+            "save_status": true
+          }
+        },
+        "data": {
+          "scenario_time_series": {
+            "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_data}/time_series/",
+            "file_name": "scenario_{domain_name}_{destination_datetime_scenario_data}_ts.json",
+            "save_status": true
+          }
+        }
+      }
+    }
+  },
+  "log": {
+    "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/log/",
+    "file_name": "app_flomart_logging_matlab_observed.txt"
+  },
+  "time": {
+    "time_now": null,
+    "time_period": 1,
+    "time_frequency": "D",
+    "time_rounding": "D"
+  }
+}

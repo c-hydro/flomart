@@ -61,6 +61,7 @@ class DriverDischarge:
         self.method_data_occurrence_tag = 'method_data_occurrence'
         self.method_data_analysis_tag = 'method_data_analysis'
         self.method_data_filling_tag = 'method_data_filling'
+        self.method_data_null_tag = 'method_data_null'
         self.time_period_tag = 'time_period'
         self.time_rounding_tag = 'time_rounding'
         self.time_frequency_tag = 'time_frequency'
@@ -93,6 +94,7 @@ class DriverDischarge:
         self.method_data_occurrence_sim = src_dict[self.flag_discharge_data_sim][self.method_data_occurrence_tag]
         self.method_data_analysis_sim = src_dict[self.flag_discharge_data_sim][self.method_data_analysis_tag]
         self.method_data_filling_sim = src_dict[self.flag_discharge_data_sim][self.method_data_filling_tag]
+        self.method_data_null_sim = src_dict[self.flag_discharge_data_sim][self.method_data_null_tag]
         self.time_period_discharge_sim = src_dict[self.flag_discharge_data_sim][self.time_period_tag]
         self.time_rounding_discharge_sim = src_dict[self.flag_discharge_data_sim][self.time_rounding_tag]
         self.time_frequency_discharge_sim = src_dict[self.flag_discharge_data_sim][self.time_frequency_tag]
@@ -104,6 +106,7 @@ class DriverDischarge:
         self.method_data_occurrence_obs = src_dict[self.flag_discharge_data_obs][self.method_data_occurrence_tag]
         self.method_data_analysis_obs = src_dict[self.flag_discharge_data_obs][self.method_data_analysis_tag]
         self.method_data_filling_obs = src_dict[self.flag_discharge_data_obs][self.method_data_filling_tag]
+        self.method_data_null_obs = src_dict[self.flag_discharge_data_obs][self.method_data_null_tag]
         self.time_period_discharge_obs = src_dict[self.flag_discharge_data_obs][self.time_period_tag]
         self.time_rounding_discharge_obs = src_dict[self.flag_discharge_data_obs][self.time_rounding_tag]
         self.time_frequency_discharge_obs = src_dict[self.flag_discharge_data_obs][self.time_frequency_tag]
@@ -397,81 +400,114 @@ class DriverDischarge:
             section_data_collections = domain_data_collections[domain_name_step]
             section_geo_collection = geo_data_collection[domain_name_step]['section_data']
 
+            log_stream.info(' -----> Collect datasets ... ')
+
             section_workspace_filter, section_workspace_valid = {}, {}
             time_first_list, time_last_list, idx_first_list, idx_last_list = [], [], [], []
             for section_key, section_data in section_geo_collection.items():
 
                 section_description = section_data['section_description']
 
-                log_stream.info(' -----> Section "' + section_description + '" ... ')
+                log_stream.info(' ------> Section "' + section_description + '" ... ')
 
                 section_workspace_valid[section_key] = {}
                 if section_description in list(section_data_collections.keys()):
                     time_series_collections = section_data_collections[section_description]
 
-                    time_first_valid = time_series_collections[self.var_name_discharge].first_valid_index()
-                    idx_first_valid = time_series_collections[self.var_name_discharge].index.get_loc(time_first_valid)
+                    if time_series_collections is not None:
 
-                    time_last_valid = time_series_collections[self.var_name_discharge].last_valid_index()
-                    idx_last_valid = time_series_collections[self.var_name_discharge].index.get_loc(time_last_valid)
+                        time_first_valid = time_series_collections[self.var_name_discharge].first_valid_index()
+                        idx_first_valid = time_series_collections[self.var_name_discharge].index.get_loc(time_first_valid)
 
-                    time_first_list.append(time_first_valid)
-                    time_last_list.append(time_last_valid)
-                    idx_first_list.append(idx_first_valid)
-                    idx_last_list.append(idx_last_valid)
+                        time_last_valid = time_series_collections[self.var_name_discharge].last_valid_index()
+                        idx_last_valid = time_series_collections[self.var_name_discharge].index.get_loc(time_last_valid)
 
-                    time_series_attrs = {'time_first_valid': time_first_valid, 'time_last_valid': time_last_valid,
-                                         'idx_first_valid': idx_first_valid, 'idx_last_valid': idx_last_valid}
-                    time_series_collections_attrs = {**time_series_attrs, **time_series_collections.attrs}
-                    time_series_collections.attrs = deepcopy(time_series_collections_attrs)
+                        time_first_list.append(time_first_valid)
+                        time_last_list.append(time_last_valid)
+                        idx_first_list.append(idx_first_valid)
+                        idx_last_list.append(idx_last_valid)
 
-                    section_workspace_valid[section_description] = deepcopy(time_series_collections)
+                        time_series_attrs = {'time_first_valid': time_first_valid, 'time_last_valid': time_last_valid,
+                                             'idx_first_valid': idx_first_valid, 'idx_last_valid': idx_last_valid}
+                        time_series_collections_attrs = {**time_series_attrs, **time_series_collections.attrs}
+                        time_series_collections.attrs = deepcopy(time_series_collections_attrs)
+
+                        section_workspace_valid[section_description] = deepcopy(time_series_collections)
+
+                        log_stream.info(' ------> Section "' + section_description +
+                                        '" ... DONE')
+
+                    else:
+                        section_workspace_valid[section_description] = None
+
+                        log_stream.info(' ------> Section "' + section_description +
+                                        '" ... SKIPPED. Datasets are defined by NoneType ')
 
                 else:
                     section_workspace_valid[section_description] = None
 
-            idx_first_select = max(idx_first_list)
-            idx_last_select = min(idx_last_list)
+                    log_stream.info(' ------> Section "' + section_description +
+                                    '" ... SKIPPED. Series are defined by NoneType ')
 
-            time_first_select = max(time_first_list)
-            time_last_select = min(time_last_list)
+            log_stream.info(' -----> Collect datasets ... DONE')
 
-            time_series_filter = pd.DataFrame(index=file_time_discharge)
-            for section_key, section_data in section_geo_collection.items():
+            log_stream.info(' -----> Validate datasets ... ')
+            if time_first_list and time_last_list:
 
-                section_description = section_data['section_description']
+                idx_first_select = max(idx_first_list)
+                idx_last_select = min(idx_last_list)
 
-                log_stream.info(' -----> Section "' + section_description + '" ... ')
+                time_first_select = max(time_first_list)
+                time_last_select = min(time_last_list)
 
-                section_workspace_valid[section_key] = {}
-                if section_description in list(section_data_collections.keys()):
-                    time_series_collections = section_data_collections[section_description]
-                    if scenario_boundary is not None:
-                        if scenario_boundary == 'both':
-                            time_series_selected = time_series_collections[time_first_select:time_last_select]
-                        elif scenario_boundary == 'right':
-                            time_series_selected = time_series_collections[:time_last_select]
-                        elif scenario_boundary == 'left':
-                            time_series_selected = time_series_collections[time_first_select:]
+                time_series_filter = pd.DataFrame(index=file_time_discharge)
+                for section_key, section_data in section_geo_collection.items():
+
+                    section_description = section_data['section_description']
+
+                    log_stream.info(' -----> Section "' + section_description + '" ... ')
+
+                    section_workspace_valid[section_key] = {}
+                    if section_description in list(section_data_collections.keys()):
+                        time_series_collections = section_data_collections[section_description]
+                        if scenario_boundary is not None:
+                            if scenario_boundary == 'both':
+                                time_series_selected = time_series_collections[time_first_select:time_last_select]
+                            elif scenario_boundary == 'right':
+                                time_series_selected = time_series_collections[:time_last_select]
+                            elif scenario_boundary == 'left':
+                                time_series_selected = time_series_collections[time_first_select:]
+                            else:
+                                log_stream.error(' ===> Scenario boundary method "' + scenario_boundary +
+                                                 '" is not supported')
+                                raise NotImplementedError('Case not implemented yet')
                         else:
-                            log_stream.error(' ===> Scenario boundary method "' + scenario_boundary +
-                                             '" is not supported')
-                            raise NotImplementedError('Case not implemented yet')
+                            time_series_selected = deepcopy(time_series_collections)
+
+                        time_series_filter[self.var_name_discharge] = time_series_selected[self.var_name_discharge]
+                        time_series_filter[self.var_name_type] = time_series_selected[self.var_name_type]
+
+                        time_series_filter_attrs = {**time_series_collections.attrs, **{'filter_stream': scenario_boundary}}
+                        time_series_filter.attrs = deepcopy(time_series_filter_attrs)
+
+                        section_workspace_filter[section_description] = deepcopy(time_series_filter)
+
+                        log_stream.info(' -----> Section "' + section_description + '" ... DONE')
+
                     else:
-                        time_series_selected = deepcopy(time_series_collections)
+                        section_workspace_filter[section_description] = None
 
-                    time_series_filter[self.var_name_discharge] = time_series_selected[self.var_name_discharge]
-                    time_series_filter[self.var_name_type] = time_series_selected[self.var_name_type]
+                        log_stream.info(' ------> Section "' + section_description +
+                                        '" ... SKIPPED. Series are defined by NoneType ')
 
-                    time_series_filter_attrs = {**time_series_collections.attrs, **{'filter_stream': scenario_boundary}}
-                    time_series_filter.attrs = deepcopy(time_series_filter_attrs)
+                section_collection_filter[domain_name_step] = section_workspace_filter
+                log_stream.info(' -----> Validate datasets ... DONE')
+            else:
 
-                    section_workspace_filter[section_description] = deepcopy(time_series_filter)
+                section_collection_filter[domain_name_step] = None
+                log_stream.info(' -----> Validate datasets ... SKIPPED. All datasets are NoneType')
 
-                else:
-                    section_workspace_filter[section_description] = None
-
-            section_collection_filter[domain_name_step] = section_workspace_filter
+            log_stream.info(' ----> Domain "' + domain_name_step + '" ... DONE')
 
             log_stream.info(' ---> Filter discharge datasets [' + time_run.strftime(time_format_algorithm) +
                             '] ... DONE')
@@ -508,21 +544,37 @@ class DriverDischarge:
 
                 if section_description in list(section_obs.keys()):
                     time_series_obs = section_obs[section_description]
-                    attrs_obs = time_series_obs.attrs
-                    attr_links_obs = attrs_obs['link_stream']
+                    if time_series_obs is not None:
+                        attrs_obs = time_series_obs.attrs
+                        attr_links_obs = attrs_obs['link_stream']
+                    else:
+                        log_stream.warning(' ===> Section time-series is undefined in the observed datasets')
+                        time_series_obs, attr_links_obs = None, None
                 else:
+                    log_stream.warning(' ===> Section time-series is not available in the observed datasets')
                     time_series_obs, attr_links_obs = None, None
 
                 if section_description in list(section_sim.keys()):
                     time_series_sim = section_sim[section_description]
-                    attrs_sim = time_series_sim.attrs
-                    attr_links_sim = attrs_sim['link_stream']
+                    if time_series_sim is not None:
+                        attrs_sim = time_series_sim.attrs
+                        attr_links_sim = attrs_sim['link_stream']
+                    else:
+                        log_stream.warning(' ===> Section time-series is undefined in the simulated datasets')
+                        time_series_sim, attr_links_sim = None, None
                 else:
+                    log_stream.warning(' ===> Section time-series is not available in the simulated datasets')
                     time_series_sim, attr_links_sim = None, None
 
+                log_stream.info(' ------> Organize mixed datasets ... ')
                 if attr_links_obs:
 
-                    if time_series_sim is not None:
+                    if (time_series_obs is not None) and (time_series_sim is not None):
+
+                        log_stream.info(' -------> Case mixed with simulated values only ... ')
+                        log_stream.info(' --------> Observed dset links == True')
+                        log_stream.info(' --------> Observed dset data == defined :: Simulated dset data == defined')
+
                         time_period_mix = list(time_series_sim.index)
                         value_period_mix = list(time_series_sim[self.var_name_discharge].values)
                         type_period_mix = list(time_series_sim[self.var_name_type].values)
@@ -531,10 +583,16 @@ class DriverDischarge:
                             time_period_mix, [self.var_name_discharge, self.var_name_type],
                             [value_period_mix, type_period_mix])
 
-                        attrs_mix = {'link_stream': attr_links_sim, 'type_stream': 'sim'}
+                        attrs_mix = {'link_stream': attr_links_sim, 'type_stream': 'simulated'}
                         section_dframe_mix.attrs = attrs_mix
 
-                    else:
+                        log_stream.info(' -------> Case mixed with simulated values only ... DONE')
+
+                    elif (time_series_obs is not None) and (time_series_sim is None):
+
+                        log_stream.info(' -------> Case mixed with observed values only ... ')
+                        log_stream.info(' --------> Observed dset links == True')
+                        log_stream.info(' --------> Observed dset data == defined :: Simulated dset data == undefined')
 
                         time_period_obs = list(time_series_obs.index)
                         value_period_obs = list(time_series_obs[self.var_name_discharge].values)
@@ -544,49 +602,98 @@ class DriverDischarge:
                             time_period_obs, [self.var_name_discharge, self.var_name_type],
                             [value_period_obs, type_period_obs])
 
-                        attrs_mix = {'link_stream': attr_links_obs, 'type_stream': 'obs'}
+                        attrs_mix = {'link_stream': attr_links_obs, 'type_stream': 'observed'}
                         section_dframe_mix.attrs = deepcopy(attrs_mix)
+
+                        log_stream.info(' -------> Case mixed with observed values only ... DONE')
+
+                    else:
+
+                        log_stream.info(' -------> Case mixed with undefined values ... ')
+                        log_stream.info(' --------> Observed dset links == True')
+                        log_stream.info(' --------> Observed dset data == undefined :: Simulated dset data == undefined')
+                        log_stream.warning(' ===> All datasets are undefined or NoneType')
+                        section_dframe_mix = None
+                        log_stream.info(' -------> Case mixed with undefined values ... DONE')
 
                 else:
 
-                    time_period_obs = list(time_series_obs.index)
-                    value_period_obs = list(time_series_obs[self.var_name_discharge].values)
-                    type_period_obs = list(time_series_obs[self.var_name_type].values)
-                    time_period_sim = list(time_series_sim.index)
-                    value_period_sim = list(time_series_sim[self.var_name_discharge].values)
-                    type_period_sim = list(time_series_sim[self.var_name_type].values)
+                    if (time_series_obs is not None) and (time_series_sim is not None):
 
-                    time_period_mix, value_period_mix, type_period_mix = [], [], []
-                    for time_step_obs, time_step_sim, value_step_obs, value_step_sim, \
-                        type_step_obs, type_step_sim in zip(time_period_obs, time_period_sim,
-                                                            value_period_obs, value_period_sim,
-                                                            type_period_obs, type_period_sim):
+                        log_stream.info(' -------> Case mixed with observed/simulated values ... ')
+                        log_stream.info(' --------> Observed dset links == False')
+                        log_stream.info(' --------> Observed dset data == defined :: Simulated dset data == defined')
 
-                        assert time_step_sim == time_step_obs
+                        time_period_obs = list(time_series_obs.index)
+                        value_period_obs = list(time_series_obs[self.var_name_discharge].values)
+                        type_period_obs = list(time_series_obs[self.var_name_type].values)
+                        time_period_sim = list(time_series_sim.index)
+                        value_period_sim = list(time_series_sim[self.var_name_discharge].values)
+                        type_period_sim = list(time_series_sim[self.var_name_type].values)
 
-                        time_step_mix = time_step_sim
+                        time_period_mix, value_period_mix, type_period_mix = [], [], []
+                        for time_step_obs, time_step_sim, value_step_obs, value_step_sim, \
+                            type_step_obs, type_step_sim in zip(time_period_obs, time_period_sim,
+                                                                value_period_obs, value_period_sim,
+                                                                type_period_obs, type_period_sim):
 
-                        if np.isnan(value_step_obs) or (value_step_obs < 0.0):
-                            if np.isnan(value_step_sim):
-                                value_step_mix = np.nan
-                                type_step_mix = np.nan
+                            assert time_step_sim == time_step_obs
+
+                            time_step_mix = time_step_sim
+
+                            if np.isnan(value_step_obs) or (value_step_obs < 0.0):
+                                if np.isnan(value_step_sim):
+                                    value_step_mix = np.nan
+                                    type_step_mix = np.nan
+                                else:
+                                    value_step_mix = value_step_sim
+                                    type_step_mix = type_step_sim
                             else:
-                                value_step_mix = value_step_sim
-                                type_step_mix = type_step_sim
-                        else:
-                            value_step_mix = value_step_obs
-                            type_step_mix = type_step_obs
+                                value_step_mix = value_step_obs
+                                type_step_mix = type_step_obs
 
-                        time_period_mix.append(time_step_mix)
-                        value_period_mix.append(value_step_mix)
-                        type_period_mix.append(type_step_mix)
+                            time_period_mix.append(time_step_mix)
+                            value_period_mix.append(value_step_mix)
+                            type_period_mix.append(type_step_mix)
 
-                    section_dframe_mix = create_obj_hydro(
-                        time_period_mix, [self.var_name_discharge, self.var_name_type],
-                        [value_period_mix, type_period_mix])
+                        section_dframe_mix = create_obj_hydro(
+                            time_period_mix, [self.var_name_discharge, self.var_name_type],
+                            [value_period_mix, type_period_mix])
 
-                    attrs_mix = {'link_stream': [attr_links_obs, attr_links_sim], 'type_stream': 'obs,sim'}
-                    section_dframe_mix.attrs = deepcopy(attrs_mix)
+                        attrs_mix = {'link_stream': [attr_links_obs, attr_links_sim], 'type_stream': 'observed,simulated'}
+                        section_dframe_mix.attrs = deepcopy(attrs_mix)
+
+                        log_stream.info(' -------> Case mixed with observed/simulated values ... DONE')
+
+                    elif (time_series_obs is None) and (time_series_sim is not None):
+
+                        log_stream.info(' -------> Case mixed with simulated values only ... ')
+                        log_stream.info(' --------> Observed dset links == False')
+                        log_stream.info(' --------> Observed dset data == undefined :: Simulated dset data == defined')
+
+                        time_period_mix = list(time_series_sim.index)
+                        value_period_mix = list(time_series_sim[self.var_name_discharge].values)
+                        type_period_mix = list(time_series_sim[self.var_name_type].values)
+
+                        section_dframe_mix = create_obj_hydro(
+                            time_period_mix, [self.var_name_discharge, self.var_name_type],
+                            [value_period_mix, type_period_mix])
+
+                        attrs_mix = {'link_stream': attr_links_sim, 'type_stream': 'simulated'}
+                        section_dframe_mix.attrs = attrs_mix
+
+                        log_stream.info(' -------> Case mixed with simulated values only ... DONE')
+
+                    else:
+
+                        log_stream.info(' -------> Case mixed with undefined values ... ')
+                        log_stream.info(' --------> Observed dset links == False')
+                        log_stream.info(' --------> Observed dset data == undefined :: Simulated dset data == undefined')
+                        log_stream.warning(' ===> All datasets are undefined or NoneType')
+                        section_dframe_mix = None
+                        log_stream.info(' -------> Case mixed with undefined values ... DONE')
+
+                log_stream.info(' ------> Organize mixed datasets ... DONE')
 
                 section_workspace_mix[section_description] = deepcopy(section_dframe_mix)
 
@@ -676,87 +783,94 @@ class DriverDischarge:
 
                         log_stream.info(' -------> Get empty datasets ... ')
 
-                        section_fields_step = None
-                        for section_tag_tmp, section_fields_tmp in section_geo_collection.items():
-                            if section_fields_tmp['section_description'] == section_key_step:
-                                section_fields_step = section_fields_tmp.copy()
-                                break
+                        if self.method_data_null_sim == 'links':
 
-                        if section_fields_step is not None:
-                            section_alinks_up = section_fields_step['area_links']['upstream']
-                            section_alinks_down = section_fields_step['area_links']['downstream']
+                            section_fields_step = None
+                            for section_tag_tmp, section_fields_tmp in section_geo_collection.items():
+                                if section_fields_tmp['section_description'] == section_key_step:
+                                    section_fields_step = section_fields_tmp.copy()
+                                    break
 
-                            if (section_alinks_up is not None) or (section_alinks_down is not None):
+                            if section_fields_step is not None:
+                                section_alinks_up = section_fields_step['area_links']['upstream']
+                                section_alinks_down = section_fields_step['area_links']['downstream']
 
-                                section_alinks = None
-                                if section_alinks_up is not None:
-                                    section_alinks = section_alinks_up
-                                elif section_alinks_down is not None:
-                                    section_alinks = section_alinks_down
+                                if (section_alinks_up is not None) or (section_alinks_down is not None):
 
-                                section_values_pnt = None
-                                section_area_ratio_ref = None
-                                if section_alinks is not None:
-                                    for section_key_alinks, section_values_alinks in section_alinks.items():
-                                        if section_key_alinks in list(section_workspace.keys()):
-                                            section_dframe_alinks = section_workspace[section_key_alinks]
-                                            if section_dframe_alinks is not None:
-                                                section_idx = section_dframe_alinks.index
-                                                section_values_tmp = section_dframe_alinks[self.var_name_discharge].values
-                                                section_type_tmp = section_dframe_alinks[self.var_name_type].values
+                                    section_alinks = None
+                                    if section_alinks_up is not None:
+                                        section_alinks = section_alinks_up
+                                    elif section_alinks_down is not None:
+                                        section_alinks = section_alinks_down
+
+                                    section_values_pnt = None
+                                    section_area_ratio_ref = None
+                                    if section_alinks is not None:
+                                        for section_key_alinks, section_values_alinks in section_alinks.items():
+                                            if section_key_alinks in list(section_workspace.keys()):
+                                                section_dframe_alinks = section_workspace[section_key_alinks]
+                                                if section_dframe_alinks is not None:
+                                                    section_idx = section_dframe_alinks.index
+                                                    section_values_tmp = section_dframe_alinks[self.var_name_discharge].values
+                                                    section_type_tmp = section_dframe_alinks[self.var_name_type].values
+                                                else:
+                                                    section_idx = None
+                                                    section_values_tmp = None
+                                                    section_type_tmp = None
                                             else:
+                                                section_dframe_alinks = None
                                                 section_idx = None
                                                 section_values_tmp = None
                                                 section_type_tmp = None
-                                        else:
-                                            section_dframe_alinks = None
-                                            section_idx = None
-                                            section_values_tmp = None
-                                            section_type_tmp = None
 
-                                        if section_dframe_alinks is not None:
-                                            section_area_ratio_pnt = section_values_alinks['area_ratio_pnt']
-                                            section_area_ratio_ref = section_values_alinks['area_ratio_ref']
+                                            if section_dframe_alinks is not None:
+                                                section_area_ratio_pnt = section_values_alinks['area_ratio_pnt']
+                                                section_area_ratio_ref = section_values_alinks['area_ratio_ref']
 
-                                            section_values_tmp = section_values_tmp * section_area_ratio_pnt
-                                            if section_values_pnt is None:
-                                                section_values_pnt = section_values_tmp.copy()
+                                                section_values_tmp = section_values_tmp * section_area_ratio_pnt
+                                                if section_values_pnt is None:
+                                                    section_values_pnt = section_values_tmp.copy()
+                                                else:
+                                                    section_values_pnt = section_values_pnt + section_values_tmp
                                             else:
-                                                section_values_pnt = section_values_pnt + section_values_tmp
+                                                section_values_pnt = None
+
+                                        if (section_area_ratio_ref is not None) and (section_values_pnt is not None):
+                                            section_values_ref = section_values_pnt * section_area_ratio_ref
+                                            section_type_ref = section_type_tmp.copy()
+
+                                            section_dframe_ref = create_obj_hydro(
+                                                section_idx, [self.var_name_discharge, self.var_name_type],
+                                                [section_values_ref, section_type_ref])
+                                            section_dframe_ref.attrs = {'link_stream': True, 'type_stream': data_type}
                                         else:
-                                            section_values_pnt = None
-
-                                    if (section_area_ratio_ref is not None) and (section_values_pnt is not None):
-                                        section_values_ref = section_values_pnt * section_area_ratio_ref
-                                        section_type_ref = section_type_tmp.copy()
-
-                                        section_dframe_ref = create_obj_hydro(
-                                            section_idx, [self.var_name_discharge, self.var_name_type],
-                                            [section_values_ref, section_type_ref])
-                                        section_dframe_ref.attrs = {'link_stream': True, 'type_stream': 'sim'}
+                                            section_dframe_ref = None
                                     else:
                                         section_dframe_ref = None
-                                else:
-                                    section_dframe_ref = None
 
-                            elif (section_alinks_up is not None) and (section_alinks_down is not None):
-                                log_stream.error(
-                                    ' ===> Section links for upstream and downstream conditions is not supported.')
-                                raise NotImplementedError('Case not implemented yet')
+                                elif (section_alinks_up is not None) and (section_alinks_down is not None):
+                                    log_stream.error(
+                                        ' ===> Section links for upstream and downstream conditions is not supported.')
+                                    raise NotImplementedError('Case not implemented yet')
+                                else:
+                                    log_stream.error(
+                                        ' ===> Section links for upstream and downstream conditions is not allowed.')
+                                    raise RuntimeError('Check your upstream and downstream conditions')
+
                             else:
-                                log_stream.error(
-                                    ' ===> Section links for upstream and downstream conditions is not allowed.')
-                                raise RuntimeError('Check your upstream and downstream conditions')
+                                section_dframe_ref = None
+                                log_stream.info(' -------> Get empty datasets ... FAILED. '
+                                                'Datasets of the other points are empty.')
+
+                            log_stream.info(
+                                ' -------> Get empty datasets ... filled by using upstream and downstream conditions ')
 
                         else:
                             section_dframe_ref = None
-                            log_stream.info(' -------> Get empty datasets ... FAILED. '
-                                            'Datasets of the other points are empty.')
+                            log_stream.info(' -------> Get empty datasets ... SKIPPED. '
+                                            'None of the methods to filling datasets was selected.')
 
                         section_workspace[section_key_step] = section_dframe_ref
-
-                        log_stream.info(
-                            ' -------> Get empty datasets ... filled by using upstream and downstream conditions ')
 
                     else:
                          section_workspace[section_key_step].attrs = {'link_stream': False, 'type_stream': data_type}
@@ -872,91 +986,98 @@ class DriverDischarge:
 
                         log_stream.info(' -------> Get empty datasets ... ')
 
-                        section_fields_step = None
-                        for section_tag_tmp, section_fields_tmp in section_geo_collection.items():
-                            if section_fields_tmp['section_description'] == section_key_step:
-                                section_fields_step = section_fields_tmp.copy()
-                                break
+                        if self.method_data_null_obs == 'links':
 
-                        if section_fields_step is not None:
-                            section_alinks_up = section_fields_step['area_links']['upstream']
-                            section_alinks_down = section_fields_step['area_links']['downstream']
+                            section_fields_step = None
+                            for section_tag_tmp, section_fields_tmp in section_geo_collection.items():
+                                if section_fields_tmp['section_description'] == section_key_step:
+                                    section_fields_step = section_fields_tmp.copy()
+                                    break
 
-                            if (section_alinks_up is not None) or (section_alinks_down is not None):
+                            if section_fields_step is not None:
+                                section_alinks_up = section_fields_step['area_links']['upstream']
+                                section_alinks_down = section_fields_step['area_links']['downstream']
 
-                                section_alinks = None
-                                if section_alinks_up is not None:
-                                    section_alinks = section_alinks_up
-                                elif section_alinks_down is not None:
-                                    section_alinks = section_alinks_down
+                                if (section_alinks_up is not None) or (section_alinks_down is not None):
 
-                                section_values_pnt = None
-                                section_area_ratio_ref = None
-                                if section_alinks is not None:
-                                    for section_key_alinks, section_values_alinks in section_alinks.items():
-                                        if section_key_alinks in list(section_workspace.keys()):
-                                            section_dframe_alinks = section_workspace[section_key_alinks]
-                                            if section_dframe_alinks is not None:
-                                                section_idx = section_dframe_alinks.index
-                                                section_values_tmp = section_dframe_alinks[self.var_name_discharge].values
-                                                section_type_tmp = section_dframe_alinks[self.var_name_type].values
+                                    section_alinks = None
+                                    if section_alinks_up is not None:
+                                        section_alinks = section_alinks_up
+                                    elif section_alinks_down is not None:
+                                        section_alinks = section_alinks_down
+
+                                    section_values_pnt = None
+                                    section_area_ratio_ref = None
+                                    if section_alinks is not None:
+                                        for section_key_alinks, section_values_alinks in section_alinks.items():
+                                            if section_key_alinks in list(section_workspace.keys()):
+                                                section_dframe_alinks = section_workspace[section_key_alinks]
+                                                if section_dframe_alinks is not None:
+                                                    section_idx = section_dframe_alinks.index
+                                                    section_values_tmp = section_dframe_alinks[self.var_name_discharge].values
+                                                    section_type_tmp = section_dframe_alinks[self.var_name_type].values
+                                                else:
+                                                    section_idx = None
+                                                    section_values_tmp = None
+                                                    section_type_tmp = None
                                             else:
+                                                section_dframe_alinks = None
                                                 section_idx = None
                                                 section_values_tmp = None
                                                 section_type_tmp = None
-                                        else:
-                                            section_dframe_alinks = None
-                                            section_idx = None
-                                            section_values_tmp = None
-                                            section_type_tmp = None
 
-                                        if section_dframe_alinks is not None:
-                                            section_area_ratio_pnt = section_values_alinks['area_ratio_pnt']
-                                            section_area_ratio_ref = section_values_alinks['area_ratio_ref']
+                                            if section_dframe_alinks is not None:
+                                                section_area_ratio_pnt = section_values_alinks['area_ratio_pnt']
+                                                section_area_ratio_ref = section_values_alinks['area_ratio_ref']
 
-                                            section_values_tmp = section_values_tmp * section_area_ratio_pnt
-                                            if section_values_pnt is None:
-                                                section_values_pnt = section_values_tmp.copy()
+                                                section_values_tmp = section_values_tmp * section_area_ratio_pnt
+                                                if section_values_pnt is None:
+                                                    section_values_pnt = section_values_tmp.copy()
+                                                else:
+                                                    section_values_pnt = section_values_pnt + section_values_tmp
                                             else:
-                                                section_values_pnt = section_values_pnt + section_values_tmp
+                                                section_values_pnt = None
+
+                                        if (section_area_ratio_ref is not None) and (section_values_pnt is not None):
+                                            section_values_ref = section_values_pnt * section_area_ratio_ref
+                                            section_type_ref = section_type_tmp.copy()
+
+                                            section_dframe_ref = create_obj_hydro(
+                                                section_idx, [self.var_name_discharge, self.var_name_type],
+                                                [section_values_ref, section_type_ref])
+                                            section_dframe_ref.attrs = {'link_stream': True, 'type_stream': data_type}
+
+                                            log_stream.info(
+                                                ' -------> Get empty datasets ... DONE. '
+                                                'Datasets filled by using upstream and downstream conditions')
                                         else:
-                                            section_values_pnt = None
-
-                                    if (section_area_ratio_ref is not None) and (section_values_pnt is not None):
-                                        section_values_ref = section_values_pnt * section_area_ratio_ref
-                                        section_type_ref = section_type_tmp.copy()
-
-                                        section_dframe_ref = create_obj_hydro(
-                                            section_idx, [self.var_name_discharge, self.var_name_type],
-                                            [section_values_ref, section_type_ref])
-                                        section_dframe_ref.attrs = {'link_stream': True, 'type_stream': data_type}
-
-                                        log_stream.info(
-                                            ' -------> Get empty datasets ... DONE. '
-                                            'Datasets filled by using upstream and downstream conditions')
+                                            section_dframe_ref = None
                                     else:
                                         section_dframe_ref = None
-                                else:
-                                    section_dframe_ref = None
 
-                            elif (section_alinks_up is not None) and (section_alinks_down is not None):
-                                log_stream.error(
-                                    ' ===> Section links for upstream and downstream conditions is not supported.')
-                                raise NotImplementedError('Case not implemented yet')
+                                elif (section_alinks_up is not None) and (section_alinks_down is not None):
+                                    log_stream.error(
+                                        ' ===> Section links for upstream and downstream conditions is not supported.')
+                                    raise NotImplementedError('Case not implemented yet')
+                                else:
+                                    log_stream.error(
+                                        ' ===> Section links for upstream and downstream conditions is not allowed.')
+                                    raise RuntimeError('Check your upstream and downstream conditions')
+
                             else:
-                                log_stream.error(
-                                    ' ===> Section links for upstream and downstream conditions is not allowed.')
-                                raise RuntimeError('Check your upstream and downstream conditions')
+                                section_dframe_ref = None
+                                log_stream.info(' -------> Get empty datasets ... DONE. '
+                                                'Datasets are not filled by using a methods in the settings file')
 
                         else:
                             section_dframe_ref = None
-                            log_stream.info(' -------> Get empty datasets ... FAILED. '
-                                            'Datasets of the other points are empty.')
+                            log_stream.info(' -------> Get empty datasets ... SKIPPED. '
+                                            'None of the methods to filling datasets was selected.')
 
                         section_workspace[section_key_step] = section_dframe_ref
 
                     else:
-                        section_workspace[section_key_step].attrs = {'link_stream': False, 'type_stream': 'obs'}
+                        section_workspace[section_key_step].attrs = {'link_stream': False, 'type_stream': data_type}
 
                     log_stream.info(' ------> Section "' + section_key_step + '" ... DONE')
 

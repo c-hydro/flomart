@@ -15,7 +15,7 @@ import numpy as np
 
 from copy import deepcopy
 
-from lib_utils_geo import read_file_geo
+from lib_utils_geo import read_file_geo, check_epsg_code
 from lib_utils_hydraulic import read_file_hydraulic
 
 from lib_utils_io import read_obj, write_obj
@@ -353,7 +353,8 @@ class DriverGeo:
         if geo_fields is None:
             geo_fields = ['area_reference_id', 'area_mask', 'area_mask_extended',
                           'area_reference_geo_x', 'area_reference_geo_y',
-                          'coord_bottom_y', 'coord_top_y', 'coord_left_x', 'coord_right_x']
+                          'coord_bottom_y', 'coord_top_y', 'coord_left_x', 'coord_right_x',
+                          'area_epsg_code']
 
         map_collections = {}
         for geo_field in geo_fields:
@@ -361,8 +362,20 @@ class DriverGeo:
             if geo_field in list(geo_data.keys()):
                 geo_value = geo_data[geo_field]
 
-                if geo_value.shape[0] == 1 and geo_value.shape[1] == 1:
-                    geo_value = float(geo_value[0][0])
+                if geo_value.ndim == 1:
+                    if geo_value.shape[0] == 1:
+                        geo_value = geo_value[0]
+                        if isinstance(geo_value, str):
+                            geo_value = str(geo_value)
+                        else:
+                            geo_value = float(geo_value)
+
+                elif geo_value.ndim == 2:
+                    if geo_value.shape[0] == 1 and geo_value.shape[1] == 1:
+                        geo_value = float(geo_value[0][0])
+                else:
+                    log_stream.error(' ===> Geo field "' + geo_field + '" format is not supported')
+                    raise NotImplementedError('Case not implemented yet')
 
                 map_collections[geo_field] = geo_value
             else:
@@ -393,6 +406,15 @@ class DriverGeo:
 
             map_collections['area_reference_geo_x'] = map_grid_x
             map_collections['area_reference_geo_y'] = map_grid_y
+
+        if 'area_epsg_code' in list(map_collections.keys()):
+            epsg_code_unchecked = map_collections['area_epsg_code']
+            epsg_code_checked = check_epsg_code(epsg_code_unchecked)
+            map_collections['area_epsg_code'] = epsg_code_checked
+
+        else:
+            log_stream.error(' ===> Geo field "area_epsg_code" must be defined')
+            raise IOError('Field not found')
 
         return map_collections
 

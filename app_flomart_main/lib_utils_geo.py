@@ -10,8 +10,7 @@ Version:       '1.0.0'
 #######################################################################################
 # Libraries
 import logging
-import numpy as np
-
+import re
 
 from lib_utils_io import read_mat
 from lib_info_args import logger_name
@@ -26,12 +25,14 @@ log_stream = logging.getLogger(logger_name)
 # -------------------------------------------------------------------------------------
 # Geographical lookup table
 geo_lookup_table = {'AreeCompetenza': 'area_reference_id',
+                    'EPSG_domain': 'area_epsg_code',
                     'LonArea': 'area_reference_geo_x', 'LatArea': 'area_reference_geo_y',
                     'LatLL': 'coord_bottom_y', 'LatUR': 'coord_top_y',
                     'LonLL': 'coord_left_x', 'LonUR': 'coord_right_x',
                     'bacino_sezione_sort': 'section_description', 'nomi_sezioni_sort': 'section_name',
                     'indici_sort': 'section_id', 'a1dQindex': 'section_discharge_idx',
-                    'mappa_aree': 'area_mask', 'mappa_aree_allargata': 'area_mask_extended'}
+                    'mappa_aree': 'area_mask', 'mappa_aree_allargata': 'area_mask_extended',
+                    'drainage_area_section_km2': 'section_drainage_area'}
 # -------------------------------------------------------------------------------------
 
 
@@ -68,33 +69,25 @@ def read_file_geo(file_name, excluded_fields=None):
 
 
 # -------------------------------------------------------------------------------------
-# Method to convert decimal degrees to km [method2]
-def deg_2_km_OLD(deg, lat=None):
-    if lat is None:
-        km = deg * 110.54
+# Method to check epsg code
+def check_epsg_code(epsg_value, epsg_prefix='EPSG', epsg_sep=':'):
+
+    if not isinstance(epsg_value, str):
+        epsg_value = str(epsg_value)
+
+    if epsg_value.isnumeric():
+        epsg_code = epsg_prefix + epsg_sep + epsg_value
     else:
-        km = deg * 111.32 * np.cos(np.deg2rad(lat))
-    return km
-# -------------------------------------------------------------------------------------
+        epsg_parts = re.findall(r'\d+', epsg_value)
 
+        if isinstance(epsg_parts, list) and (epsg_parts.__len__() == 1):
+            epsg_value = epsg_parts[0]
+        else:
+            log_stream.error(' ===> EPSG format is not supported')
+            raise NotImplementedError('Case not implemented yet')
 
-# -------------------------------------------------------------------------------------
-# Method to compute cell area in m^2
-def compute_cell_area_OLD(geo_x, geo_y, cell_size_x, cell_size_y):
+        epsg_code = epsg_prefix + epsg_sep + epsg_value
 
-    # Method constant(s)
-    r = 6378388  # (Radius)
-    e = 0.00672267  # (Ellipsoid)
-
-    # dx = (R * cos(lat)) / (sqrt(1 - e2 * sqr(sin(lat)))) * PI / 180
-    dx_2d = (r * np.cos(np.abs(geo_y) * np.pi / 180)) / \
-            (np.sqrt(1 - e * np.sqrt(np.sin(np.abs(geo_y) * np.pi / 180)))) * np.pi / 180
-    # dy = (R * (1 - e2)) / pow((1 - e2 * sqr(sin(lat))),1.5) * PI / 180
-    dy_2d = (r * (1 - e)) / np.power((1 - e * np.sqrt(np.sin(np.abs(geo_y) / 180))), 1.5) * np.pi / 180
-
-    # area cell in m^2
-    area_cell = ((dx_2d / (1 / cell_size_x)) * (dy_2d / (1 / cell_size_y)))  # [m^2]
-
-    return area_cell
+    return epsg_code
 
 # -------------------------------------------------------------------------------------

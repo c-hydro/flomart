@@ -1,23 +1,24 @@
 #!/usr/bin/python3
 """
-FLOODS - Scenario Application
+FLOMART - FLOod MAp in Real Time
 
 __date__ = '20220701'
 __version__ = '2.0.0'
 __author__ =
         'Fabio Delogu (fabio.delogu@cimafoundation.org)',
+        'Matteo Darienzo (matteo.darienzo@cimafoundation.org)',
         'Flavio Pignone (flavio.pignone@cimafoundation.org)',
         'Rocco Masi (rocco.masi@cimafoundation.org)',
         'Lorenzo Campo (lorenzo.campo@cimafoundation.org)',
         'Francesco Silvestro (francesco.silvestro@cimafoundation.org)'
 
-__library__ = 'floods'
+__library__ = 'flomart'
 
 General command line:
-python3 app_flood_scenario_main.py -settings_file configuration.json -time "YYYY-MM-DD HH:MM"
+python3 app_flomart_main.py -settings_file configuration.json -time "YYYY-MM-DD HH:MM"
 
 Version(s):
-20220701 (2.0.0) --> Code refactoring based on file settings and static and dynamic datasets;
+20220701 (2.0.0) --> FLOMART application(s) and code refactoring based on file settings and static and dynamic datasets;
 20220228 (1.9.1) --> Bugs fixing for the weighted scenarios part
 20220223 (1.9.0) --> Bugs fixing and code updating based on pre-operational release
 20220201 (1.8.0) --> Pre-operational release
@@ -52,7 +53,7 @@ log_stream = logging.getLogger(logger_name)
 # Algorithm information
 alg_version = '2.0.0'
 alg_release = '2022-07-01'
-alg_name = 'FLOODS - Scenario Application'
+alg_name = 'FLOMART'
 # -------------------------------------------------------------------------------------
 
 

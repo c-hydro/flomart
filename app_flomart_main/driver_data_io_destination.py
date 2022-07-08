@@ -164,6 +164,7 @@ class DriverScenario:
         self.domain_scenario_area_tag = "area_reference_id"
         self.domain_scenario_grid_x_tag = "area_reference_geo_x"
         self.domain_scenario_grid_y_tag = "area_reference_geo_y"
+        self.domain_epsg_code = 'area_epsg_code'
 
         self.domain_scenario_hazard_name = 'mappa_h'
         self.domain_scenario_hazard_format = np.float32
@@ -505,6 +506,7 @@ class DriverScenario:
                     domain_geo_data = map_geo_collection[self.domain_scenario_area_tag]
                     domain_geo_x = map_geo_collection[self.domain_scenario_grid_x_tag]
                     domain_geo_y = map_geo_collection[self.domain_scenario_grid_y_tag]
+                    domain_epsg_code = map_geo_collection[self.domain_epsg_code]
 
                     time_step_string = domain_map_time.strftime(time_format_algorithm)
 
@@ -552,6 +554,7 @@ class DriverScenario:
                     section_info_collection['scenario_name'] = domain_name_step
                     section_info_collection['scenario_time_now'] = time_now_string
                     section_info_collection['scenario_time_step'] = time_step_string
+                    section_info_collection['scenario_epsg_code'] = domain_epsg_code
 
                     log_stream.info(' -------> Prepare file data ... DONE')
 
@@ -586,7 +589,7 @@ class DriverScenario:
                                           scenario_name=domain_name_step,
                                           scenario_time_now_string=time_now_string,
                                           scenario_time_step_string=time_step_string,
-                                          fig_color_map_type=None, fig_dpi=150)
+                                          fig_color_map_type=None, fig_dpi=150, fig_epsg_code=domain_epsg_code)
                             log_stream.info(' -------> Save file png ' + file_name_scenario_plot_png +
                                             ' ... DONE')
                         else:
@@ -606,7 +609,7 @@ class DriverScenario:
                         if not os.path.exists(file_path_scenario_plot_tiff):
                             save_file_tiff(file_path_scenario_plot_tiff,
                                            domain_map_data, domain_geo_x, domain_geo_y,
-                                           file_epsg_code='EPSG:32632')
+                                           file_epsg_code=domain_epsg_code)
                             log_stream.info(' -------> Save file tiff ' + file_name_scenario_plot_tiff +
                                             ' ... DONE')
                         else:

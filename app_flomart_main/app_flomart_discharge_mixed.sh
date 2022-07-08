@@ -2,13 +2,13 @@
 
 #-----------------------------------------------------------------------------------------
 # Script information
-script_name='APP - RUNNER FLOOD SCENARIO - MIXED DISCHARGE - REALTIME'
+script_name='APP - RUNNER FLOMART - MIXED DISCHARGE - REALTIME'
 script_version="1.0.0"
 script_date='2021/11/18'
 
 virtualenv_folder='/home/cfmi.arpal.org/idro/FloodScenario/library/fp_virtualenv_python3/'
-virtualenv_name='fp_virtualenv_python3_flood_libraries'
-script_folder='/home/cfmi.arpal.org/idro/FloodScenario/library/fp_package_floods_application/'
+virtualenv_name='fp_virtualenv_python3_flomart_libraries'
+script_folder='/home/cfmi.arpal.org/idro/FloodScenario/library/fp_package_flomart_application/'
 
 # Execution example:
 # python3 app_flood_scenario_main.py -settings_algorithm configuration.json -time "2020-11-02 12:00"
@@ -16,8 +16,8 @@ script_folder='/home/cfmi.arpal.org/idro/FloodScenario/library/fp_package_floods
 
 #-----------------------------------------------------------------------------------------
 # Get file information
-script_file='/home/cfmi.arpal.org/idro/FloodScenario/library/fp_package_floods_application/app_flood_scenario_main.py'
-settings_file='/home/cfmi.arpal.org/idro/FloodScenario/flood_app_exec/app_runner_scenario_mixed/app_flood_runner_scenario_discharge_mixed_realtime.json'
+script_file='/home/cfmi.arpal.org/idro/FloodScenario/library/fp_package_floods_application/app_flomart_main.py'
+settings_file='/home/cfmi.arpal.org/idro/FloodScenario/flomart_app_exec/app_runner_scenario_mixed/app_flomart_discharge_mixed_realtime.json'
 
 # Time period execution
 time_period_hour=0 # hour(s)
