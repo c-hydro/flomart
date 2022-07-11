@@ -1060,119 +1060,124 @@ class DriverScenario:
                     os.remove(file_path_scenario_anc_domain_info)
 
             if not os.path.exists(file_path_scenario_anc_domain_info):
-            
-                domain_scenario_workspace = {}
-                for section_obj_key, section_obj_dframe in section_obj_data.items():
 
-                    log_stream.info(' -----> Section "' + section_obj_key + '" ... ')
+                if section_obj_data is not None:
+                    domain_scenario_workspace = {}
+                    for section_obj_key, section_obj_dframe in section_obj_data.items():
 
-                    section_db_data = None
-                    for section_key, section_fields in section_geo_data.items():
-                        if section_fields['section_description'] == section_obj_key:
-                            section_db_data = section_fields.copy()
-                            break
+                        log_stream.info(' -----> Section "' + section_obj_key + '" ... ')
 
-                    if (section_db_data is not None) and (section_obj_dframe is not None):
+                        section_db_data = None
+                        for section_key, section_fields in section_geo_data.items():
+                            if section_fields['section_description'] == section_obj_key:
+                                section_db_data = section_fields.copy()
+                                break
 
-                        section_discharge_data = section_obj_dframe[self.var_name_discharge]
-                        section_type_data = section_obj_dframe[self.var_name_type]
+                        if (section_db_data is not None) and (section_obj_dframe is not None):
 
-                        section_db_n = section_db_data['section_id']
-                        section_db_description = section_db_data['section_description']
-                        section_db_name_outlet = section_db_data['name_point_outlet']
-                        section_db_name_obs = section_db_data['name_point_obs']
-                        # section_db_idx = section_db_data['idx_data_terrain']
-                        section_db_discharge_idx = section_db_data['section_discharge_idx']
+                            section_discharge_data = section_obj_dframe[self.var_name_discharge]
+                            section_type_data = section_obj_dframe[self.var_name_type]
 
-                        assert section_db_description == section_obj_key
+                            section_db_n = section_db_data['section_id']
+                            section_db_description = section_db_data['section_description']
+                            section_db_name_outlet = section_db_data['name_point_outlet']
+                            section_db_name_obs = section_db_data['name_point_obs']
+                            # section_db_idx = section_db_data['idx_data_terrain']
+                            section_db_discharge_idx = section_db_data['section_discharge_idx']
 
-                        # Compute scenario idx
-                        if self.scenario_analysis == 'max_period':
+                            assert section_db_description == section_obj_key
 
-                            # Compute discharge for evaluating scenario
-                            section_discharge_run, section_discharge_time, \
-                                section_discharge_value, section_type_value, \
-                                section_n_value = self.compute_scenario_discharge(
-                                    section_discharge_data, section_type_data, analysis_freq=self.scenario_analysis)
-                            # Get discharge attr(s)
-                            section_discharge_attrs = section_discharge_data.attrs
+                            # Compute scenario idx
+                            if self.scenario_analysis == 'max_period':
 
-                            # Compute tr for evaluating scenario
-                            section_scenario_trs,\
-                                section_scenario_trs_right, section_scenario_trs_left, \
-                                section_scenario_weights_right, section_scenario_weights_left\
-                                = self.compute_scenario_tr(
-                                    section_db_discharge_idx, section_discharge_time, section_discharge_value,
-                                    section_discharge_name=section_db_description,
-                                    section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max)
+                                # Compute discharge for evaluating scenario
+                                section_discharge_run, section_discharge_time, \
+                                    section_discharge_value, section_type_value, \
+                                    section_n_value = self.compute_scenario_discharge(
+                                        section_discharge_data, section_type_data, analysis_freq=self.scenario_analysis)
+                                # Get discharge attr(s)
+                                section_discharge_attrs = section_discharge_data.attrs
 
-                            domain_scenario_workspace[section_obj_key] = {}
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_index_tag] = section_scenario_trs
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_index_right_tag] = section_scenario_trs_right
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_index_left_tag] = section_scenario_trs_left
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_right_tag] = section_scenario_weights_right
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_left_tag] = section_scenario_weights_left
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_discharge_tag] = section_discharge_values
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_type_tag] = section_type_values
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_time_tag] = section_discharge_times
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_n_tag] = section_n_values
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_attrs_tag] = section_discharge_attrs
-                            log_stream.info(' -----> Section "' + section_obj_key + '" ... DONE')
+                                # Compute tr for evaluating scenario
+                                section_scenario_trs,\
+                                    section_scenario_trs_right, section_scenario_trs_left, \
+                                    section_scenario_weights_right, section_scenario_weights_left\
+                                    = self.compute_scenario_tr(
+                                        section_db_discharge_idx, section_discharge_time, section_discharge_value,
+                                        section_discharge_name=section_db_description,
+                                        section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max)
 
-                        elif self.scenario_analysis == 'all_period':
+                                domain_scenario_workspace[section_obj_key] = {}
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_tag] = section_scenario_trs
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_right_tag] = section_scenario_trs_right
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_left_tag] = section_scenario_trs_left
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_right_tag] = section_scenario_weights_right
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_left_tag] = section_scenario_weights_left
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_discharge_tag] = section_discharge_values
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_type_tag] = section_type_values
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_time_tag] = section_discharge_times
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_n_tag] = section_n_values
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_attrs_tag] = section_discharge_attrs
+                                log_stream.info(' -----> Section "' + section_obj_key + '" ... DONE')
 
-                            # Compute discharge for evaluating scenario
-                            section_discharge_runs, section_discharge_times, \
-                                section_discharge_values, section_type_values, \
-                                section_n_values = self.compute_scenario_discharge(
-                                    section_discharge_data, section_type_data, analysis_freq=self.scenario_analysis)
-                            # Get discharge attr(s)
-                            section_discharge_attrs = section_discharge_data.attrs
+                            elif self.scenario_analysis == 'all_period':
 
-                            # Compute tr for evaluating scenario
-                            section_scenario_trs,\
-                                section_scenario_trs_right, section_scenario_trs_left, \
-                                section_scenario_weights_right, section_scenario_weights_left\
-                                = self.compute_scenario_tr(
-                                    section_db_discharge_idx, section_discharge_times, section_discharge_values,
-                                    section_discharge_name=section_db_description,
-                                    section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max)
+                                # Compute discharge for evaluating scenario
+                                section_discharge_runs, section_discharge_times, \
+                                    section_discharge_values, section_type_values, \
+                                    section_n_values = self.compute_scenario_discharge(
+                                        section_discharge_data, section_type_data, analysis_freq=self.scenario_analysis)
+                                # Get discharge attr(s)
+                                section_discharge_attrs = section_discharge_data.attrs
 
-                            section_tmp = list(zip(section_discharge_values, section_scenario_trs, section_scenario_trs_right, section_scenario_trs_left))
+                                # Compute tr for evaluating scenario
+                                section_scenario_trs,\
+                                    section_scenario_trs_right, section_scenario_trs_left, \
+                                    section_scenario_weights_right, section_scenario_weights_left\
+                                    = self.compute_scenario_tr(
+                                        section_db_discharge_idx, section_discharge_times, section_discharge_values,
+                                        section_discharge_name=section_db_description,
+                                        section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max)
 
-                            domain_scenario_workspace[section_obj_key] = {}
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_index_tag] = section_scenario_trs
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_index_right_tag] = section_scenario_trs_right
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_index_left_tag] = section_scenario_trs_left
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_right_tag] = section_scenario_weights_right
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_left_tag] = section_scenario_weights_left
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_discharge_tag] = section_discharge_values
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_type_tag] = section_type_values
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_time_tag] = section_discharge_times
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_n_tag] = section_n_values
-                            domain_scenario_workspace[section_obj_key][self.domain_scenario_attrs_tag] = section_discharge_attrs
+                                section_tmp = list(zip(section_discharge_values, section_scenario_trs, section_scenario_trs_right, section_scenario_trs_left))
 
-                            log_stream.info(' -----> Section "' + section_obj_key + '" ... DONE')
+                                domain_scenario_workspace[section_obj_key] = {}
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_tag] = section_scenario_trs
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_right_tag] = section_scenario_trs_right
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_left_tag] = section_scenario_trs_left
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_right_tag] = section_scenario_weights_right
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_left_tag] = section_scenario_weights_left
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_discharge_tag] = section_discharge_values
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_type_tag] = section_type_values
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_time_tag] = section_discharge_times
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_n_tag] = section_n_values
+                                domain_scenario_workspace[section_obj_key][self.domain_scenario_attrs_tag] = section_discharge_attrs
+
+                                log_stream.info(' -----> Section "' + section_obj_key + '" ... DONE')
+
+                            else:
+
+                                log_stream.error(' ===> Scenario frequency value "' + str(self.scenario_analysis) +
+                                                 '" is not allowed')
+                                log_stream.info(' -----> Section "' + section_obj_key + '" ... FAILED')
+                                raise NotImplementedError('Case not implemented yet')
 
                         else:
 
-                            log_stream.error(' ===> Scenario frequency value "' + str(self.scenario_analysis) +
-                                             '" is not allowed')
-                            log_stream.info(' -----> Section "' + section_obj_key + '" ... FAILED')
-                            raise NotImplementedError('Case not implemented yet')
+                            log_stream.info(' -----> Section "' + section_obj_key + '" ... SKIPPED. Datasets are empty')
+                            domain_scenario_workspace[section_obj_key] = None
 
-                    else:
+                    # Save scenario information file
+                    folder_name_scenario_anc_domain_info, file_name_scenario_anc_domain_info = os.path.split(
+                        file_path_scenario_anc_domain_info)
+                    make_folder(folder_name_scenario_anc_domain_info)
+                    write_obj(file_path_scenario_anc_domain_info, domain_scenario_workspace)
 
-                        log_stream.info(' -----> Section "' + section_obj_key + '" ... SKIPPED. Datasets are empty')
-                        domain_scenario_workspace[section_obj_key] = None
+                    log_stream.info(' ----> Domain "' + domain_name_step + '" ... DONE')
 
-                # Save scenario information file
-                folder_name_scenario_anc_domain_info, file_name_scenario_anc_domain_info = os.path.split(
-                    file_path_scenario_anc_domain_info)
-                make_folder(folder_name_scenario_anc_domain_info)
-                write_obj(file_path_scenario_anc_domain_info, domain_scenario_workspace)
-
-                log_stream.info(' ----> Domain "' + domain_name_step + '" ... DONE')
+                else:
+                    domain_scenario_workspace = None
+                    log_stream.info(' ----> Domain "' + domain_name_step + '" ... SKIPPED. All datasets are undefined')
 
             else:
 
