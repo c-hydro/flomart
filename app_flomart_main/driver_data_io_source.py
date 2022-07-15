@@ -753,7 +753,9 @@ class DriverDischarge:
 
                         driver_type = DriverType(
                             section_name, file_path_data,
-                            file_time=file_time_discharge, file_type=self.type_sim,
+                            file_time=file_time_discharge,
+                            variables_names=self.variables_discharge_sim,
+                            file_type=self.type_sim,
                             data_type=data_type,
                             method_data_occurrence=self.method_data_occurrence_sim,
                             method_data_filling=self.method_data_filling_sim)
@@ -956,7 +958,9 @@ class DriverDischarge:
 
                         driver_type = DriverType(
                             section_name, file_path_data,
-                            file_time=file_time_discharge, file_type=self.type_obs,
+                            file_time=file_time_discharge,
+                            variables_names=self.variables_obs,
+                            file_type=self.type_obs,
                             data_type=data_type,
                             method_data_occurrence=self.method_data_occurrence_obs,
                             method_data_filling=self.method_data_filling_obs)

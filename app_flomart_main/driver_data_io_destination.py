@@ -586,10 +586,12 @@ class DriverScenario:
                         if not os.path.exists(file_path_scenario_plot_png):
                             save_file_png(file_path_scenario_plot_png,
                                           domain_map_data, domain_geo_x, domain_geo_y,
+                                          fig_epsg_code=domain_epsg_code,
                                           scenario_name=domain_name_step,
                                           scenario_time_now_string=time_now_string,
                                           scenario_time_step_string=time_step_string,
-                                          fig_color_map_type=None, fig_dpi=150, fig_epsg_code=domain_epsg_code)
+                                          fig_color_map_type=None,
+                                          fig_dpi=150)
                             log_stream.info(' -------> Save file png ' + file_name_scenario_plot_png +
                                             ' ... DONE')
                         else:
@@ -653,6 +655,7 @@ class DriverScenario:
             domain_scenario_data = scenario_data_collection[domain_name_step]
             section_geo_data = geo_data_collection[domain_name_step]['section_data'] # domain_section_db
             map_geo_data = geo_data_collection[domain_name_step]['map_data']
+            domain_epsg_code = map_geo_data['area_epsg_code']  # MATTEO: I have added this, because before epsg in the tiff saving was hardcoded
 
             file_path_scenario_anc_domain_file = file_path_scenario_anc_collections_file[domain_name_step]
             if domain_scenario_data is not None:
@@ -908,7 +911,7 @@ class DriverScenario:
                                                 save_file_tiff(file_path_scenario_anc_map,
                                                                domain_scenario_merged_filled,
                                                                domain_geo_x, domain_geo_y,
-                                                               file_epsg_code='EPSG:32632')
+                                                               file_epsg_code=domain_epsg_code)
 
                                             elif file_path_scenario_anc_map.endswith('workspace'):
                                                 write_obj(file_path_scenario_anc_map, domain_scenario_merged_filled)
@@ -941,7 +944,7 @@ class DriverScenario:
                                                 save_file_tiff(file_path_scenario_anc_map,
                                                                domain_scenario_merged_tmp,
                                                                domain_geo_x, domain_geo_y,
-                                                               file_epsg_code='EPSG:32632')
+                                                               file_epsg_code=domain_epsg_code)
 
                                             elif file_path_scenario_anc_map.endswith('workspace'):
                                                 write_obj(file_path_scenario_anc_map, domain_scenario_merged_tmp)
@@ -1139,7 +1142,10 @@ class DriverScenario:
                                         section_discharge_name=section_db_description,
                                         section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max)
 
-                                section_tmp = list(zip(section_discharge_values, section_scenario_trs, section_scenario_trs_right, section_scenario_trs_left))
+                                section_tmp = list(zip(section_discharge_values,
+                                                       section_scenario_trs,
+                                                       section_scenario_trs_right,
+                                                       section_scenario_trs_left))
 
                                 domain_scenario_workspace[section_obj_key] = {}
                                 domain_scenario_workspace[section_obj_key][self.domain_scenario_index_tag] = section_scenario_trs

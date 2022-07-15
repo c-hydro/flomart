@@ -83,19 +83,21 @@ def save_file_tiff(file_name, file_data, file_geo_x, file_geo_y, file_metadata=N
 # -------------------------------------------------------------------------------------
 # Method to save data values in png format
 def save_file_png(file_name, file_data, file_geo_x, file_geo_y,
+                  fig_epsg_code,
                   scenario_name='NA',
                   scenario_time_now_string='NA', scenario_time_step_string='NA',
-                  fig_color_map_type=None, fig_dpi=150, fig_epsg_code='EPSG:32632'):
+                  fig_color_map_type=None, fig_dpi=150):
 
     if fig_color_map_type is None:
         fig_color_map_type = 'Blues'
     fig_color_map_obj = load(fig_color_map_type)
 
-    if fig_epsg_code != 'EPSG:32632':
-        log_stream.error(' ===> EPSG Code not supported (Only supported "EPSG:32632"')
-        raise NotImplemented('Method to use all epsg codes must be developed')
+    # if fig_epsg_code != 'EPSG:32632':
+    #     log_stream.error(' ===> EPSG Code not supported (Only supported "EPSG:32632"')
+    #     raise NotImplemented('Method to use all epsg codes must be developed')
 
-    p = Proj(proj='utm', zone=32, ellps='WGS84')
+    p = Proj(fig_epsg_code)  # p = Proj(proj='utm', zone=33, ellps='WGS84')
+
     file_lons, file_lats = p(file_geo_x, file_geo_y, inverse=True)
 
     file_lon_west = np.min(file_lons)
