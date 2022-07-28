@@ -102,7 +102,7 @@
           "type": "matlab",
           "variables": {"time":  "a1sDateVet", "discharge":  "a1dQOss", "water_level": "a1dLivOssMean" },
           "method_data_occurrence": "all",
-          "method_data_analysis" : null,
+          "method_data_analysis" : "max",
           "method_data_filling": "interpolate",
           "method_data_null": "links",
           "time_period": 48,

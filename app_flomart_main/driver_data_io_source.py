@@ -87,6 +87,12 @@ class DriverDischarge:
             domain_hydro_dict[domain_name_step] = domain_hydro_list
         self.domain_hydro_dict = domain_hydro_dict
 
+        domain_description_dict = {}  # MATTEO: add section description:
+        for domain_name_step in self.domain_name_list:
+            domain_description_list = get_dict_value(geo_data_collection[domain_name_step], 'section_description', [])
+            domain_description_dict[domain_name_step] = domain_description_list
+        self.domain_description_dict = domain_description_dict
+
         self.folder_name_discharge_sim = src_dict[self.flag_discharge_data_sim][self.folder_name_tag]
         self.file_name_discharge_sim = src_dict[self.flag_discharge_data_sim][self.file_name_tag]
         self.variables_discharge_sim = src_dict[self.flag_discharge_data_sim][self.variables_tag]
@@ -117,7 +123,9 @@ class DriverDischarge:
                 self.time_run, self.folder_name_discharge_sim, self.file_name_discharge_sim,
                 file_name_prefix=self.file_prefix_sim, file_name_elem=self.file_elem_sim,
                 file_name_sep=self.file_sep_sim,
-                extra_args={'section_name_obj': self.domain_section_dict})
+                extra_args={'section_name_obj': self.domain_section_dict,
+                            'section_description_obj': self.domain_description_dict     # MATTEO: add description
+                            })
         else:
             log_stream.error(' ===> Source files of "overland_flow" are not defined ')
             raise IOError('Overflow datasets is needed by the application.')
@@ -236,6 +244,8 @@ class DriverDischarge:
                 time_rounding = extra_args['time_rounding']
             if 'time_frequency' in list(extra_args.keys()):
                 time_frequency = extra_args['time_frequency']
+            if 'section_description_obj' in list(extra_args.keys()):
+                section_description_obj = extra_args['section_description_obj']
 
         if (time_rounding is not None) and (time_period is not None):
             time_range = pd.date_range(end=time, periods=time_period, freq=time_frequency)
@@ -256,6 +266,7 @@ class DriverDischarge:
                     section_name_list = section_name_obj[domain_name]
 
             alg_template_values = {'domain_name': domain_name,
+                                   #"section_description": section_description_obj[domain_name],
                                    'source_sub_path_time_discharge_sim': time,
                                    'source_datetime_discharge_sim': time,
                                    'source_datetime_from_discharge_sim': '*',
@@ -472,7 +483,11 @@ class DriverDischarge:
                         time_series_collections = section_data_collections[section_description]
                         if scenario_boundary is not None:
                             if scenario_boundary == 'both':
-                                time_series_selected = time_series_collections[time_first_select:time_last_select]
+                                if time_series_collections is not None:
+                                    time_series_selected = time_series_collections[time_first_select:time_last_select]
+                                else:
+                                    time_series_selected = None
+
                             elif scenario_boundary == 'right':
                                 time_series_selected = time_series_collections[:time_last_select]
                             elif scenario_boundary == 'left':
@@ -484,15 +499,20 @@ class DriverDischarge:
                         else:
                             time_series_selected = deepcopy(time_series_collections)
 
-                        time_series_filter[self.var_name_discharge] = time_series_selected[self.var_name_discharge]
-                        time_series_filter[self.var_name_type] = time_series_selected[self.var_name_type]
+                        if time_series_selected is not None:
+                            time_series_filter[self.var_name_discharge] = time_series_selected[self.var_name_discharge]
+                            time_series_filter[self.var_name_type] = time_series_selected[self.var_name_type]
 
-                        time_series_filter_attrs = {**time_series_collections.attrs, **{'filter_stream': scenario_boundary}}
-                        time_series_filter.attrs = deepcopy(time_series_filter_attrs)
+                            time_series_filter_attrs = {**time_series_collections.attrs, **{'filter_stream': scenario_boundary}}
+                            time_series_filter.attrs = deepcopy(time_series_filter_attrs)
 
-                        section_workspace_filter[section_description] = deepcopy(time_series_filter)
+                            section_workspace_filter[section_description] = deepcopy(time_series_filter)
+                            log_stream.info(' -----> Section "' + section_description + '" ... DONE')
+                        else:
+                            section_workspace_filter[section_description] = None
+                            log_stream.info(' ------> Section "' + section_description +
+                                            '" ... SKIPPED. Series are defined by NoneType ')
 
-                        log_stream.info(' -----> Section "' + section_description + '" ... DONE')
 
                     else:
                         section_workspace_filter[section_description] = None
@@ -750,7 +770,7 @@ class DriverDischarge:
                     if section_name in list(file_path_discharge.keys()):
 
                         file_path_data = file_path_discharge[section_name]
-
+                        log_stream.info(' -------------> file path "' + str(file_path_data))
                         driver_type = DriverType(
                             section_name, file_path_data,
                             file_time=file_time_discharge,

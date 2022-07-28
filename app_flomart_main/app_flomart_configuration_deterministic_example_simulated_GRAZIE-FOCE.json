@@ -4,7 +4,7 @@
       "title": "FLOMART",
       "web-site": "",
       "source": "Python application developed by CIMA Research Foundation",
-      "history": "2.0.0 [20220701]",
+      "history": "2.0.1 [20220701]",
       "project-info": "flomart",
       "algorithm": ""
     },
@@ -20,7 +20,7 @@
     },
     "ancillary": {
       "__comment__": "scenario_analysis: [max_period, all_period], scenario_tiling: [rounded, weighted], scenario_type: [observed, simulated, mixed], scenario_method: [max]",
-      "domain_name" : ["Foglia"],
+      "domain_name" : ["Chienti"],
       "tr_min" : 1,
       "tr_max" : 500,
       "tr_freq": 1,
@@ -34,6 +34,7 @@
       "section_name": "string_section",
       "mask_name": "string_mask",
       "domain_name": "string_domain",
+      "section_description": "string_section",
       "scenario_discharge" : "string_discharge",
       "source_sub_path_time_discharge_sim": "%Y/%m/%d/%H",
       "source_datetime_discharge_sim": "%Y%m%d%H%M",
@@ -58,24 +59,24 @@
       "source" : {
         "geo_data": {
           "generic": {
-            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_static/geo_data/",
-            "file_name": "info_{domain_name}.mat"
+            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/geo_data/",
+            "file_name": "info_Grazie-Foce.mat"
           },
           "hydraulic": {
-            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_static/geo_data/",
-            "file_name": "info_{domain_name}.json"
+            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/geo_data/",
+            "file_name": "info_Grazie-Foce.json"
           }
         },
         "hazard_data": {
           "__comment__": "filename: {domain_name}_hazmap_T{tr}.mat, {domain_name}_WD_max_T{tr}.mat, {domain_name}_WD_max_T{tr}.tif",
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_static/hazard_data/{domain_name}/",
-          "file_name": "{domain_name}_WD_max_T{tr}.tif"
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/hazard_data/Grazie-Foce/",
+          "file_name": "Grazie-Foce_WD_max_T{tr}.tif"
         }
       },
       "destination": {
         "geo_data": {
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_static/geo_data/",
-          "file_name": "info_{domain_name}.workspace"
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/geo_data/",
+          "file_name": "info_Grazie-Foce.workspace"
         }
       }
     },
@@ -83,7 +84,7 @@
       "source": {
         "discharge_data_simulated": {
           "_comment" : "file_name_string: [idro_{source_datetime_from_discharge_sim}_{source_datetime_to_discharge_sim}{mask_discharge}.json]",
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/source/discharge_run_obs_ws/{source_sub_path_time_discharge_sim}/collections/",
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/source/discharge_run_obs_ws/{source_sub_path_time_discharge_sim}/collections/",
           "file_name": "hydrograph_{section_name}_{domain_name}_{source_datetime_from_discharge_sim}.json",
           "type": "json",
           "variables": {"time":  "time_period", "discharge":  "time_series_discharge_simulated", "water_level": null},
@@ -97,7 +98,7 @@
         },
         "discharge_data_observed": {
           "__comment__": "mat_file: {section_name}_{source_datetime_from_discharge_obs}_{source_datetime_to_discharge_obs}_1H.mat",
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/source/discharge_observed/{source_sub_path_time_discharge_obs}/",
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/source/discharge_observed/{source_sub_path_time_discharge_obs}/",
           "file_name": "{section_name}_{source_datetime_from_discharge_obs}_{source_datetime_to_discharge_obs}_1H.mat",
           "type": "matlab",
           "variables": {"time":  "a1sDateVet", "discharge":  "a1dQOss", "water_level": "a1dLivOssMean" },
@@ -112,48 +113,48 @@
       },
       "ancillary": {
         "discharge_data_simulated": {
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/ancillary/discharge_run_obs_ws/{ancillary_sub_path_time_discharge}/",
-          "file_name": "discharge_{domain_name}_{ancillary_datetime_discharge}_simulated.workspace"
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/ancillary/discharge_run_obs_ws/{ancillary_sub_path_time_discharge}/",
+          "file_name": "discharge_Grazie-Foce_{ancillary_datetime_discharge}_simulated.workspace"
         },
         "discharge_data_observed": {
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/ancillary/discharge_run_obs_ws/{ancillary_sub_path_time_discharge}/",
-          "file_name": "discharge_{domain_name}_{ancillary_datetime_discharge}_observed.workspace"
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/ancillary/discharge_run_obs_ws/{ancillary_sub_path_time_discharge}/",
+          "file_name": "discharge_Grazie-Foce_{ancillary_datetime_discharge}_observed.workspace"
         },
         "scenario_data_info": {
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
-          "file_name": "scenario_{domain_name}_{ancillary_datetime_scenario}_info.workspace"
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario_Grazie-Foce_{ancillary_datetime_scenario}_info.workspace"
         },
         "scenario_data_file": {
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
-          "file_name": "scenario_{domain_name}_{ancillary_datetime_scenario}_file.workspace"
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario_Grazie-Foce_{ancillary_datetime_scenario}_file.workspace"
         },
         "scenario_data_map": {
-          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
-          "file_name": "scenario_{domain_name}_{ancillary_datetime_scenario}_map.tiff"
+          "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/ancillary/scenario_run_obs_ws/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario_Grazie-Foce_{ancillary_datetime_scenario}_map.tiff"
         }
       },
       "destination" : {
         "plot": {
           "scenario_tiff": {
-            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
-            "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.tiff",
+            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
+            "file_name": "scenario_Grazie-Foce_{destination_datetime_scenario_plot}_graph.tiff",
             "save_status": true
           },
           "scenario_png": {
-            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
-            "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.png",
+            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
+            "file_name": "scenario_Grazie-Foce_{destination_datetime_scenario_plot}_graph.png",
             "save_status": false
           },
           "scenario_info": {
-            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
-            "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.json",
+            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_plot}/plot/",
+            "file_name": "scenario_Grazie-Foce_{destination_datetime_scenario_plot}_graph.json",
             "save_status": true
           }
         },
         "data": {
           "scenario_time_series": {
-            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_data}/time_series/",
-            "file_name": "scenario_{domain_name}_{destination_datetime_scenario_data}_ts.json",
+            "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_dynamic/outcome/scenario_run_obs_ws/{destination_sub_path_time_scenario_data}/time_series/",
+            "file_name": "scenario_Grazie-Foce_{destination_datetime_scenario_data}_ts.json",
             "save_status": true
           }
         }
@@ -161,8 +162,8 @@
     }
   },
   "log": {
-    "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/log/",
-    "file_name": "app_flomart_logging_matlab_observed.txt"
+    "folder_name": "/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/log/",
+    "file_name": "app_flomart_logging_Grazie-Foce.txt"
   },
   "time": {
     "time_now": null,

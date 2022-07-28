@@ -19,6 +19,7 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 import scipy.io
+import h5py
 
 from copy import deepcopy
 from rasterio.transform import Affine
@@ -287,8 +288,23 @@ def write_obj(file_name, data):
 # Method to read mat obj
 def read_mat(file_name):
     if os.path.exists(file_name):
-        data = scipy.io.loadmat(file_name)
+        try:
+            data = scipy.io.loadmat(file_name)
+        except:
+            # mat file has been creation wit6h version 7.3 of matlab save
+            # scipy loadmat not supported ! need h5py
+            #data = scipy.io.loadmat(file_name)
+            f = h5py.File(file_name, 'r')
+            # data = dict()
+            # for key, val in d.items():
+            #     if type(val) == h5py._hl.dataset.Dataset:
+            #         data[key] = np.array(val)
+            #         # print(key,np.array(val))
+
     else:
         data = None
+
     return data
 # -------------------------------------------------------------------------------------
+
+

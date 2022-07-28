@@ -1094,9 +1094,9 @@ class DriverScenario:
                             if self.scenario_analysis == 'max_period':
 
                                 # Compute discharge for evaluating scenario
-                                section_discharge_run, section_discharge_time, \
-                                    section_discharge_value, section_type_value, \
-                                    section_n_value = self.compute_scenario_discharge(
+                                section_discharge_run, section_discharge_times, \
+                                    section_discharge_values, section_type_values, \
+                                    section_n_values = self.compute_scenario_discharge(
                                         section_discharge_data, section_type_data, analysis_freq=self.scenario_analysis)
                                 # Get discharge attr(s)
                                 section_discharge_attrs = section_discharge_data.attrs
@@ -1106,7 +1106,7 @@ class DriverScenario:
                                     section_scenario_trs_right, section_scenario_trs_left, \
                                     section_scenario_weights_right, section_scenario_weights_left\
                                     = self.compute_scenario_tr(
-                                        section_db_discharge_idx, section_discharge_time, section_discharge_value,
+                                        section_db_discharge_idx, section_discharge_times, section_discharge_values,
                                         section_discharge_name=section_db_description,
                                         section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max)
 

@@ -83,6 +83,7 @@ def analyze_obj_hydro(file_obj_in, file_source='simulated', file_method='max',
 
             if file_method is not None:
                 if file_method == 'max':
+                    # MATTEO: here there is a bug to solve !!
                     file_values = list(file_dframe_in.max(axis=1).values)
                 elif file_method == 'mean':
                     file_values = list(file_dframe_in.mean(axis=1).values)
