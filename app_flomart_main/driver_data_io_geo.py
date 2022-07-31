@@ -362,20 +362,27 @@ class DriverGeo:
             if geo_field in list(geo_data.keys()):
                 geo_value = geo_data[geo_field]
 
-                if geo_value.ndim == 1:
-                    if geo_value.shape[0] == 1:
-                        geo_value = geo_value[0]
-                        if isinstance(geo_value, str):
-                            geo_value = str(geo_value)
-                        else:
-                            geo_value = float(geo_value)
+                if hasattr(geo_value, 'ndim'):
+                    if geo_value.ndim == 1:
+                        if geo_value.shape[0] == 1:
+                            geo_value = geo_value[0]
+                            if isinstance(geo_value, str):
+                                geo_value = str(geo_value)
+                            else:
+                                geo_value = float(geo_value)
 
-                elif geo_value.ndim == 2:
-                    if geo_value.shape[0] == 1 and geo_value.shape[1] == 1:
-                        geo_value = float(geo_value[0][0])
+                    elif geo_value.ndim == 2:
+                        if geo_value.shape[0] == 1 and geo_value.shape[1] == 1:
+                            geo_value = float(geo_value[0][0])
+                    else:
+                        log_stream.error(' ===> Geo field "' + geo_field + '" format for array is not supported')
+                        raise NotImplementedError('Case not implemented yet')
                 else:
-                    log_stream.error(' ===> Geo field "' + geo_field + '" format is not supported')
-                    raise NotImplementedError('Case not implemented yet')
+                    if isinstance(geo_value, int):
+                        geo_value = str(geo_value)
+                    else:
+                        log_stream.error(' ===> Geo field "' + geo_field + '" format for scalar is not supported')
+                        raise NotImplementedError('Case not implemented yet')
 
                 map_collections[geo_field] = geo_value
             else:

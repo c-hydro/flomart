@@ -290,17 +290,55 @@ def read_mat(file_name):
     if os.path.exists(file_name):
         try:
             data = scipy.io.loadmat(file_name)
-        except:
-            # mat file has been creation wit6h version 7.3 of matlab save
-            # scipy loadmat not supported ! need h5py
-            #data = scipy.io.loadmat(file_name)
-            f = h5py.File(file_name, 'r')
-            # data = dict()
-            # for key, val in d.items():
-            #     if type(val) == h5py._hl.dataset.Dataset:
-            #         data[key] = np.array(val)
-            #         # print(key,np.array(val))
 
+        except BaseException as base_exp:
+
+            # mat file has been creation wit6h version 7.3 of matlab save
+            log_stream.warning(
+                ' ===> Geo file in MAT format "' + file_name +
+                '" is not supported by scipy library with exception "' + str(base_exp) + '".')
+            log_stream.warning(' ===> Try to use h5py to read it')
+
+            file_handle = h5py.File(file_name, 'r')
+            data = {}
+            for key in list(file_handle.keys()):
+                fields = file_handle[key]
+                if isinstance(fields, h5py._hl.dataset.Dataset):
+                    obj = fields[()]
+
+                    if isinstance(obj[0][0], h5py.Reference):
+                        obj_list = []
+                        for obj_tmp in obj:
+                            obj_name = obj_tmp[0]
+                            obj_parts = file_handle[obj_name]
+                            obj_value = obj_parts[()]
+                            obj_dtype = obj_parts.regionref.id.dtype
+
+                            if obj_value.shape[0] == 1 and obj_dtype == np.float64:
+                                obj_tmp = obj_parts[()][0]
+                                if obj_tmp.shape[0] == 1:
+                                    obj_tmp = obj_tmp[0]
+                                obj_list.append(obj_tmp)
+                            elif obj_value.shape[0] >= 1 and obj_dtype == np.uint16:
+                                obj_joins = ''.join(chr(i) for i in obj_parts[:])
+                                obj_list.append(obj_joins)
+                            else:
+                                log_stream.error(' ===> Field parser is not supported')
+                                raise NotImplementedError('Case not implemented yet')
+                        data[key] = obj_list
+                    else:
+                        if key == 'EPSG_domain':
+                            obj_joins = ''.join(chr(i) for i in obj[:])
+                            data[key] = int(obj_joins)
+                        elif key == 'indici_sort' or key == 'a1dQindex':
+                            elem_list = []
+                            for elem_step in obj:
+                                if elem_step.shape[0] == 1:
+                                    elem_step = elem_step[0]
+                                elem_list.append(elem_step)
+                            data[key] = elem_list
+                        else:
+                            data[key] = obj
     else:
         data = None
 

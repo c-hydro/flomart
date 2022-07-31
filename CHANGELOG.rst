@@ -2,10 +2,39 @@
 Changelog
 =========
 
+Version 2.0.3 [2022-08-01]
+**************************
+- APP: app_flomart_main.py
+	- Bugs fixing for reading geographical file in different type and format (mat, hdf5)
+
+Version 2.0.2 [2022-07-28]
+**************************
+- APP: app_flomart_preprocessing.m 
+	- updated preprocessing matlab script (new save of info_{domainname}.mat) 
+	- computation of drainage areas (in km2) and epsg code
+	- add of possibility to generate Qindex variable from continuum outputs.
+- APP: example_generation_flood_map.m	 
+	- add preprocessing script matlab to test flomart (the operational generation of realtime flood map from the abacus) 
+- APP: Continuum_getMap_NC.m
+	- add preprocessing script matlab to read netcf continuum outputs (for the computation of Qindex). 
+- APP: driver_data_io_destination.py
+	- bug corrected in inputs of function self.compute_scenario_discharge() and self.compute_scenario_tr()
+
+Version 2.0.1 [2022-07-15]
+**************************
+- APP: app_flomart_configuration_deterministic_example_simulated_FOGLIA.json 
+	- Add of configuration file for Foglia River case study. 
+
+- APP: driver_data_io_destination.py
+	- Modification to read all epsg through domain_epsg_code (info passed directly from .mat file) in order to plot png and tiff.
+
+- APP: app_flomart_main/driver_data_io_source.py, app_flomart_main/driver_type_io.py
+	- (DriverType class) modification in order to add variables_names=self.variables_obs or self.variables_sim 
+
 Version 2.0.0 [2022-07-05]
 **************************
 - APP: app_flomart_main.py
-	- Operational release (refactor of scripts and procedures based on preprocessing tools)
+	- Operational release and refactoring of scripts and procedures
 - APP: app_flomart_preprocessing.m
 	- Preprocessing tools to prepare data 
 
