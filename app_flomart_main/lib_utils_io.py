@@ -320,7 +320,7 @@ def read_mat(file_name):
                                     obj_tmp = obj_tmp[0]
                                 obj_list.append(obj_tmp)
                             elif obj_value.shape[0] >= 1 and obj_dtype == np.uint16:
-                                obj_joins = ''.join(chr(i) for i in obj_parts[:])
+                                obj_joins = ''.join(chr(int(i)) for i in obj_parts[:])
                                 obj_list.append(obj_joins)
                             else:
                                 log_stream.error(' ===> Field parser is not supported')
@@ -328,7 +328,7 @@ def read_mat(file_name):
                         data[key] = obj_list
                     else:
                         if key == 'EPSG_domain':
-                            obj_joins = ''.join(chr(i) for i in obj[:])
+                            obj_joins = ''.join(chr(int(i)) for i in obj[:])
                             data[key] = int(obj_joins)
                         elif key == 'indici_sort' or key == 'a1dQindex':
                             elem_list = []

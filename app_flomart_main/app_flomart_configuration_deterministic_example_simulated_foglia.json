@@ -82,7 +82,6 @@
     "dynamic": {
       "source": {
         "discharge_data_simulated": {
-          "_comment" : "file_name_string: [idro_{source_datetime_from_discharge_sim}_{source_datetime_to_discharge_sim}{mask_discharge}.json]",
           "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/source/discharge_run_obs_ws_marche/{source_sub_path_time_discharge_sim}/collections/",
           "file_name": "hydrograph_{section_name}_{domain_name}_{source_datetime_discharge_sim}.json",
           "type": "json",
@@ -96,7 +95,6 @@
           "time_rounding": "D"
         },
         "discharge_data_observed": {
-          "__comment__": "mat_file: {section_name}_{source_datetime_from_discharge_obs}_{source_datetime_to_discharge_obs}_1H.mat",
           "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/source/discharge_run_obs_ws_marche/{source_sub_path_time_discharge_obs}/",
           "file_name": "hydrograph_{section_name}_{domain_name}_{source_datetime_discharge_obs}.json",
           "type": "json",

@@ -29,7 +29,9 @@ from lib_utils_hydrology_mat import read_file_hydro_obs as read_file_hydro_obs_m
 from lib_utils_hydrology_mat import parse_file_hydro_name as parse_file_hydro_name_mat
 from lib_utils_hydrology_mat import create_file_hydro_tag as create_file_hydro_tag_mat
 
-from lib_utils_hydrology_json import read_file_hydro_sim as read_file_hydro_sim_json
+from lib_utils_hydrology_json import read_file_hydro as read_file_hydro_json
+from lib_utils_hydrology_json import parse_file_hydro_name as parse_file_hydro_name_json
+from lib_utils_hydrology_json import create_file_hydro_tag as create_file_hydro_tag_json
 
 
 from lib_info_args import logger_name
@@ -84,6 +86,10 @@ class DriverType:
         else:
             log_stream.error(' ===> FileType "' + self.file_type + '" is not supported')
             raise NotImplementedError('Case not implemented yet')
+
+        if not isinstance(section_ts, pd.DataFrame):
+            log_stream.error(' ===> Section TimeSeries obj is expected in DataFrame format')
+            raise RuntimeError('Check your Section TimeSeries object to define it using the DataFrame format')
 
         return section_ts
     # -------------------------------------------------------------------------------------
@@ -200,15 +206,14 @@ class DriverType:
                     log_stream.error(' ===> File occurrence "' + file_method_occurrence + '" is not supported')
                     raise NotImplementedError('Case not implemented yet')
 
-        if section_ts_discharge is not None:
-            section_ts_discharge = fill_obj_hydro(
-                obj_hydro=section_ts_discharge, obj_method_filling=file_method_filling)
+        if section_dframe_discharge is not None:
+            section_dframe_discharge = fill_obj_hydro(
+                obj_hydro=section_dframe_discharge, obj_method_filling=file_method_filling)
         else:
             log_stream.warning(' ===> Section "' + section_name + '" has not valid time series ')
 
-        return section_ts_discharge
+        return section_dframe_discharge
     # -------------------------------------------------------------------------------------
-
 
     # -------------------------------------------------------------------------------------
     # Method to wrap json data
@@ -224,9 +229,11 @@ class DriverType:
         for file_path_step in file_path_list:
 
             if file_data == 'simulated':
-                section_ts_discharge, section_ts_water_level = read_file_hydro_sim_json(section_name,
-                                                                                        file_path_step,
-                                                                                        variables_names)
+                section_ts_discharge, section_ts_water_level = read_file_hydro_json(
+                    section_name, file_path_step, variables_names)
+            elif file_data == 'observed':
+                section_ts_discharge, section_ts_water_level = read_file_hydro_json(
+                    section_name, file_path_step, variables_names)
             else:
                 log_stream.error(' ===> File data "' + file_data + '" is not supported')
                 raise NotImplementedError('Case not implemented yet')
@@ -241,19 +248,19 @@ class DriverType:
                 section_ts_discharge = fill_obj_hydro(
                     obj_hydro=section_ts_discharge, obj_method_filling=file_method_filling)
 
-                # file_part_timestamp_start, file_part_timestamp_end, \
-                # file_part_mask, file_part_n_ens = parse_file_hydro_name_json(
-                #     file_name_step, file_data=file_data)
-                #
-                # file_tag = create_file_hydro_tag_json(
-                #     file_part_timestamp_start, file_part_timestamp_end, file_part_n_ens, section_name)
-                #
-                # section_ts_discharge.attrs = {
-                #     'file_name': file_name_step, 'section_name': section_name,
-                #     'file_mask': file_part_mask, 'file_ensemble': file_part_n_ens, 'file_tag': file_tag,
-                #     'time_start': file_part_timestamp_start, 'time_end': file_part_timestamp_end}
-                #
-                # section_dframe_discharge[file_tag] = section_ts_discharge
+                file_part_timestamp_start, file_part_timestamp_end, \
+                file_part_mask, file_part_n_ens = parse_file_hydro_name_json(
+                     file_name_step, file_data=file_data)
+
+                file_tag = create_file_hydro_tag_json(
+                     file_part_timestamp_start, file_part_timestamp_end, file_part_n_ens, section_name)
+
+                section_ts_discharge.attrs = {
+                     'file_name': file_name_step, 'section_name': section_name,
+                     'file_mask': file_part_mask, 'file_ensemble': file_part_n_ens, 'file_tag': file_tag,
+                     'time_start': file_part_timestamp_start, 'time_end': file_part_timestamp_end}
+
+                section_dframe_discharge[file_tag] = section_ts_discharge
 
             if section_dframe_discharge is not None:
                 if file_method_occurrence == 'first':
@@ -264,15 +271,13 @@ class DriverType:
                     log_stream.error(' ===> File occurrence "' + file_method_occurrence + '" is not supported')
                     raise NotImplementedError('Case not implemented yet')
 
-        if section_ts_discharge is not None:
-            section_ts_discharge = fill_obj_hydro(
-                obj_hydro=section_ts_discharge, obj_method_filling=file_method_filling)
+        if section_dframe_discharge is not None:
+            section_dframe_discharge = fill_obj_hydro(
+                obj_hydro=section_dframe_discharge, obj_method_filling=file_method_filling)
         else:
             log_stream.warning(' ===> Section "' + section_name + '" has not valid time series ')
 
-        return section_ts_discharge
+        return section_dframe_discharge
         # -------------------------------------------------------------------------------------
-
-
 
 # -------------------------------------------------------------------------------------

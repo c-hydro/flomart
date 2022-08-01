@@ -9,7 +9,7 @@
       "algorithm": ""
     },
     "flags": {
-      "cleaning_static_data": true,
+      "cleaning_static_data": false,
       "cleaning_ancillary_data_discharge_obs": true,
       "cleaning_ancillary_data_discharge_sim": true,
       "cleaning_ancillary_data_scenario_info": true,
