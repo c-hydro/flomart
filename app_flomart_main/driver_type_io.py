@@ -87,9 +87,13 @@ class DriverType:
             log_stream.error(' ===> FileType "' + self.file_type + '" is not supported')
             raise NotImplementedError('Case not implemented yet')
 
-        if not isinstance(section_ts, pd.DataFrame):
-            log_stream.error(' ===> Section TimeSeries obj is expected in DataFrame format')
-            raise RuntimeError('Check your Section TimeSeries object to define it using the DataFrame format')
+        if section_ts is not None:
+            if not isinstance(section_ts, pd.DataFrame):
+                log_stream.error(' ===> Section TimeSeries obj is expected in DataFrame format')
+                raise RuntimeError('Check your Section TimeSeries object to define it using the DataFrame format')
+
+        else:
+            log_stream.warning(' ===> Section TimeSeries is defined by NoneType. All files are not available')
 
         return section_ts
     # -------------------------------------------------------------------------------------

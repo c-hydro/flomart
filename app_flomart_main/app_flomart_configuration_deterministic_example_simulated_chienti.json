@@ -9,7 +9,7 @@
       "algorithm": ""
     },
     "flags": {
-      "cleaning_static_data": false,
+      "cleaning_static_data": true,
       "cleaning_ancillary_data_discharge_obs": true,
       "cleaning_ancillary_data_discharge_sim": true,
       "cleaning_ancillary_data_scenario_info": true,
@@ -22,7 +22,7 @@
       "__comment__": "scenario_analysis: [max_period, all_period], scenario_tiling: [rounded, weighted], scenario_type: [observed, simulated, mixed], scenario_method: [max]",
       "domain_name" : ["Chienti"],
       "tr_min" : 1,
-      "tr_max" : 30,
+      "tr_max" : 20,
       "tr_freq": 1,
       "scenario_tiling": "rounded",
       "scenario_boundary": "both",
@@ -32,6 +32,8 @@
     "template": {
       "tr": "string_tr",
       "section_name": "string_section",
+      "section_name_part1": "string_section_part1",
+      "section_name_part2": "string_section_part2",
       "mask_name": "string_mask",
       "domain_name": "string_domain",
       "scenario_discharge" : "string_discharge",
@@ -84,7 +86,7 @@
         "discharge_data_simulated": {
           "_comment" : "file_name_string: [idro_{source_datetime_from_discharge_sim}_{source_datetime_to_discharge_sim}{mask_discharge}.json]",
           "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/source/discharge_run_obs_ws_marche/{source_sub_path_time_discharge_sim}/collections/",
-          "file_name": "hydrograph_{section_name}_{domain_name}_{source_datetime_discharge_sim}.json",
+          "file_name": "hydrograph_{section_name_part1}_{section_name_part2}_{source_datetime_discharge_sim}.json",
           "type": "json",
           "variables": {"time":  "time_period", "discharge":  "time_series_discharge_simulated", "water_level": null},
           "method_data_occurrence": "all",
@@ -98,7 +100,7 @@
         "discharge_data_observed": {
           "__comment__": "mat_file: {section_name}_{source_datetime_from_discharge_obs}_{source_datetime_to_discharge_obs}_1H.mat",
           "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/source/discharge_run_obs_ws_marche/{source_sub_path_time_discharge_obs}/",
-          "file_name": "hydrograph_{section_name}_{domain_name}_{source_datetime_discharge_obs}.json",
+          "file_name": "hydrograph_{section_name_part1}_{section_name_part2}_{source_datetime_discharge_obs}.json",
           "type": "json",
           "variables": {"time":  "time_period", "discharge":  "time_series_discharge_observed", "water_level": null },
           "method_data_occurrence": "all",

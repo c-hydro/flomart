@@ -9,7 +9,7 @@
       "algorithm": ""
     },
     "flags": {
-      "cleaning_static_data": true,
+      "cleaning_static_data": false,
       "cleaning_ancillary_data_discharge_obs": true,
       "cleaning_ancillary_data_discharge_sim": true,
       "cleaning_ancillary_data_scenario_info": true,
@@ -68,7 +68,7 @@
         },
         "hazard_data": {
           "__comment__": "filename: {domain_name}_hazmap_T{tr}.mat, {domain_name}_WD_max_T{tr}.mat, {domain_name}_WD_max_T{tr}.tif",
-          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_static/hazard_data/Abaco_{domain_name}Completo_TIF/",
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_static/hazard_data/Abaco_{domain_name}Completo/",
           "file_name": "{domain_name}Completo_WD_max_T{tr}.tif"
         }
       },
@@ -83,7 +83,7 @@
       "source": {
         "discharge_data_simulated": {
           "_comment" : "file_name_string: [idro_{source_datetime_from_discharge_sim}_{source_datetime_to_discharge_sim}{mask_discharge}.txt]",
-          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace2/flomart-ws/data_dynamic/source/run_osservato_pluviometri/{source_sub_path_time_discharge_sim}/",
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/source/run_osservato_pluviometri/{source_sub_path_time_discharge_sim}/",
           "file_name": "idro_{source_datetime_from_discharge_sim}_{source_datetime_to_discharge_sim}{mask_name}.txt",
           "type": "ascii_arpal_sim",
           "variables": {"time":  "a1sDateVet", "discharge":  "a1dQOssMean", "water_level": null},
@@ -97,7 +97,7 @@
         },
         "discharge_data_observed": {
           "__comment__": "mat_file: {section_name}_{source_datetime_from_discharge_obs}_{source_datetime_to_discharge_obs}_1H.mat",
-          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace2/flomart-ws/data_dynamic/source/LivelliPortateOsservate/{source_sub_path_time_discharge_obs}/",
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_dynamic/source/LivelliPortateOsservate/{source_sub_path_time_discharge_obs}/",
           "file_name": "LivelloPortate_{section_name}_{source_datetime_from_discharge_obs}_{source_datetime_to_discharge_obs}.txt",
           "type": "ascii_arpal_obs",
           "variables": {"time":  "a1sDateVet", "discharge":  "a1dQOssMean", "water_level": "a1dLivOssMean" },
