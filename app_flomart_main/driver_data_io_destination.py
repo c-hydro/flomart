@@ -795,6 +795,7 @@ class DriverScenario:
 
                                         section_area_idx = np.argwhere(
                                             map_geo_data[self.domain_scenario_area_tag] == section_db_id)
+                                        map_shape_data = map_geo_data[self.domain_scenario_area_tag].shape
 
                                         section_scenario_tr_select = max(self.tr_min,
                                                                          min(self.tr_max, section_scenario_tr_check))
@@ -819,8 +820,17 @@ class DriverScenario:
                                                 file_format=[self.domain_scenario_hazard_format],
                                                 file_scale_factor=[self.domain_scenario_hazard_scale_factor])
 
+
                                             if file_data_hazard is not None:
                                                 file_data_h = file_data_hazard[self.domain_scenario_hazard_name]
+                                                file_shape_h = file_data_h.shape
+
+                                                if (map_shape_data[0] != file_shape_h[0]) or \
+                                                        (map_shape_data[1] != file_shape_h[1]):
+                                                    log_stream.error(' ===> File hazard "' + file_path_hazard +
+                                                                     '" and map gep area does not have the same dims')
+                                                    raise RuntimeError('Hazard map and area map dims must be the same')
+
                                             else:
                                                 log_stream.error(' ===> File hazard "' + file_path_hazard +
                                                                  '" is not available. Check your folder.')
@@ -848,6 +858,12 @@ class DriverScenario:
 
                                             if file_data_hazard_right is not None:
                                                 file_data_h_right = file_data_hazard_right[self.domain_scenario_hazard_name]
+                                                file_shape_h_right = file_data_h_right.shape
+                                                if (map_shape_data[0] != file_shape_h_right[0]) or \
+                                                        (map_shape_data[1] != file_shape_h_right[1]):
+                                                    log_stream.error(' ===> File hazard right "' + file_path_hazard_right +
+                                                                     '" and map gep area does not have the same dims')
+                                                    raise RuntimeError('Hazard map and area map dims must be the same')
                                             elif file_data_hazard_right is None:
                                                 log_stream.error(
                                                     ' ===> File hazard right is "NoneType". Check your folder.')
@@ -859,12 +875,18 @@ class DriverScenario:
 
                                             if file_data_hazard_left is not None:
                                                 file_data_h_left = file_data_hazard_left[self.domain_scenario_hazard_name]
+                                                file_shape_h_left = file_data_h_left.shape
+                                                if (map_shape_data[0] != file_shape_h_left[0]) or \
+                                                        (map_shape_data[1] != file_shape_h_left[1]):
+                                                    log_stream.error(' ===> File hazard left "' + file_path_hazard_left +
+                                                                     '" and map gep area does not have the same dims')
+                                                    raise RuntimeError('Hazard map and area map dims must be the same')
                                             elif file_data_hazard_left is None:
                                                 log_stream.error(
                                                     ' ===> File hazard left is "NoneType". Check your folder.')
                                                 raise TypeError('File not found.')
                                             else:
-                                                log_stream.error(' ===> File hazard "' + file_data_hazard_right +
+                                                log_stream.error(' ===> File hazard "' + file_path_hazard_left +
                                                                  '" is not available. Check your folder.')
                                                 raise FileNotFoundError('File not found.')
 

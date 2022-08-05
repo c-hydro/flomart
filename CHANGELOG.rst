@@ -5,7 +5,9 @@ Changelog
 Version 2.0.3 [2022-08-01]
 **************************
 - APP: app_flomart_main.py
-	- Bugs fixing for reading geographical file in different type and format (mat, hdf5)
+	- Bugs fixing for reading geographical file in different type and format (mat, hdf5).
+	- Bugs fixing for managing settings parameters.
+	- Bugs fixing for reading dynamic files in json and mat format.
 
 Version 2.0.2 [2022-07-28]
 **************************

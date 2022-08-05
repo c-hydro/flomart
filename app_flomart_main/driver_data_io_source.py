@@ -347,7 +347,22 @@ class DriverDischarge:
                 section_path_obj = {}
                 for section_name_step in section_name_list:
 
-                    alg_template_extra = {'section_name': section_name_step}
+                    section_name_all, section_name_part1, section_name_part2 = None, None, None
+                    if '_' in section_name_step:
+                        section_name_parts = section_name_step.split('_')
+                        if section_name_parts.__len__() == 2:
+                            section_name_part1, section_name_part2 = section_name_parts[0], section_name_parts[1]
+                        else:
+                            log_stream.error(' ===> Section name must be defined by two elements')
+                            raise RuntimeError('Define string using two elements with "_" separator')
+                    else:
+                        section_name_all = deepcopy(section_name_step)
+
+                    alg_template_extra = {'section_name': section_name_all,
+                                          'section_name_part1': section_name_part1,
+                                          'section_name_part2': section_name_part2
+                                          }
+
                     alg_template_values = {**alg_template_values, **alg_template_extra}
 
                     folder_name_def = fill_tags2string(folder_name_raw, alg_template_tags, alg_template_values)
@@ -770,7 +785,7 @@ class DriverDischarge:
                     if section_name in list(file_path_discharge.keys()):
 
                         file_path_data = file_path_discharge[section_name]
-                        log_stream.info(' -------------> file path "' + str(file_path_data))
+                        log_stream.info(' ------> File path(s): "' + ','.join(file_path_data) + '"')
                         driver_type = DriverType(
                             section_name, file_path_data,
                             file_time=file_time_discharge,
@@ -781,10 +796,14 @@ class DriverDischarge:
                             method_data_filling=self.method_data_filling_sim)
 
                         section_dframe = driver_type.get_data()
-
-                        log_stream.info(' ------> Section "' + section_description + '" ... DONE')
+                        if section_dframe is not None:
+                            log_stream.info(' ------> Section "' + section_description + '" ... DONE')
+                        else:
+                            log_stream.info(' ------> Section "' + section_description +
+                                            '" ... SKIPPED. Files not available')
                     else:
-                        log_stream.info(' ------> Section "' + section_description + '" ... SKIPPED. Datasets are empty')
+                        log_stream.info(' ------> Section "' + section_description +
+                                        '" ... SKIPPED. Section not available')
                         section_dframe = None
 
                     section_workspace[section_description] = section_dframe

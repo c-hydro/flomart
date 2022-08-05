@@ -30,6 +30,9 @@ logging.getLogger('rasterio').setLevel(logging.WARNING)
 
 # Logging
 log_stream = logging.getLogger(logger_name)
+
+# Debug
+import matplotlib.pylab as plt
 #######################################################################################
 
 
@@ -112,6 +115,7 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
 
     file_data_json = {}
     for file_key, file_value in file_data_dict.items():
+
         if isinstance(file_value, list):
             file_value = [str(i) for i in file_value]
             file_value = file_sep.join(file_value)
@@ -182,6 +186,8 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
                 else:
                     file_tmp[value_key] = value_data
             file_value = deepcopy(file_tmp)
+        elif file_value is None:
+            log_stream.warning(' ===> Datasets obj is defined by NoneType. Check if datasets are available or not')
         else:
             log_stream.error(' ===> Error in getting datasets')
             raise RuntimeError('Datasets case not implemented yet')
@@ -192,7 +198,6 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
     with open(file_name, "w", encoding='utf-8') as file_handle:
         file_handle.write(file_data)
 
-    pass
 # -------------------------------------------------------------------------------------
 
 
@@ -337,6 +342,13 @@ def read_mat(file_name):
                                     elem_step = elem_step[0]
                                 elem_list.append(elem_step)
                             data[key] = elem_list
+                        elif key == 'AreeCompetenza':
+                            if obj.ndim == 2:
+                                obj_tmp = np.transpose(obj)
+                                data[key] = obj_tmp
+                            else:
+                                log_stream.error(' ===> Obj must be in 2d format')
+                                raise NotImplementedError('Case not implemented yet')
                         else:
                             data[key] = obj
     else:
