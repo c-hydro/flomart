@@ -23,7 +23,8 @@ from lib_utils_system import fill_tags2string, make_folder
 from lib_utils_generic import get_dict_value, reduce_dict_2_lists
 from lib_utils_plot import save_file_tiff, save_file_png, read_file_tiff, save_file_info
 from lib_utils_ts import prepare_file_ts, save_file_ts
-from lib_utils_tr import cmp_tr_exp, cmp_tr_linear
+# from lib_utils_tr import cmp_tr_exp, cmp_tr_linear
+from lib_utils_tr import cmp_tr_general
 
 from lib_info_args import logger_name, time_format_algorithm
 
@@ -181,7 +182,9 @@ class DriverScenario:
         self.dframe_columns = [self.domain_scenario_index_cmp_tag, self.domain_scenario_discharge_cmp_tag,
                                self.domain_scenario_h_cmp_tag]
 
-        self.correction_discharge_factor = 1.16
+
+        self.correction_discharge_factor =  0.1486  # MARCHE         # 1.16 LIGURIA
+        log_stream.info(' ---> K (correction factor) = ' + str(self.correction_discharge_factor))
         # -------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------
@@ -232,21 +235,25 @@ class DriverScenario:
 
                 if section_discharge_value >= 0.0:
 
-                    if section_discharge_value >= section_discharge_idx * self.correction_discharge_factor:
-                        section_scenario_tr_rounded, \
-                            section_scenario_tr_right, section_scenario_tr_left, \
-                            section_scenario_weight_right, section_scenario_weight_left = cmp_tr_exp(
-                                section_discharge_idx, section_discharge_value)
-                    else:
-                        section_scenario_tr_rounded, \
-                            section_scenario_tr_right, section_scenario_tr_left, \
-                            section_scenario_weight_right, section_scenario_weight_left = cmp_tr_linear(
-                                section_discharge_idx, section_discharge_value,
-                                section_discharge_factor=self.correction_discharge_factor)
+                    log_stream.info(' --------------> Q(t) = ' + str(section_discharge_value))
+                    # MATTEO: replaced two functions cmp_tr_exp and cmp_tr_lin into unique function:
+                    section_scenario_tr_rounded, \
+                    section_scenario_tr_right, section_scenario_tr_left, \
+                    section_scenario_weight_right, section_scenario_weight_left = cmp_tr_general(
+                        section_discharge_idx,
+                        section_discharge_value,
+                        domain_name=self.domain_name_list[0],
+                        section_name=section_discharge_name,
+                        section_tr_approx=3)
 
                     section_scenario_tr = int(section_scenario_tr_rounded)
                     section_scenario_tr_right = int(section_scenario_tr_right)
                     section_scenario_tr_left = int(section_scenario_tr_left)
+                    log_stream.info(' --------------> tr=' + str(section_scenario_tr) +
+                                    ', tr_right=' + str(section_scenario_tr_right) + ' (weight=' +
+                                    str(section_scenario_weight_right) + ')' +
+                                    ', tr_left=' + str(section_scenario_tr_left) + ' (weight=' +
+                                    str(section_scenario_weight_left) + ')')
 
                     if section_scenario_tr < section_scenario_tr_min:
                         section_scenario_tr = section_scenario_tr_min
@@ -510,46 +517,53 @@ class DriverScenario:
 
                     time_step_string = domain_map_time.strftime(time_format_algorithm)
 
-                    section_info_collection = {}
-                    for domain_info_key, domain_info_fields in domain_info_collection.items():
-                        if domain_info_fields is not None:
-                            if domain_info_key in domain_description_collection:
+                    if (self.scenario_analysis == 'all_period'):
 
-                                if self.domain_scenario_attrs_tag in list(domain_info_fields.keys()):
-                                    section_info_attrs = domain_info_fields[self.domain_scenario_attrs_tag]
-                                else:
-                                    log_stream.warning(' ===> Section attributes for "' + domain_info_key +
-                                                       '" are undefined due to time-series discharge datasets.')
-                                    section_info_attrs = {}
+                        section_info_collection = {}
+                        for domain_info_key, domain_info_fields in domain_info_collection.items():
+                            if domain_info_fields is not None:
+                                if domain_info_key in domain_description_collection:
 
-                                domain_info_dframe = pd.DataFrame(domain_info_fields, index=domain_info_fields['time'])
+                                    if self.domain_scenario_attrs_tag in list(domain_info_fields.keys()):
+                                        section_info_attrs = domain_info_fields[self.domain_scenario_attrs_tag]
+                                    else:
+                                        log_stream.warning(' ===> Section attributes for "' + domain_info_key +
+                                                           '" are undefined due to time-series discharge datasets.')
+                                        section_info_attrs = {}
 
-                                if not domain_info_dframe[domain_info_dframe.index.isin([domain_map_time])].empty:
-                                    section_info_fields = domain_info_dframe[domain_info_dframe.index.isin([domain_map_time])].to_dict('r')[0]
-                                else:
-                                    section_info_fields = {}
-                                    log_stream.warning(' ===> Section information for "' + domain_info_key +
-                                                       '" are undefined due to time-series discharge datasets.')
+                                    domain_info_dframe = pd.DataFrame(domain_info_fields, index=domain_info_fields['time'])
 
-                                if isinstance(section_info_fields, dict) and isinstance(section_info_attrs, dict):
-                                    section_info_fields = {**section_info_fields, **section_info_attrs}
-                                else:
-                                    log_stream.warning(' ===> Section information and attributes for "' + domain_info_key +
-                                                       '" are undefined due to time-series discharge datasets.')
-                                    section_info_fields = {}
+                                    if not domain_info_dframe[domain_info_dframe.index.isin([domain_map_time])].empty:
+                                            section_info_fields = domain_info_dframe[domain_info_dframe.index.isin([domain_map_time])].to_dict('r')[0]
+                                    else:
+                                        section_info_fields = {}
+                                        log_stream.warning(' ===> Section information for "' + domain_info_key +
+                                                           '" are undefined due to time-series discharge datasets.')
 
-                                if section_info_fields is not None:
-                                    for section_info_key, section_info_value in section_info_fields.items():
-                                        if isinstance(section_info_value, pd.Timestamp):
-                                            section_tmp_value = section_info_value.strftime(time_format_algorithm)
-                                            section_info_fields[section_info_key] = section_tmp_value
-                                        elif isinstance(section_info_value, list):
-                                           section_tmp_value = ','.join(str(elem) for elem in section_info_value)
-                                           section_info_fields[section_info_key] = section_tmp_value
-                                        elif isinstance(section_info_value, bool):
-                                            section_tmp_value = str(section_info_value)
-                                            section_info_fields[section_info_key] = section_tmp_value
-                                section_info_collection[domain_info_key] = section_info_fields
+                                    if isinstance(section_info_fields, dict) and isinstance(section_info_attrs, dict):
+                                        section_info_fields = {**section_info_fields, **section_info_attrs}
+                                    else:
+                                        log_stream.warning(' ===> Section information and attributes for "' + domain_info_key +
+                                                           '" are undefined due to time-series discharge datasets.')
+                                        section_info_fields = {}
+
+                                    if section_info_fields is not None:
+                                        for section_info_key, section_info_value in section_info_fields.items():
+                                            if isinstance(section_info_value, pd.Timestamp):
+                                                section_tmp_value = section_info_value.strftime(time_format_algorithm)
+                                                section_info_fields[section_info_key] = section_tmp_value
+                                            elif isinstance(section_info_value, list):
+                                               section_tmp_value = ','.join(str(elem) for elem in section_info_value)
+                                               section_info_fields[section_info_key] = section_tmp_value
+                                            elif isinstance(section_info_value, bool):
+                                                section_tmp_value = str(section_info_value)
+                                                section_info_fields[section_info_key] = section_tmp_value
+
+                                    section_info_collection[domain_info_key] = section_info_fields
+
+                    elif self.scenario_analysis == 'max_period':
+                        section_info_collection = domain_info_collection
+
 
                     section_info_collection['scenario_name'] = domain_name_step
                     section_info_collection['scenario_time_now'] = time_now_string
@@ -562,6 +576,8 @@ class DriverScenario:
                     folder_name_scenario_plot_info, file_name_scenario_plot_info = os.path.split(
                         file_path_scenario_plot_info)
                     make_folder(folder_name_scenario_plot_info)
+
+
 
                     log_stream.info(' -------> Save file json ' + file_name_scenario_plot_info + ' ... ')
                     if self.save_status_scenario_plot_info:
@@ -644,10 +660,12 @@ class DriverScenario:
 
         file_path_scenario_anc_collections_file = self.file_path_scenario_anc_file
 
+        log_stream.info('')
+        log_stream.info(' ---> #############################################################')
         log_stream.info(' ---> Compute scenario maps [' + time.strftime(time_format_algorithm) + '] ... ')
-
         scenario_map_collection = {}
         scenario_dframe_collection = {}
+
         for domain_name_step in self.domain_name_list:
 
             log_stream.info(' ----> Domain "' + domain_name_step + '" ... ')
@@ -691,8 +709,10 @@ class DriverScenario:
                         # DEBUG
                         # section_scenario_key = 'Lavagna_Carasco'
                         # section_scenario_data = domain_scenario_data[section_scenario_key]
-
+                        log_stream.info('                                                                   ')
+                        log_stream.info(' -----> ***********************************************************')
                         log_stream.info(' -----> Section "' + section_scenario_key + '" ... ')
+                        log_stream.info(' -----> ***********************************************************')
 
                         section_db_data = None
                         for section_key, section_fields in section_geo_data.items():
@@ -795,6 +815,7 @@ class DriverScenario:
 
                                         section_area_idx = np.argwhere(
                                             map_geo_data[self.domain_scenario_area_tag] == section_db_id)
+                                        map_shape_data = map_geo_data[self.domain_scenario_area_tag].shape
 
                                         section_scenario_tr_select = max(self.tr_min,
                                                                          min(self.tr_max, section_scenario_tr_check))
@@ -819,8 +840,17 @@ class DriverScenario:
                                                 file_format=[self.domain_scenario_hazard_format],
                                                 file_scale_factor=[self.domain_scenario_hazard_scale_factor])
 
+
                                             if file_data_hazard is not None:
                                                 file_data_h = file_data_hazard[self.domain_scenario_hazard_name]
+                                                file_shape_h = file_data_h.shape
+
+                                                if (map_shape_data[0] != file_shape_h[0]) or \
+                                                        (map_shape_data[1] != file_shape_h[1]):
+                                                    log_stream.error(' ===> File hazard "' + file_path_hazard +
+                                                                     '" and map gep area does not have the same dims')
+                                                    raise RuntimeError('Hazard map and area map dims must be the same')
+
                                             else:
                                                 log_stream.error(' ===> File hazard "' + file_path_hazard +
                                                                  '" is not available. Check your folder.')
@@ -828,9 +858,12 @@ class DriverScenario:
 
                                         elif self.scenario_tiling == 'weighted':
 
+                                            log_stream.info(' -----------> Creation of hazard map from abacus (weighted method):"')
+                                            log_stream.info('                   Define paths of hazard maps right and left ... "')
                                             file_path_hazard_right = self.define_file_hazard(
                                                 self.folder_name_hazard, self.file_name_hazard,
                                                 domain_name_step, section_scenario_tr_right_select)
+
                                             file_path_hazard_left = self.define_file_hazard(
                                                 self.folder_name_hazard, self.file_name_hazard,
                                                 domain_name_step, section_scenario_tr_left_select)
@@ -848,6 +881,12 @@ class DriverScenario:
 
                                             if file_data_hazard_right is not None:
                                                 file_data_h_right = file_data_hazard_right[self.domain_scenario_hazard_name]
+                                                file_shape_h_right = file_data_h_right.shape
+                                                if (map_shape_data[0] != file_shape_h_right[0]) or \
+                                                        (map_shape_data[1] != file_shape_h_right[1]):
+                                                    log_stream.error(' ===> File hazard right "' + file_path_hazard_right +
+                                                                     '" and map gep area does not have the same dims')
+                                                    raise RuntimeError('Hazard map and area map dims must be the same')
                                             elif file_data_hazard_right is None:
                                                 log_stream.error(
                                                     ' ===> File hazard right is "NoneType". Check your folder.')
@@ -859,19 +898,31 @@ class DriverScenario:
 
                                             if file_data_hazard_left is not None:
                                                 file_data_h_left = file_data_hazard_left[self.domain_scenario_hazard_name]
+                                                file_shape_h_left = file_data_h_left.shape
+                                                if (map_shape_data[0] != file_shape_h_left[0]) or \
+                                                        (map_shape_data[1] != file_shape_h_left[1]):
+                                                    log_stream.error(' ===> File hazard left "' + file_path_hazard_left +
+                                                                     '" and map gep area does not have the same dims')
+                                                    raise RuntimeError('Hazard map and area map dims must be the same')
                                             elif file_data_hazard_left is None:
                                                 log_stream.error(
                                                     ' ===> File hazard left is "NoneType". Check your folder.')
                                                 raise TypeError('File not found.')
                                             else:
-                                                log_stream.error(' ===> File hazard "' + file_data_hazard_right +
+                                                log_stream.error(' ===> File hazard "' + file_path_hazard_left +
                                                                  '" is not available. Check your folder.')
                                                 raise FileNotFoundError('File not found.')
 
-                                            # DEBUG
+                                            # DEBUG:
                                             # test_left = file_data_h_left[section_db_idx_hydraulic[0], section_db_idx_hydraulic[1]]
                                             # test_right = file_data_h_right[section_db_idx_hydraulic[0], section_db_idx_hydraulic[1]]
 
+                                            log_stream.info('                   Right tr = ' +
+                                                            str(section_scenario_tr_right_select) + ', weight = ' +
+                                                            str(section_scenario_wg_right_check))
+                                            log_stream.info('                   Left tr = ' +
+                                                            str(section_scenario_tr_left_select) + ', weight = ' +
+                                                            str(section_scenario_wg_left_check))
                                             file_data_h = (file_data_h_right * section_scenario_wg_right_check +
                                                            file_data_h_left * section_scenario_wg_left_check)
                                             file_data_h[file_data_h < 0.0] = 0.0
@@ -879,6 +930,7 @@ class DriverScenario:
                                             section_scenario_tr_select = (
                                                 section_scenario_tr_right_select * section_scenario_wg_right_check +
                                                 section_scenario_tr_left_select * section_scenario_wg_left_check)
+                                            log_stream.info('                   tr (weighted) = ' + str(section_scenario_tr_select))
 
                                         else:
                                             log_stream.info(' ===> Scenario tiling method "' +
@@ -991,6 +1043,8 @@ class DriverScenario:
                                 section_dframe_collections[section_scenario_key] = dframe_summary
                                 log_stream.info(' -----> Section "' + section_scenario_key + '" ... DONE')
 
+
+
                             else:
                                 log_stream.info(' -----> Section "' + section_scenario_key +
                                                 '" ... SKIPPED. Section datasets are empty')
@@ -1029,7 +1083,7 @@ class DriverScenario:
                 scenario_dframe_collection[domain_name_step] = None
 
         log_stream.info(' ---> Compute scenario maps [' + time.strftime(time_format_algorithm) + '] ... DONE')
-
+        log_stream.info(' ---> #############################################################')
         return scenario_map_collection, scenario_dframe_collection
     # -------------------------------------------------------------------------------------
 
@@ -1065,12 +1119,12 @@ class DriverScenario:
             if not os.path.exists(file_path_scenario_anc_domain_info):
 
                 if section_obj_data is not None:
+
                     domain_scenario_workspace = {}
                     for section_obj_key, section_obj_dframe in section_obj_data.items():
-
                         log_stream.info(' -----> Section "' + section_obj_key + '" ... ')
-
                         section_db_data = None
+
                         for section_key, section_fields in section_geo_data.items():
                             if section_fields['section_description'] == section_obj_key:
                                 section_db_data = section_fields.copy()
@@ -1087,13 +1141,16 @@ class DriverScenario:
                             section_db_name_obs = section_db_data['name_point_obs']
                             # section_db_idx = section_db_data['idx_data_terrain']
                             section_db_discharge_idx = section_db_data['section_discharge_idx']
+                            log_stream.info(' --------------> Qindex = ' + str(section_db_discharge_idx))
 
                             assert section_db_description == section_obj_key
 
-                            # Compute scenario idx
+                            # Compute scenario idx:
                             if self.scenario_analysis == 'max_period':
 
-                                # Compute discharge for evaluating scenario
+                                # log_stream.info(' --------------> Scenario_analysis will be performed on the max period!')
+
+                                # Compute discharge for evaluating scenario:
                                 section_discharge_run, section_discharge_times, \
                                     section_discharge_values, section_type_values, \
                                     section_n_values = self.compute_scenario_discharge(
@@ -1101,7 +1158,14 @@ class DriverScenario:
                                 # Get discharge attr(s)
                                 section_discharge_attrs = section_discharge_data.attrs
 
-                                # Compute tr for evaluating scenario
+                                # Compute tr for evaluating scenario:
+                                # MATTEO: added following loggings
+                                # log_stream.info(' --------------> tstart = ' + section_discharge_times[0].strftime(
+                                #     time_format_algorithm))
+                                # log_stream.info(' --------------> tend   = ' + section_discharge_times[-1].strftime(
+                                #     time_format_algorithm))
+                                log_stream.info(' --------------> Qmax = ' + str(np.max(section_discharge_values)) + ' [m^3/s]')
+
                                 section_scenario_trs,\
                                     section_scenario_trs_right, section_scenario_trs_left, \
                                     section_scenario_weights_right, section_scenario_weights_left\
@@ -1133,7 +1197,15 @@ class DriverScenario:
                                 # Get discharge attr(s)
                                 section_discharge_attrs = section_discharge_data.attrs
 
-                                # Compute tr for evaluating scenario
+                                # Compute tr for evaluating scenario:
+                                # MATTEO: added following loggings.
+                                # log_stream.info(' --------------> tstart = ' + section_discharge_times[0].strftime(
+                                #     time_format_algorithm))
+                                # log_stream.info(' --------------> tend   = ' + section_discharge_times[-1].strftime(
+                                #     time_format_algorithm))
+                                log_stream.info(' --------------> max(Q) = ' + str(np.max(section_discharge_values)) + ' [m^3/s]')
+                                log_stream.info(' --------------> Qindex = ' + str(section_db_discharge_idx))
+
                                 section_scenario_trs,\
                                     section_scenario_trs_right, section_scenario_trs_left, \
                                     section_scenario_weights_right, section_scenario_weights_left\
@@ -1171,6 +1243,7 @@ class DriverScenario:
                         else:
 
                             log_stream.info(' -----> Section "' + section_obj_key + '" ... SKIPPED. Datasets are empty')
+                            log_stream.info(' ---> #############################################################')
                             domain_scenario_workspace[section_obj_key] = None
 
                     # Save scenario information file

@@ -30,6 +30,9 @@ logging.getLogger('rasterio').setLevel(logging.WARNING)
 
 # Logging
 log_stream = logging.getLogger(logger_name)
+
+# Debug
+import matplotlib.pylab as plt
 #######################################################################################
 
 
@@ -82,7 +85,6 @@ def write_file_tif(file_name, file_data, file_wide, file_high, file_geotrans, fi
 # -------------------------------------------------------------------------------------
 # Method to read data values in geotiff format
 def read_file_tif(file_name):
-
     file_handle = rasterio.open(file_name)
     file_proj = file_handle.crs.wkt
     file_geotrans = file_handle.transform
@@ -112,6 +114,7 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
 
     file_data_json = {}
     for file_key, file_value in file_data_dict.items():
+
         if isinstance(file_value, list):
             file_value = [str(i) for i in file_value]
             file_value = file_sep.join(file_value)
@@ -182,6 +185,8 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
                 else:
                     file_tmp[value_key] = value_data
             file_value = deepcopy(file_tmp)
+        elif file_value is None:
+            log_stream.warning(' ===> Datasets obj is defined by NoneType. Check if datasets are available or not')
         else:
             log_stream.error(' ===> Error in getting datasets')
             raise RuntimeError('Datasets case not implemented yet')
@@ -192,7 +197,6 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
     with open(file_name, "w", encoding='utf-8') as file_handle:
         file_handle.write(file_data)
 
-    pass
 # -------------------------------------------------------------------------------------
 
 
@@ -290,17 +294,63 @@ def read_mat(file_name):
     if os.path.exists(file_name):
         try:
             data = scipy.io.loadmat(file_name)
-        except:
-            # mat file has been creation wit6h version 7.3 of matlab save
-            # scipy loadmat not supported ! need h5py
-            #data = scipy.io.loadmat(file_name)
-            f = h5py.File(file_name, 'r')
-            # data = dict()
-            # for key, val in d.items():
-            #     if type(val) == h5py._hl.dataset.Dataset:
-            #         data[key] = np.array(val)
-            #         # print(key,np.array(val))
 
+        except BaseException as base_exp:
+
+            # mat file has been creation wit6h version 7.3 of matlab save
+            log_stream.warning(
+                ' ===> Geo file in MAT format "' + file_name +
+                '" is not supported by scipy library with exception "' + str(base_exp) + '".')
+            log_stream.warning(' ===> Try to use h5py to read it')
+
+            file_handle = h5py.File(file_name, 'r')
+            data = {}
+            for key in list(file_handle.keys()):
+                fields = file_handle[key]
+                if isinstance(fields, h5py._hl.dataset.Dataset):
+                    obj = fields[()]
+
+                    if isinstance(obj[0][0], h5py.Reference):
+                        obj_list = []
+                        for obj_tmp in obj:
+                            obj_name = obj_tmp[0]
+                            obj_parts = file_handle[obj_name]
+                            obj_value = obj_parts[()]
+                            obj_dtype = obj_parts.regionref.id.dtype
+
+                            if obj_value.shape[0] == 1 and obj_dtype == np.float64:
+                                obj_tmp = obj_parts[()][0]
+                                if obj_tmp.shape[0] == 1:
+                                    obj_tmp = obj_tmp[0]
+                                obj_list.append(obj_tmp)
+                            elif obj_value.shape[0] >= 1 and obj_dtype == np.uint16:
+                                obj_joins = ''.join(chr(int(i)) for i in obj_parts[:])
+                                obj_list.append(obj_joins)
+                            else:
+                                log_stream.error(' ===> Field parser is not supported')
+                                raise NotImplementedError('Case not implemented yet')
+                        data[key] = obj_list
+                    else:
+                        if key == 'EPSG_domain':
+                            obj_joins = ''.join(chr(int(i)) for i in obj[:])
+                            data[key] = int(obj_joins)
+                        elif key == 'indici_sort' or key == 'a1dQindex':
+                            elem_list = []
+                            for elem_step in obj:
+                                if elem_step.shape[0] == 1:
+                                    elem_step = elem_step[0]
+                                elem_list.append(elem_step)
+                            data[key] = elem_list
+                        elif key == 'AreeCompetenza':
+                            if obj.ndim == 2:
+                                obj_tmp = np.transpose(obj)
+                                # obj_tmp = obj.copy()
+                                data[key] = obj_tmp
+                            else:
+                                log_stream.error(' ===> Obj must be in 2d format')
+                                raise NotImplementedError('Case not implemented yet')
+                        else:
+                            data[key] = obj
     else:
         data = None
 

@@ -7,10 +7,8 @@ clc; clear;
 % please, if a new case study need to be analysed, then insert the name of the 
 % new domain in the list below. Then execute next command to select the
 % case study from prompt pop-up:
-list_domains = {'Foglia', 'Entella', 'EntellaCompleto', 'Scrivia', 'Caccamo-Grazie', 'Grazie-Foce', 'Polverina-Caccamo', 'Chienti'}
+list_domains = {'Foglia', 'Entella', 'Scrivia', 'Chienti'}
 domain_name = strjoin(list_domains([listdlg('ListString', ['Choose case study:', ' ', list_domains])]-2))
-
-
 
 
 
@@ -89,80 +87,7 @@ elseif strcmp(domain_name,'Scrivia')
     EPSG_domain = '32632'; % Liguria Region zone 32 utm
 
     
-    
-elseif strcmp(domain_name,'Grazie-Foce')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % percorso dove si trova questo script matlab (e i suoi moduli) per il preprocessing in Flomart:
-    path_code = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/flomart-2.0.0_test/app_flomart_preprocessing';
-    % percorso dove preparare i files statici:
-    path_preparation_data = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/PREPARATION';
-    % percorso dove cercare dati statici geografici con griglia: 
-    sPathGridGeoData = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/PREPARATION/gridded_marche';
-    % Percorso dove salvare il file mat output 'info_{domain_name}.mat':
-    sPathOutputInfoMat = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/geo_data';
-    % percorso dove si trovano le simulazioni:
-    sPathHazardData = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/hazard_data';
-    %name_hazardmaps = [domain_name,'_WD_max_Q.tif'];% nome delle hazard maps di partenza senza le tre cifre finali (es:  "Grazie-Foce_WD_max_T001.tif" )
-    name_hazardmaps = ['Grazie-Foce_WD_max_T'];
-    type_hazardmaps ='.tif';  % format of the hazard map files
-    % tempo di ritorno al di sotto (strettamente) del quale la mappa di hazard si annulla
-    TR_min=1;
-    % tempo di ritorno massimo (eventuali valori superiori vengono saturati a questo valore)
-    TR_max=500;
-    modeSelectionSections = 'hardcoded';  % mode for the selection of control sections ('hardcoded' or 'byprompt')
-    % coordinate system EPSG utm: 
-    EPSG_domain = '32633'; % Marche Region zone 33 utm
-
-    
-    
-    
-elseif strcmp(domain_name,'Caccamo-Grazie')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % percorso dove si trova questo script matlab (e i suoi moduli) per il preprocessing in Flomart:
-    path_code = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/flomart-2.0.0_test/app_flomart_preprocessing';
-    % percorso dove preparare i files statici:
-    path_preparation_data = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/PREPARATION';
-    % percorso dove cercare dati statici geografici con griglia: 
-    sPathGridGeoData = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/PREPARATION/gridded_marche';
-    % Percorso dove salvare il file mat output 'info_{domain_name}.mat':
-    sPathOutputInfoMat = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/geo_data';
-    % percorso dove si trovano le simulazioni:
-    sPathHazardData = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/hazard_data';
-    %name_hazardmaps = [domain_name,'_WD_max_Q.tif'];% nome delle hazard maps di partenza senza le tre cifre finali (es:  "Grazie-Foce_WD_max_T001.tif" )
-    name_hazardmaps = ['Caccamo-Grazie_WD_max_T'];
-    type_hazardmaps ='.tif';  % format of the hazard map files
-    % tempo di ritorno al di sotto (strettamente) del quale la mappa di hazard si annulla
-    TR_min=1;
-    % tempo di ritorno massimo (eventuali valori superiori vengono saturati a questo valore)
-    TR_max=500;
-    modeSelectionSections = 'hardcoded';  % mode for the selection of control sections ('hardcoded' or 'byprompt')
-    % coordinate system EPSG utm: 
-    EPSG_domain = '32633'; % Marche Region zone 33 utm
-
-    
-    
-elseif strcmp(domain_name,'Polverina-Caccamo')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % percorso dove si trova questo script matlab (e i suoi moduli) per il preprocessing in Flomart:
-    path_code = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/flomart-2.0.0_test/app_flomart_preprocessing';
-    % percorso dove preparare i files statici:
-    path_preparation_data = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/PREPARATION';
-    % percorso dove cercare dati statici geografici con griglia: 
-    sPathGridGeoData = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/PREPARATION/gridded_marche';
-    % Percorso dove salvare il file mat output 'info_{domain_name}.mat':
-    sPathOutputInfoMat = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/geo_data';
-    % percorso dove si trovano le simulazioni:
-    sPathHazardData = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/hazard_data';
-    %name_hazardmaps = [domain_name,'_WD_max_Q.tif'];% nome delle hazard maps di partenza senza le tre cifre finali (es:  "Grazie-Foce_WD_max_T001.tif" )
-    name_hazardmaps = ['Polverina-Caccamo_WD_max_T'];
-    type_hazardmaps ='.tif';  % format of the hazard map files
-    % tempo di ritorno al di sotto (strettamente) del quale la mappa di hazard si annulla
-    TR_min=1;
-    % tempo di ritorno massimo (eventuali valori superiori vengono saturati a questo valore)
-    TR_max=500;
-    modeSelectionSections = 'hardcoded';  % mode for the selection of control sections ('hardcoded' or 'byprompt')
-    % coordinate system EPSG utm: 
-    EPSG_domain = '32633'; % Marche Region zone 33 utm
+  
     
 elseif strcmp(domain_name,'Chienti')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,7 +102,7 @@ elseif strcmp(domain_name,'Chienti')
     % percorso dove si trovano le simulazioni:
     sPathHazardData = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Chienti/data_static/hazard_data';
     %name_hazardmaps = [domain_name,'_WD_max_Q.tif'];% nome delle hazard maps di partenza senza le tre cifre finali (es:  "Grazie-Foce_WD_max_T001.tif" )
-    name_hazardmaps = ['Chienti_WD_max_T'];
+    name_hazardmaps = ['compressed/Chienti_WD_max_T'];
     type_hazardmaps ='.tif';  % format of the hazard map files
     % tempo di ritorno al di sotto (strettamente) del quale la mappa di hazard si annulla
     TR_min=1;
@@ -225,6 +150,8 @@ if strcmp(domain_name,'Foglia')
     sFileName_lon = [sPathGridGeoData, '/marche.lon.txt'];
     sFileName_lat = [sPathGridGeoData, '/marche.lat.txt'];
     sFileName_pnt = [sPathGridGeoData, '/marche.pnt.txt'];
+    sFileName_AreaDrenata = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_aree_drenate.asc'];
+    
     
     %% DEFINING VARIABLES OF FILE .MAT:
     % Choice:
@@ -265,96 +192,55 @@ if strcmp(domain_name,'Foglia')
     % Londem = lon;
 
     %% Qindex:
-    % COMPUTE Qindex if not available:
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     % path containing discharge values for each cell of the grid for a time
-%     % period >= 10 years:
-%     sPathQmaps = [path_preparation_data, '/discharge_2010_2020_NEW'];
-%     [iNRows,iNCols]= size(a2iChoice);
-%     sDateFrom      = '201101012300';
-%     sDateTo        = '202012312300';
-%     %define time step of files:
-%     dt             =  1;  %days
-%     iNoData        = -9999; % valore per dati mancanti nelle mappe Netcdf
-%     % define startuing and ending time of simulations:
-%     nDateFrom      = datenum(sDateFrom,'yyyymmddHHMM');
-%     nDateTo        = datenum(sDateTo,'yyyymmddHHMM');
-%     %initialise current time:
-%     nNow           = nDateFrom;
-%     %initialise matrixes with discharge:
-%     a3dMapQ        = zeros([iNRows,iNCols,10]);
-%     maxQannual     = zeros([iNRows,iNCols]);
-%     % initialise counter:
-%     iCountDay      = 0;
-%     iCountYear     = 1;
-% 
-%     while nNow<=nDateTo
-%         iCountDay = iCountDay + 1;
-%         sDate = datestr(nNow,'yyyymmddHHMM');
-%         disp(sDate);
-%         % extract month, day, hour from file name:  
-%         iYear   = str2double(sDate(1:4));
-%         iMonth  = str2double(sDate(5:6));
-%         iDay    = str2double(sDate(7:8));
-%         iHour   = str2double(sDate(9:10));
-%         sPathNow = [sPathQmaps,'/',sDate(1:4),'/',sDate(5:6),'/',sDate(7:8),'/'];
-%         try
-%             sFileNameMap = ['hmc.output-grid.',sDate,'.nc.gz'];   
-%             a2dMap = Continuum_getMap_NC(sPathNow, sFileNameMap,'Discharge');  %istantaneous Discharge (m)
-%             a2dMap(a2dMap==iNoData) = NaN;
-%             % compute maximum between actual Q(t) and all previous ones of the
-%             % year:
-%             a3dMapQ(:,:,iCountYear) = max(a3dMapQ(:,:,iCountYear), a2dMap);
-%             %a3dMapQ(:,:,iCountYear) = arrayfun(@(x,y) max(x(:),y(:)), a3dMapQ(:,:,iCountYear), a2dMap);
-%         catch
-%             disp('problem with format of netcdf file!! skip!');
-%         end
-% 
-%         if iMonth==12 & iDay ==31 & iHour == 23
-%                 maxQannual(:,:,iCountYear) =  a3dMapQ(:,:,iCountYear);
-%                 %display(maxQannual);
-%                 display('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-%                 iCountDay = 0;
-%                 % go to next year:
-%                 iCountYear = iCountYear + 1;
-%         end   
-%         % pass to next time step:
-%         nNow = datenum(sDate,'yyyymmddHHMM')+dt;
-%     end
-% 
-%     % Calcolo mappa di portata massima annuale media su deici anni:
-%     maxQannual_mean(:,:) = zeros([iNRows,iNCols]);
-%     for iCountYear=1:10
-%         tmp = maxQannual_mean(:,:);
-%         %tmp(OutOfCN) = NaN;
-%         maxQannual_mean(:,:) = tmp + maxQannual(:,:,iCountYear);
-%     end
-%     maxQannual_mean(:,:) = maxQannual_mean(:,:)./10;
-%     a2dQindice = maxQannual_mean;
-% 
-%     % Save obtained Qindex layer for future applications:
-%     save([path_preparation_data, '/Qindex_bis_',domain_name,'.mat'], 'a2dQindice');
-%     
-    % or just load a previously computed .mat file with "a2dQindice":
-    load([path_preparation_data, '/Qindex_bis_',domain_name,'.mat'])
+    % load a previously computed .mat file with "a2dQindice":
+    % load([path_preparation_data, '/Qindex_bis_',domain_name,'.mat'])
+
+    %% Regionalizzazione Marche:
+    % Choice:
+    [a2dMap_areadrenata, a2dCoord_areadrenata] = arcgridread(sFileName_AreaDrenata);
+    a2iAreaDrenata = a2dMap_areadrenata;
+    % a2iAreaDrenata(isnan(a2iAreaDrenata)) = -1;  %replace all NaN with -1
+    a2dQindice = 1.6119*a2iAreaDrenata(:,:).^0.9735;
     
-    
-    
-elseif strcmp(domain_name,'Entella')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %already available import the Data_*_*Domain.mat file:
-    sFileNameOutput =   [sPathGridGeoData, '/Data_LiguriaDomain.mat'];
-    load(sFileNameOutput);
-    
-    
-elseif strcmp(domain_name,'Scrivia')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %already available import the Data_*_*Domain.mat file:
-    sFileNameOutput =   [sPathGridGeoData, '/Data_LiguriaDomain.mat'];
-    load(sFileNameOutput);
+    % plot to verify:
+    imagesc(a2dMap_area);
+    caxis([2 30]);
 
     
-elseif strcmp(domain_name,'Caccamo-Grazie') | strcmp(domain_name,'Grazie-Foce') | strcmp(domain_name,'Polverina-Caccamo') | strcmp(domain_name,'Chienti')
+    
+elseif strcmp(domain_name,'Entella') | strcmp(domain_name,'Scrivia')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   if already available import the Data_*_*Domain.mat file:
+%   sFileNameOutput =   [sPathGridGeoData, '/Data_LiguriaDomain.mat'];
+%   load(sFileNameOutput);
+
+%   otherwhise upload ascii data:
+    sFileName_choice = [sPathGridGeoData, '/LiguriaDomain.choice.txt'];
+    sFileName_area = [sPathGridGeoData, '/LiguriaDomain.area.txt'];
+    sFileName_pnt = [sPathGridGeoData, '/LiguriaDomain.pnt.txt'];
+    % Choice:
+    [a2dMap_choice, a2dCoord_choice] = arcgridread(sFileName_choice);
+    a2iChoice = a2dMap_choice;
+    a2iChoice(isnan(a2iChoice)) = -1;  %replace all NaN with -1
+    % Area:
+    [a2dMap_area, a2dCoord_area] = arcgridread(sFileName_area);
+    a2dArea = a2dMap_area;
+    % Pointers:
+    [a2dMap_pnt, a2dCoord_pnt] = arcgridread(sFileName_pnt);
+    a2iPunt = a2dMap_pnt;
+    a2iPunt(isnan(a2iPunt)) = 0;   %replace all NaN with 0
+
+
+    %upload Qindex, Latdem, Londem from .mat file:
+    load([sPathGridGeoData, '/Data_LiguriaDomain.mat']);
+    a2dQindex  = a2dQindice;
+    Latdem = Latdem; 
+    Londem = Londem; 
+    
+  
+
+    
+elseif strcmp(domain_name,'Chienti')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     sFileName_choice = [sPathGridGeoData, '/marche.choice.txt'];
     sFileName_area = [sPathGridGeoData, '/marche.area.txt'];
@@ -407,25 +293,20 @@ end
 
 
 %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Creazione mat file "Aree_finali_Foglia.mat":
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%wm = webmap('World Imagery'); % satellite world map
-
-%% define the domain grid (corners): 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Define the new domain grid
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define the new domain grid (corners): 
 if strcmp(domain_name,'Foglia')
         Lat_min=43.776;
         Lat_max=43.926;
         Lon_min=12.485;
         Lon_max=12.929;
-
 elseif strcmp(domain_name,'Scrivia')
         Lat_min=44.48;
         Lat_max=44.68;
         Lon_min=8.93;
         Lon_max=9.1;
-
 elseif strcmp(domain_name,'Entella')
         Lat_min=44.3;
         Lat_max=44.44;
@@ -435,43 +316,12 @@ elseif strcmp(domain_name,'Entella')
 %         Lat_max=44.350;
 %         Lon_min=9.36;
 %         Lon_max=9.44;
-elseif strcmp(domain_name,'EntellaCompleto')
-        Lat_min=44.3;
-        Lat_max=44.44;
-        Lon_min=9.18;
-        Lon_max=9.5;
-
-elseif strcmp(domain_name,'Grazie-Foce')
-%         Lat_min=43.03;
-%         Lat_max=43.32;
-%         Lon_min=13.23;
-%         Lon_max=13.8;
-        Lat_min = 43.18; 
-        Lat_max = 43.3;
-        Lon_min = 13.25; 
-        Lon_max = 13.76;
-
-elseif strcmp(domain_name,'Polverina-Caccamo')
-        Lat_min=43.142;
-        Lat_max=43.190;
-        Lon_min=13.205;
-        Lon_max=13.275;
-
-elseif strcmp(domain_name,'Caccamo-Grazie')
-        Lat_min=43.085;
-        Lat_max=43.148;
-        Lon_min=13.109;
-        Lon_max=13.207;
-
 elseif strcmp(domain_name,'Chienti')
         Lat_min=43.0845;
         Lat_max=43.301;
         Lon_min=13.103;
         Lon_max=13.7497;
-   
 end
-
-
 
 
 % define corners indexes:
@@ -487,10 +337,6 @@ indice_x_min=temp(end);clear temp
 %      'Lon_min','Lon_max', 'indice_y_min','indice_y_max','indice_x_max','indice_x_min')
 
 
-
-
-        
-       
 
 
 %% Define the new layers according to the selected domain grid
@@ -509,6 +355,27 @@ caxis([2 30]);
 
 
 
+
+%% extra tool (Create new sections indexes)
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % transform lat/lon coordinates into matricial continuum indixes:
+% tmp = a2dMap_choice;
+% masknan = nan(size(tmp));
+% masknan(tmp==1) = 333;
+% c = readtable([path_preparation_data, '/nuove_sezioni_flomart_Chienti_Foglia.csv']);
+% x_points = c.Lon;
+% y_points = c.Lat;
+% namfascii = sFileName_choice;
+% [rr, cc] = Get_MatrixCoordinates_FromPoints_NoNaN(x_points, y_points, namfascii, masknan);
+% %Quindi, salvare le coordinate matrice [rr, cc] nel file “rigacolonna.txt”.
+% fid = fopen([path_preparation_data, '/rigacolonna.txt'], 'wt');
+% for i = 1:length(rr)
+%     fprintf(fid,'%.0f', rr(i));
+%     fprintf(fid,'%s', " ");
+%     fprintf(fid,'%.0f', cc(i));
+%     fprintf(fid,'\n');
+% end
+% fclose(fid);
 
 
 
@@ -542,30 +409,36 @@ if strcmp(modeSelectionSections,'byprompt')
   
 %% Instead, here chosen sections are hard-coded:
 elseif strcmp(modeSelectionSections,'hardcoded')
-    
-       
+        
     if strcmp(domain_name,'Foglia')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % define the number of control sections:
-        quante_sez=3;
+        quante_sez=6;
         Ymax= length(Latdem(:,1));
         Xmax= length(Latdem(1,:));
         % define indexes of the selected sections [Y X]:
-        sezioni_indici_relativi=[106 155;...  % Bronzo   
-                                 92 241;... % Montecchio
-                                 72 286];    % OUT   
-%         sezioni_indici_relativi =[41 7;...  % Bronzo        % GRID MARCHE   
-%                                   27 93;... % Montecchio
-%                                   8 138];   % OUT
+        sezioni_indici_relativi=[106 155;...  % Bronzo 
+                                 108 190;...  % FlomartTorreCotogna
+                                 108 207;...  % FlomartLaBadia
+                                 93 228;...   % FlomartCasellaMontecchio
+                                 92 241;...   % Montecchio
+                                 72 286];     % Foglia3 (Foce)   
         % define the names of each selected section:                     
-        nomi_sezioni{1}='Bronzo';
-        nomi_sezioni{2}='Montecchio';
-        nomi_sezioni{3}='Foglia3';
+        nomi_sezioni{1}='Bronzo_Foglia'; 
+        nomi_sezioni{2}='FlomartTorreCotogna_Foglia';
+        nomi_sezioni{3}='FlomartLaBadia_Foglia';
+        nomi_sezioni{4}='FlomartCasellaMontecchio_Foglia';
+        nomi_sezioni{5}='Montecchio_Foglia';
+        nomi_sezioni{6}='Foglia3_Foglia';
+        
         % define name of catchment and section:
-        bacino_sezione{1} = 'Foglia_Bronzo'; 
-        bacino_sezione{2} = 'Foglia_Montecchio'; 
-        bacino_sezione{3} = 'Foglia_Foce'; 
-
+        bacino_sezione{1} = 'Foglia_Bronzo';
+        bacino_sezione{2} = 'Foglia_FlomartTorreCotogna';
+        bacino_sezione{3} = 'Foglia_FlomartLaBadia';
+        bacino_sezione{4} = 'Foglia_FlomartCasellaMontecchio';
+        bacino_sezione{5} = 'Foglia_Montecchio'; 
+        bacino_sezione{6} = 'Foglia_Foce'; 
+        
         % verifica aree e calcolo Qindex)
         for i=1:size(sezioni_indici_relativi,1)
             AreaBas(i)=a2dArea(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
@@ -574,52 +447,8 @@ elseif strcmp(modeSelectionSections,'hardcoded')
         %Ricavo indici relativi al ritaglio
         sezioni_indici_relativi_corr2(:,1)=sezioni_indici_relativi(:,1)-indice_x_min+1;
         sezioni_indici_relativi_corr2(:,2)=sezioni_indici_relativi(:,2)-indice_y_min+1;
-    
-%         quante_sez=3;
-%         % define indexes of the selected sections [Y X]:
-%         sezioni_indici_relativi=[25 6;...   % Bronzo        % GRID FLOODPROOF   
-%                                  17 57;...  % Montecchio
-%                                  5 84];     % OUT
-% 
-%         % define the names of each selected section:                     
-%         nomi_sezioni{1}='Bronzo';
-%         nomi_sezioni{2}='Montecchio';
-%         nomi_sezioni{3}='Foglia3';
-%         % define name of catchment and section:
-%         bacino_sezione{1} = 'Foglia_Bronerence system code in the inputs!  EPSG_domain  
-% salvo geotiff e .mat aree competenza (controllare):
-geotiffwrite([path_preparation_data,'/prova_area', domain_name,'.tif'], double(AreeCompetenza),R, 'CoordRefSysCode',['EPSG:',EPSG_domain])
 
-
-
-% Save obtained information into mat file (this file is used as static input by Flomart application):
-save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
-    'LonLL','LonUR','LatLL','LatUR',...
-    'AreeCompetenza','mappa_aree_allargata','mappa_aree','Lat_dominio_UTM','Lon_dominio_UTM','a1dQindex','nomi_sezioni_sort', ...
-     'indici_sort','bacino_sezione_sort', 'EPSG_domain', 'drainage_area_section_km2');
-  
-
-
-
-
-
-
-
-%%zo'; 
-%         bacino_sezione{2} = 'Foglia_Montecchio'; 
-%         bacino_sezione{3} = 'Foglia_Foce'; 
-%         %% INDEXES CORRECTION (added by M.Darienzo):
-%         % Ricavo indici corretti
-%         sezioni_indici_relativi_corr=sezioni_indici_relativi;
-%         sezioni_indici_relativi_corr2=sezioni_indici_relativi_corr;
-%         % verifica aree e calcolo Qindex)
-%         for i=1:size(sezioni_indici_relativi_corr,1)
-%             AreaBas(i)=Area_dominio(sezioni_indici_relativi_corr(i,1),sezioni_indici_relativi_corr(i,2));
-%             a1dQindex(i)=Qindice_dominio(sezioni_indici_relativi_corr(i,1),sezioni_indici_relativi_corr(i,2));
-%         end    
-
-        
-               
+                  
         
         
     elseif strcmp(domain_name,'Scrivia')
@@ -693,7 +522,23 @@ save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
         bacino_sezione{4}='Entella_Panesi';
         bacino_sezione{5}='Sturla_Vignolo';    
         bacino_sezione{6}='Entella_Foce';
-
+        
+        % AGGIUNTO MATTEO:
+        section_name_part1{1}='Graveglia';
+        section_name_part1{2}='Lavagna';
+        section_name_part1{3}='Lavagna';
+        section_name_part1{4}='Entella';
+        section_name_part1{5}='Sturla';    
+        section_name_part1{6}='Entella';
+        
+        section_name_part2{1}='Caminata';
+        section_name_part2{2}='Carasco';
+        section_name_part2{3}='SMartino';
+        section_name_part2{4}='Panesi';
+        section_name_part2{5}='Vignolo';    
+        section_name_part2{6}='Foce';
+        
+        
         % INDEXES CORRECTION (added by F. Silvestro):
         % Ricavo indici corretti
         sezioni_indici_relativi_corr(:,1)=Ymax-sezioni_indici_relativi(:,1)+1;
@@ -707,11 +552,7 @@ save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
         sezioni_indici_relativi_corr2(:,1)=sezioni_indici_relativi_corr(:,1)-indice_x_min+1;
         sezioni_indici_relativi_corr2(:,2)=sezioni_indici_relativi_corr(:,2)-indice_y_min+1;
         
-%         % add Foce section:
-%         quante_sez=6;
-%         bacino_sezione{6}='Entella_Foce';
-%         nomi_sezioni{6}='OUT';
-%         sezioni_indici_relativi_corr2(6,:) = [65 57]; 
+
         
 
         
@@ -735,14 +576,12 @@ save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
         nomi_sezioni{4}='PANESI';
         nomi_sezioni{5}='STIVIG';
         
-        
         % AGGIUNTO FRANCESCO
         bacino_sezione{1}='Graveglia_Caminata';
         bacino_sezione{2}='Lavagna_Carasco';
         bacino_sezione{3}='Lavagna_SMartino';
         bacino_sezione{4}='Entella_Panesi';
         bacino_sezione{5}='Sturla_Vignolo';    
-  
 
         % INDEXES CORRECTION (added by F. Silvestro):
         % Ricavo indici corretti
@@ -758,131 +597,55 @@ save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
         %Ricavo indici relativi al ritaglio
         sezioni_indici_relativi_corr2(:,1)=sezioni_indici_relativi_corr(:,1)-indice_x_min+1;
         sezioni_indici_relativi_corr2(:,2)=sezioni_indici_relativi_corr(:,2)-indice_y_min+1;
-        
         % sezioni_indici_relativi_corr2 = sezioni_indici_relativi;
         
         
-        
-    elseif strcmp(domain_name,'Grazie-Foce')
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%         % define the number of control sections:
-%         quante_sez=5;
-%         Ymax= length(Latdem(:,1));
-%         Xmax= length(Latdem(1,:));
-%         % define indexes of the selected sections [Y X]:
-%         sezioni_indici_relativi=[299 454;...  % Fiastra
-%                                  297 444;...  % Chienti1  
-%                                  288 515;...  % Chienti2
-%                                  296 543;...  % EteMorto
-%                                  277 565];    % OUT   
-%         % define the names of each selected section:
-%         nomi_sezioni{1}='Fiastra';
-%         nomi_sezioni{2}='Chienti1';
-%         nomi_sezioni{3}='Chienti2';
-%         nomi_sezioni{4}='EteMorto';
-%         nomi_sezioni{5}='FoceChienti';
-%         % define name of catchment and section:
-% %         bacino_sezione{1} = 'Chienti_Fiastra'; 
-% %         bacino_sezione{2} = 'Chienti_Chienti1'; 
-% %         bacino_sezione{3} = 'Chienti_Chienti2'; 
-% %         bacino_sezione{4} = 'Chienti_EteMorto'; 
-% %         bacino_sezione{5} = 'Chienti_Foce'; 
-%         bacino_sezione{1} = 'Fiastra_Chienti'; 
-%         bacino_sezione{2} = 'Chienti1_Chienti'; 
-%         bacino_sezione{3} = 'Chienti2_Chienti'; 
-%         bacino_sezione{4} = 'EteMorto_EteMorto'; 
-%         bacino_sezione{5} = 'FoceChienti_Chienti'; 
-        % define the number of control sections:
-        quante_sez=4;
-        Ymax= length(Latdem(:,1));
-        Xmax= length(Latdem(1,:));
-        % define indexes of the selected sections [Y X]:
-        sezioni_indici_relativi=[299 454;...  % Fiastra
-                                 297 444;...  % Chienti1  
-                                 288 515;...  % Chienti2
-                                 277 565];    % OUT   
-        % define the names of each selected section:
-        nomi_sezioni{1}='Fiastra';
-        nomi_sezioni{2}='Chienti1';
-        nomi_sezioni{3}='Chienti2';
-        nomi_sezioni{4}='FoceChienti';
-        % define name of catchment and section:
-        bacino_sezione{1} = 'Fiastra_Chienti'; 
-        bacino_sezione{2} = 'Chienti1_Chienti'; 
-        bacino_sezione{3} = 'Chienti2_Chienti'; 
-        bacino_sezione{4} = 'FoceChienti_Chienti';         
-        
-
-        % verifica aree e calcolo Qindex)
-        for i=1:size(sezioni_indici_relativi,1)
-            AreaBas(i)=a2dArea(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
-            a1dQindex(i)=a2dQindice(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
-        end
-        %Ricavo indici relativi al ritaglio
-        sezioni_indici_relativi_corr2(:,1)=sezioni_indici_relativi(:,1)-indice_x_min+1;
-        sezioni_indici_relativi_corr2(:,2)=sezioni_indici_relativi(:,2)-indice_y_min+1;
-   
-       
-        
-        
-        
-        
-    elseif strcmp(domain_name,'Polverina-Caccamo')
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-        quante_sez=1;
-        sezioni_indici_relativi_corr2 = [3 32];
-        nomi_sezioni{1}='DigaCaccamo';
-        % define name of catchment and section:
-        bacino_sezione{1} = 'DigaCaccamo_Chienti'; 
-
-        % verifica aree e calcolo Qindex)
-        for i=1:size(sezioni_indici_relativi_corr2,1)
-            AreaBas(i)  =Area_dominio(sezioni_indici_relativi_corr2(i,1),sezioni_indici_relativi_corr2(i,2));
-            a1dQindex(i)=a2dQindice(sezioni_indici_relativi_corr2(i,1),sezioni_indici_relativi_corr2(i,2));
-        end
-     
-        
-    elseif strcmp(domain_name,'Caccamo-Grazie')
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-        quante_sez=1;
-        sezioni_indici_relativi_corr2 = [3 22];
-        nomi_sezioni{1}='DigaGrazie';
-        % define name of catchment and section:
-        bacino_sezione{1} = 'DigaGrazie_Chienti'; 
-
-        % verifica aree e calcolo Qindex)
-        for i=1:size(sezioni_indici_relativi_corr2,1)
-            AreaBas(i)  =Area_dominio(sezioni_indici_relativi_corr2(i,1),sezioni_indici_relativi_corr2(i,2));
-            a1dQindex(i)=a2dQindice(sezioni_indici_relativi_corr2(i,1),sezioni_indici_relativi_corr2(i,2));
-        end
-        
-        
-        
-        
-       
 
     elseif strcmp(domain_name,'Chienti')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % define the number of control sections:
-        quante_sez=3;
+        quante_sez=11;
         Ymax= length(Latdem(:,1));
         Xmax= length(Latdem(1,:));
         % define indexes of the selected sections [Y X]:
-        sezioni_indici_relativi=[%299 454;...  % Fiastra
+        sezioni_indici_relativi=[337 362;...  % FlomartPolverina
+                                 326 387;...  % BorgianoDiga
+                                 % 319 402;...% FlomartBorgiano (REMOVED)
+                                 312 409;...  % LeGrazieDiga
+                                 306 415;...  % FlomartLeGrazie
                                  297 444;...  % Chienti1  
+                                 288 472;...  % FlomartPrimaFiastra
+                                 284 482;...  % FlomartDopoFiastra
                                  288 515;...  % Chienti2
-                                 277 565];    % OUT   
+                                 285 522;...  % FlomartTorrione
+                                 285 532;...  % FlomartMonteCosaro
+                                 277 565];    % FoceChienti   
         % define the names of each selected section:
-        %nomi_sezioni{1}='Fiastra';
-        nomi_sezioni{1}='Chienti1';
-        nomi_sezioni{2}='Chienti2';
-        nomi_sezioni{3}='FoceChienti';
+        nomi_sezioni{1}='FlomartPolverina_Chienti';
+        nomi_sezioni{2}='Diga_Borgiano';
+        nomi_sezioni{3}='Diga_LeGrazie';
+        nomi_sezioni{4}='FlomartLeGrazie_Chienti';
+        nomi_sezioni{5}='Chienti1_Chienti';
+        nomi_sezioni{6}='FlomartPrimaFiastra_Chienti';
+        nomi_sezioni{7}='FlomartDopoFiastra_Chienti';
+        nomi_sezioni{8}='Chienti2_Chienti';
+        nomi_sezioni{9}='FlomartTorrione_Chienti';
+        nomi_sezioni{10}='FlomartMonteCosaro_Chienti';
+        nomi_sezioni{11}='FoceChienti_Chienti';
+        
         % define name of catchment and section:
-        %bacino_sezione{1} = 'Fiastra_Chienti'; 
-        bacino_sezione{1} = 'Chienti1_Chienti'; 
-        bacino_sezione{2} = 'Chienti2_Chienti'; 
-        bacino_sezione{3} = 'FoceChienti_Chienti';         
-
+        bacino_sezione{1} = 'Chienti_FlomartPolverina'; 
+        bacino_sezione{2} = 'Chienti_Diga_Borgiano'; 
+        bacino_sezione{3} = 'Chienti_Diga_LeGrazie'; 
+        bacino_sezione{4} = 'Chienti_FlomartLeGrazie';
+        bacino_sezione{5} = 'Chienti_Chienti1'; 
+        bacino_sezione{6} = 'Chienti_FlomartPrimaFiastra';
+        bacino_sezione{7} = 'Chienti_FlomartDopoFiastra';
+        bacino_sezione{8} = 'Chienti_Chienti2'; 
+        bacino_sezione{9} = 'Chienti_FlomartTorrione';
+        bacino_sezione{10} = 'Chienti_FlomartMonteCosaro';
+        bacino_sezione{11} = 'Chienti_FoceChienti';
+        
         % verifica aree e calcolo Qindex)
         for i=1:size(sezioni_indici_relativi,1)
             AreaBas(i)=a2dArea(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
@@ -891,16 +654,12 @@ save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
         %Ricavo indici relativi al ritaglio
         sezioni_indici_relativi_corr2(:,1)=sezioni_indici_relativi(:,1)-indice_x_min+1;
         sezioni_indici_relativi_corr2(:,2)=sezioni_indici_relativi(:,2)-indice_y_min+1;
-        
-        
     end
     
 else
     error('ERROR: user-defined mode of sections selection not available');     
 end  
       
-
-
 
 % % plot to verify sections on starting grid:
 % figure 
@@ -926,8 +685,6 @@ end
      
 
 
-     
-
 %% AREE DRENATE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Compute the drainage area for each selected section:
@@ -938,6 +695,7 @@ aree = aree_drenate(Punt_dominio, sezioni_indici_relativi_corr2);
 mappa_aree=zeros(size(Punt_dominio));
 L=cellfun(@length,aree);
 [ordinati,indici_sort]=sort(L);
+
 for i=length(L):-1:1
         valori=unique(mappa_aree(indici_sort(i)));
         mappa_aree(aree{indici_sort(i)})=i;
@@ -946,7 +704,10 @@ for i=length(L):-1:1
         drainage_area_sort{i}=AreaBas(indici_sort(i));         %Aggiunto MATTEO
 end
 
-    
+   
+
+
+
 
 % Verify areas with a PLOT:
 figure
@@ -960,6 +721,10 @@ for indicew=1:length(sezioni_indici_relativi_corr2)
     plot(sezioni_indici_relativi_corr2(indicew,2),sezioni_indici_relativi_corr2(indicew,1),'or','markersize',6)
 end
     
+
+
+
+
 
 
 
@@ -1035,7 +800,6 @@ if strcmp(domain_name,'Foglia')
 elseif strcmp(domain_name,'Graveglia')
         disp('No allargamento !');
         
-        
 elseif strcmp(domain_name,'Scrivia')
         disp('No allargamento !');
         
@@ -1048,16 +812,6 @@ elseif strcmp(domain_name,'EntellaCompleto')
         mappa_aree_allargata(54:62,59:66) = quante_sez; %foce
         mappa_aree_allargata(60:66,49:63) = quante_sez; %foce
         % mappa_aree_allargata(2:4,81:83) = quante_sez;  
-        
-elseif strcmp(domain_name,'Grazie-Foce')
-        %mappa_aree_allargata(8:11,168:172) = quante_sez; %foce
-        mappa_aree_allargata(3:8,160:170) = quante_sez; %foce
-
-elseif strcmp(domain_name,'Polverina-Caccamo')
-        disp('No allargamento !');
-
-elseif strcmp(domain_name,'Caccamo-Grazie')
-        disp('No allargamento !');
 
 elseif strcmp(domain_name,'Chienti')
         %mappa_aree_allargata(8:11,168:172) = quante_sez; %foce
@@ -1080,9 +834,6 @@ end
 save([path_preparation_data,'/mappa_aree_allargata_', domain_name,'.mat'], 'mappa_aree_allargata')
     
     
-
-
-
     
    
     
@@ -1095,21 +846,6 @@ name_file_hazard_read=[sPathHazardData, '/', domain_name, '/', name_hazardmaps, 
 %name_file_read=[sPathHazardData, '/', domain_name,'/', name_hazardmaps, num2str(TR_max),nome_hazmaps1];
 %name_file_hazard_read=[path_preparation_data, '/telemac_data/', domain_name,'_WD_max_Q100.tif'];
 [A, R]=geotiffread(name_file_hazard_read);
-
-
-
-% % ONLY IF NECESSARY:
-% % it may be possible that the available hazard maps are located into 3
-% % separated abacus (for different branch of the river).
-% % Here, you can merge the hazard maps in one unique map for the whole basin:
-% name_file_hazard_read2 =[sPathHazardData, '/Polverina-Caccamo/Polverina-Caccamo_WD_max_T', sprintf('%03.0f',TR_min), type_hazardmaps];
-% [A2, R2] = geotiffread(name_file_hazard_read2);
-% name_file_hazard_read3 =[sPathHazardData, '/Caccamo-Grazie/Caccamo-Grazie_WD_max_T', sprintf('%03.0f',TR_min), type_hazardmaps];
-% [A3, R3]= geotiffread(name_file_hazard_read3);
-% [Z_out, R_out] = imfuse(A2,R2,A3,R3);  % requires image processing toolbox
-
-
-
 
 
 
@@ -1143,9 +879,10 @@ res_Lat = ((coord_top - coord_bottom)/(size(mappa_aree_allargata,1)-1));
 [Lon_dominio_UTM, Lat_dominio_UTM] = meshgrid(coord_left:res_Lon:coord_right, ...
                                               coord_bottom:res_Lat:coord_top);
 
+              
                                           
 % Compute drainage area in km2 for each selected section:                                  
-if strcmp(domain_name,'Foglia') | strcmp(domain_name,'Grazie-Foce') | strcmp(domain_name,'Caccamo-Grazie') | strcmp(domain_name,'Polverina-Caccamo')| strcmp(domain_name,'Chienti') 
+if strcmp(domain_name,'Foglia') | strcmp(domain_name,'Chienti') 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for  i=1:length(drainage_area_sort)
         drainage_area_section_km2{i} = drainage_area_sort{i}/1000000*res_Lon*res_Lat; 
@@ -1200,41 +937,47 @@ figure; imagesc(AreeCompetenza);
 
 
 
-% AreeCompetenzaBIG = AreeCompetenza;
-% [Ny,Nx,~] = size(AreeCompetenzaBIG);
-% idx1 = 1:4:Ny;
-% idx2 = 1:4:Nx;
-% B = AreeCompetenzaBIG(idx1,idx2,:);
-% AreeCompetenza = B;
 
 %% ! please, verify the geo reference system code in the inputs!  EPSG_domain  
 % salvo geotiff e .mat aree competenza (controllare):
+save([path_preparation_data,'/AreeCompetenza_', domain_name,'.mat'], 'AreeCompetenza')
 geotiffwrite([path_preparation_data,'/prova_area', domain_name,'.tif'], double(AreeCompetenza),R, 'CoordRefSysCode',['EPSG:',EPSG_domain])
 
 
-
+    
 % Save obtained information into mat file (this file is used as static input by Flomart application):
 save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
     'LonLL','LonUR','LatLL','LatUR',...
     'AreeCompetenza','mappa_aree_allargata','mappa_aree','Lat_dominio_UTM','Lon_dominio_UTM','a1dQindex','nomi_sezioni_sort', ...
      'indici_sort','bacino_sezione_sort', 'EPSG_domain', 'drainage_area_section_km2');
-  
+
+
+
+ 
+% % if an error occurs while saving mat file (mainly because of size of variabile AreeCompetenza then save into h5df format ('-v7.3'):
+% save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
+%     'LonLL','LonUR','LatLL','LatUR',...
+%     'AreeCompetenza','mappa_aree_allargata','mappa_aree','Lat_dominio_UTM','Lon_dominio_UTM','a1dQindex','nomi_sezioni_sort', ...
+%      'indici_sort','bacino_sezione_sort', 'EPSG_domain', 'drainage_area_section_km2', '-v7.3');
 
 
 
 
+%% create and save flood map for tr=0 (with zeros):
+HazardMap0 = zeros(size(A));
+geotiffwrite([sPathHazardData, '/', domain_name, '/', name_hazardmaps, sprintf('%03.0f',0), type_hazardmaps], double(HazardMap0),R, 'CoordRefSysCode',['EPSG:',EPSG_domain])
 
 
 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                    EXAMPLE OF OPERATIONAL FLOOD MAP GENERATION:                           %
+%                 EXAMPLE OF OPERATIONAL FLOOD MAP GENERATION:            % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % insert values of peak discharge for each selected section:
 discharge_values_sections =[800, 2000, 3050]; %Foglia
 discharge_values_sections =[300, 200, 300, 400, 500, 1000]; %Entella
 discharge_values_sections =[200, 300, 400, 500]; %Scrivia
-discharge_values_sections =[200, 300, 400, 500, 1000]; %Grazie-Foce
+discharge_values_sections =[200, 300, 400, 500, 1000]; % Chienti
 
 
 examp_map = example_generation_flood_map(domain_name, sPathHazardData, name_hazardmaps, path_preparation_data, ...
@@ -1244,3 +987,119 @@ examp_map = example_generation_flood_map(domain_name, sPathHazardData, name_haza
 
 
 
+                                     
+                                     
+
+                                     
+                                     
+
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FIND RELATION Q vs. T:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sFileName_QT2 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T2.asc'];
+sFileName_QT5 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T5.asc'];
+sFileName_QT10 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T10.asc'];
+sFileName_QT20 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T20.asc'];
+sFileName_QT50 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T50.asc'];
+sFileName_QT100 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T100.asc'];
+sFileName_QT150 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T150.asc'];
+sFileName_QT200 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T200.asc'];
+sFileName_QT500 = [path_preparation_data, '/Mappe_Regionalizzazione_Q_v2/Mappa_quantili_T500.asc'];
+% Q(T=2):
+[a2dMap_QT2, a2dCoord_QT2] = arcgridread(sFileName_QT2);
+a2iQT2 = a2dMap_QT2;
+% Q(T=5):
+[a2dMap_QT5, a2dCoord_QT5] = arcgridread(sFileName_QT5);
+a2iQT5 = a2dMap_QT5;
+% Q(T=10):
+[a2dMap_QT10, a2dCoord_QT10] = arcgridread(sFileName_QT10);
+a2iQT10 = a2dMap_QT10;
+% Q(T=20):
+[a2dMap_QT20, a2dCoord_QT20] = arcgridread(sFileName_QT20);
+a2iQT20 = a2dMap_QT20;
+% Q(T=50):
+[a2dMap_QT50, a2dCoord_QT50] = arcgridread(sFileName_QT50);
+a2iQT50 = a2dMap_QT50;
+% Q(T=100):
+[a2dMap_QT100, a2dCoord_QT100] = arcgridread(sFileName_QT100);
+a2iQT100 = a2dMap_QT100;
+% Q(T=150):
+[a2dMap_QT150, a2dCoord_QT150] = arcgridread(sFileName_QT150);
+a2iQT150 = a2dMap_QT150;
+% Q(T=200):
+[a2dMap_QT200, a2dCoord_QT200] = arcgridread(sFileName_QT200);
+a2iQT200 = a2dMap_QT200;
+% Q(T=500):
+[a2dMap_QT500, a2dCoord_QT500] = arcgridread(sFileName_QT500);
+a2iQT500 = a2dMap_QT500;
+    
+%
+for i=1:size(sezioni_indici_relativi,1)
+        a1dQT2(i)   = a2iQT2(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+        a1dQT5(i)   = a2iQT5(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+        a1dQT10(i)  = a2iQT10(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+        a1dQT20(i)  = a2iQT20(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+        a1dQT50(i)  = a2iQT50(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+        a1dQT100(i) = a2iQT100(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+        a1dQT150(i) = a2iQT150(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+        a1dQT200(i) = a2iQT200(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+        a1dQT500(i) = a2iQT500(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+end
+
+figure
+RT= [0 2 5 10 20 50 100 150 200 500];
+for i=length(L):-1:1
+        a1dQT2_sort(i) = a1dQT2(indici_sort(i));               
+        a1dQT5_sort(i) = a1dQT5(indici_sort(i));  
+        a1dQT10_sort(i) = a1dQT10(indici_sort(i));    
+        a1dQT20_sort(i) = a1dQT20(indici_sort(i));         
+        a1dQT50_sort(i) = a1dQT50(indici_sort(i));        
+        a1dQT100_sort(i) = a1dQT100(indici_sort(i));              
+        a1dQT150_sort(i) = a1dQT150(indici_sort(i));              
+        a1dQT200_sort(i) = a1dQT200(indici_sort(i));          
+        a1dQT500_sort(i) = a1dQT500(indici_sort(i));             
+        
+        QQ = [0 a1dQT2_sort(i) a1dQT5_sort(i) a1dQT10_sort(i) a1dQT20_sort(i) ... 
+              a1dQT50_sort(i) a1dQT100_sort(i) a1dQT150_sort(i) a1dQT200_sort(i) a1dQT500_sort(i)];
+        plot(RT, QQ, 'o-', 'markersize',6, 'MarkerFaceColor', 'k');
+        
+        x = log(RT);
+        y = QQ;
+        hold on;
+        a=[];
+        for k =1:length(x)
+            a=[a ; x(k) 1];
+        end
+        c = a\y';
+        hold on;
+        x =min(RT):0.01:max(RT);
+        y=c(1)*log(x)+c(2);
+        %plot(x,y, 'k');
+
+        txt2 = nomi_sezioni_sort{i};
+        txt2 = strrep(txt2,'_','\_');
+        if c(2) < 0
+            txt = [txt2, '   \rightarrow     y = ', num2str(c(1)), ' log(x) - ' num2str(abs(c(2)))];
+        else
+            txt = [txt2, '   \rightarrow     y = ', num2str(c(1)), ' log(x) + ' num2str(c(2))];
+        end    
+
+        %text(200, c(1)*log(200) + c(2) + 50, txt);
+        display(txt);
+        display(QQ);
+        %legend({txt}, 'Location','southeast');
+
+        
+        Qlimit_sort(i) = c(1)*log(1) + c(2);   % lower limit of the relation
+        hold on;
+end
+grid off;
+title('FOGLIA')
+%title('CHIENTI')
+xlabel('Return Time T') 
+ylabel('Discharge Q_T [m^3/s]')                                     
+     
+
+
+x = exp((y - c(2))/c(1));

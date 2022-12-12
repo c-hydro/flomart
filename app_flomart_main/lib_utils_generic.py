@@ -11,9 +11,8 @@ Version:       '1.0.0'
 # Library
 import logging
 import numpy as np
-import operator
+import h5py
 
-from functools import reduce  # forward compatibility for Python 3
 from copy import deepcopy
 
 from lib_info_args import logger_name
@@ -30,35 +29,42 @@ log_stream = logging.getLogger(logger_name)
 # Method to convert array 2 list
 def convert_array_2_list(data_in):
     data_out = None
-    if data_in.ndim == 1 or data_in.shape[0] == 1:
-        for data in data_in[0]:
+    if not isinstance(data_in, list):
+        if data_in.ndim == 1 or data_in.shape[0] == 1:
+            for data in data_in[0]:
 
-            if data_out is None:
-                data_out = []
-            if isinstance(data, np.ndarray):
-                data_filter = data[0]
+                if data_out is None:
+                    data_out = []
+                if isinstance(data, np.ndarray):
+                    data_filter = data[0]
 
-                if isinstance(data_filter, np.ndarray):
-                    if data_filter.shape[0] == 1:
-                        data_filter = data_filter[0]
-                    else:
-                        log_stream.error(' ===> Error in getting data value')
-                        raise NotImplementedError('Case not implemented yet')
-            else:
-                data_filter = data
+                    if isinstance(data_filter, np.ndarray):
+                        if data_filter.shape[0] == 1:
+                            data_filter = data_filter[0]
+                        else:
+                            log_stream.error(' ===> Error in getting data value')
+                            raise NotImplementedError('Case not implemented yet')
+                else:
+                    data_filter = data
 
-            if isinstance(data_filter, str):
-                data_tmp = str(data_filter)
-            elif isinstance(data_filter, (int, np.integer)):
-                data_tmp = int(data_filter)
-            elif isinstance(data_filter, (float, np.floating)):
-                data_tmp = float(data_filter)
-            else:
-                log_stream.error(' ===> Error in parsering data value')
-                raise NotImplementedError('Case not implemented yet')
-            data_out.append(data_tmp)
+                if isinstance(data_filter, str):
+                    data_tmp = str(data_filter)
+                elif isinstance(data_filter, (int, np.integer)):
+                    data_tmp = int(data_filter)
+                elif isinstance(data_filter, (float, np.floating)):
+                    data_tmp = float(data_filter)
+                elif isinstance(data_filter, h5py._hl.dataset.Dataset):
+                    print('ciao')
+                else:
+                    log_stream.error(' ===> Error in parsering data value')
+                    raise NotImplementedError('Case not implemented yet')
+                data_out.append(data_tmp)
+        else:
+            data_out = deepcopy(data_in)
+
     else:
         data_out = deepcopy(data_in)
+
     return data_out
 # -------------------------------------------------------------------------------------
 

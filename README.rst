@@ -1,7 +1,8 @@
 Floods Scenario Application
 ===========================
-
 Welcome to the **Floods Scenario Application** GitHub repository. This application is used for preventing and reducing the hydrogeological risk.
+
+
 
 Background
 **********
@@ -15,7 +16,6 @@ Components
 
 Prerequisites
 *************
-
 In order to use the Flood-PROOFS forecasting chain, users are strongly raccomanted to control if the following characteristics, libraries and packages are available and correctly installed on their machine.
 
 Usually, Flood-PROOFS libraries are installed on **Linux Debian/Ubuntu 64bit** environment and all libraries, packages and applications must be compilled and/or installed in according with this operative system.
@@ -68,9 +68,9 @@ Broadly speaking, there are four potential user categories of the FloodPROOFS mo
 
 It is expected that the majority of early adopters of the FloodPROOFS modelling system will be Applying users looking to apply the system with local data/scenarios, with more Contributor users adopting the system as it becomes well known and established.
 
+
 Contribute and Guidelines
 *************************
-
 We are happy if you want to contribute. Please raise an issue explaining what is missing or if you find a bug. We will also gladly accept pull requests against our master branch for new features or bug fixes.
 
 If you want to contribute please follow these steps:
@@ -84,18 +84,18 @@ If you want to contribute please follow these steps:
 
 Authors
 *******
-
 All authors involved in the library development for the Flood-PROOFS modelling system are reported in this authors_ file.
+
 
 License
 *******
-
 By accessing or using the Flood-PROOFS modelling system, code, data or documentation, you agree to be bound by the FloodPROOFS license available. See the license_ for details. 
+
 
 Changelog
 *********
-
 All notable changes and bugs fixing to this project will be documented in this changelog_ file.
+
 
 References
 **********

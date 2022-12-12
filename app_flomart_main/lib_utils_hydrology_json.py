@@ -21,13 +21,14 @@ from lib_info_args import logger_name
 
 # Logging
 log_stream = logging.getLogger(logger_name)
+
+
 #######################################################################################
 
 
 # -------------------------------------------------------------------------------------
-# Method to read hydro simulated file in json format
-def read_file_hydro_sim(section_name, file_name, variables_names):
-
+# Method to read hydro simulated/observed file in json format
+def read_file_hydro(section_name, file_name, variables_names):
     with open(file_name) as json_file:
         file_data = json.load(json_file)
 
@@ -44,17 +45,15 @@ def read_file_hydro_sim(section_name, file_name, variables_names):
         log_stream.error(' ===> File column "' + var_time + '" simulated not available in the datasets')
         raise IOError('Check your input file "' + file_name + '" to control the available fields')
 
-
     if var_discharge in list(file_keys):
         file_discharge = file_data[var_discharge]
-        file_discharge = list(file_discharge.split(",")) # convert string to list of strings
+        file_discharge = list(file_discharge.split(","))  # convert string to list of strings
     else:
         log_stream.error(' ===> File column "' + var_discharge + '" simulated not available in the datasets')
         raise IOError('Check your input file "' + file_name + '" to control the available fields')
 
-
     section_period = []
-    section_data_discharge =[]
+    section_data_discharge = []
 
     for time_step, discharge_step in zip(file_time, file_discharge):
         dt_tmp = pd.Timestamp(time_step)
@@ -70,88 +69,72 @@ def read_file_hydro_sim(section_name, file_name, variables_names):
 
     return section_series_discharge, section_series_water_level
 
+
 # -------------------------------------------------------------------------------------
 
+# -------------------------------------------------------------------------------------
+# Create file hydro tag
+def create_file_hydro_tag(section_ts_start, section_ts_end, section_ens=None, section_name=None,
+                          time_format='%Y%m%d%H%M', tag_sep=':'):
+
+    if (section_ens is not None) and (section_name is None):
+        section_tag = section_ts_start.strftime(time_format) + '_' + section_ts_end.strftime(time_format) + \
+                      tag_sep + section_ens
+    elif (section_name is not None) and (section_ens is None):
+        if section_ts_start == section_ts_end:
+            section_tag = section_ts_end.strftime(time_format) + tag_sep + section_name
+        else:
+            section_tag = section_ts_start.strftime(time_format) + '_' + section_ts_end.strftime(time_format) + \
+                          tag_sep + section_name
+    elif (section_name is None) and (section_ens is None):
+        if section_ts_start == section_ts_end:
+            section_tag = section_ts_end.strftime(time_format)
+        else:
+            section_tag = section_ts_start.strftime(time_format) + '_' + section_ts_end.strftime(time_format)
+    else:
+        log_stream.error(' ===> File tag is not correctly defined')
+        raise NotImplementedError('Case not implemented yet')
+
+    return section_tag
 
 
-#
-# # -------------------------------------------------------------------------------------
-# # Create file hydro tag
-# def create_file_hydro_tag(section_ts_start, section_ts_end, section_ens=None, section_name=None,
-#                           time_format='%Y%m%d%H%M', tag_sep=':'):
-#
-#     if (section_ens is not None) and (section_name is None):
-#         section_tag = section_ts_start.strftime(time_format) + '_' + section_ts_end.strftime(time_format) + \
-#                       tag_sep + section_ens
-#     elif (section_name is not None) and (section_ens is None):
-#         section_tag = section_ts_start.strftime(time_format) + '_' + section_ts_end.strftime(time_format) + \
-#                       tag_sep + section_name
-#     elif (section_name is None) and (section_ens is None):
-#         section_tag = section_ts_start.strftime(time_format) + '_' + section_ts_end.strftime(time_format)
-#     else:
-#         log_stream.error(' ===> File tag is not correctly defined')
-#         raise NotImplementedError('Case not implemented yet')
-#
-#     return section_tag
-# # -------------------------------------------------------------------------------------
-#
-#
-#
-#
-#
-# # -------------------------------------------------------------------------------------
-# # Parse file hydro name
-# def parse_file_hydro_name(file_name, file_data='simulated'):
-#     # MATTEO: this function has to be updated! it could also be removed!
-#
-#     file_parts = re.findall(r'\d+', file_name)
-#     file_root, file_extension = os.path.splitext(file_name)
-#
-#     if not file_extension.endswith('txt'):
-#         log_stream.error(' ===> File extension must be "txt"')
-#         raise IOError('File type must be in ascii format')
-#
-#     if file_parts.__len__() == 3:
-#
-#         # probabilistic simulated file(s)
-#         if file_data == 'simulated':
-#             file_part_datetime_start = datetime.strptime(file_parts[0], "%y%j%H%M")
-#             file_part_datetime_end = datetime.strptime(file_parts[1][:-2], "%y%j%H%M")
-#             file_part_mask = file_parts[1][-2:]
-#             file_part_n_ens = file_parts[2]
-#         elif file_data == 'observed':
-#             file_part_datetime_start = datetime.strptime(file_parts[0], "%Y%m%d%H%M")
-#             file_part_datetime_end = datetime.strptime(file_parts[1], "%Y%m%d%H%M")
-#             file_part_mask = None
-#             file_part_n_ens = None
-#         else:
-#             log_stream.error(
-#                 ' ===> Parser of filename ' + file_name + ' failed for unknown type of file parts equal to 3')
-#             raise NotImplementedError('Case not implemented yet')
-#
-#     elif file_parts.__len__() == 2:
-#
-#         # deterministic simulated file(s)
-#         if file_data == 'simulated':
-#             file_part_datetime_start = datetime.strptime(file_parts[0], "%y%j%H%M")
-#             file_part_datetime_end = datetime.strptime(file_parts[1][:-2], "%y%j%H%M")
-#             file_part_mask = file_parts[1][-2:]
-#             file_part_n_ens = None
-#         elif file_data == 'observed':
-#             file_part_datetime_start = datetime.strptime(file_parts[0], "%Y%m%d%H%M")
-#             file_part_datetime_end = datetime.strptime(file_parts[1], "%Y%m%d%H%M")
-#             file_part_mask = None
-#             file_part_n_ens = None
-#
-#         else:
-#             log_stream.error(' ===> Parser of filename ' + file_name + ' failed for unknown file type')
-#             raise NotImplementedError('Case not implemented yet')
-#     else:
-#         log_stream.error(' ===> Parser of filename ' + file_name + ' failed for unknown format')
-#         raise NotImplementedError('Case not implemented yet')
-#
-#     file_part_timestamp_start = pd.Timestamp(file_part_datetime_start)
-#     file_part_timestamp_end = pd.Timestamp(file_part_datetime_end)
-#
-#     return file_part_timestamp_start, file_part_timestamp_end, file_part_mask, file_part_n_ens
-# # -------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------
+# Parse file hydro name
+def parse_file_hydro_name(file_name, file_data='simulated'):
+
+    match_parts = re.search(r'\d{4}\d{2}\d{2}\d{2}\d{2}', file_name)
+    file_parts = [match_parts.group()]
+
+    file_root, file_extension = os.path.splitext(file_name)
+
+    if not file_extension.endswith('json'):
+        log_stream.error(' ===> File extension must be "json"')
+        raise IOError('File type must be in json format')
+
+    if file_parts.__len__() == 1:
+
+        # deterministic simulated file(s)
+        if file_data == 'simulated':
+            file_part_datetime_start = datetime.strptime(file_parts[0], "%Y%m%d%H%M")
+            file_part_datetime_end = datetime.strptime(file_parts[0], "%Y%m%d%H%M")
+            file_part_mask = None
+            file_part_n_ens = None
+        elif file_data == 'observed':
+            file_part_datetime_start = datetime.strptime(file_parts[0], "%Y%m%d%H%M")
+            file_part_datetime_end = datetime.strptime(file_parts[0], "%Y%m%d%H%M")
+            file_part_mask = None
+            file_part_n_ens = None
+        else:
+            log_stream.error(' ===> Parser of filename ' + file_name + ' failed for unknown file type')
+            raise NotImplementedError('Case not implemented yet')
+    else:
+        log_stream.error(' ===> Parser of filename ' + file_name + ' failed for unknown format')
+        raise NotImplementedError('Case not implemented yet')
+
+    file_part_timestamp_start = pd.Timestamp(file_part_datetime_start)
+    file_part_timestamp_end = pd.Timestamp(file_part_datetime_end)
+
+    return file_part_timestamp_start, file_part_timestamp_end, file_part_mask, file_part_n_ens
+# -------------------------------------------------------------------------------------

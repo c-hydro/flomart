@@ -73,6 +73,9 @@ def save_file_tiff(file_name, file_data, file_geo_x, file_geo_y, file_metadata=N
     if not isinstance(file_data, list):
         file_data = [file_data]
 
+    log_stream.info(' -----------> Converting all nan in the hazard map array into 0 ... ')
+    file_data[0] = np.nan_to_num(file_data[0] ,nan = 0)
+
     write_file_tif(file_name, file_data,
                    file_data_width, file_data_height, file_data_transform, file_epsg_code,
                    file_metadata=file_metadata)
@@ -92,11 +95,20 @@ def save_file_png(file_name, file_data, file_geo_x, file_geo_y,
         fig_color_map_type = 'Blues'
     fig_color_map_obj = load(fig_color_map_type)
 
-    # if fig_epsg_code != 'EPSG:32632':
-    #     log_stream.error(' ===> EPSG Code not supported (Only supported "EPSG:32632"')
-    #     raise NotImplemented('Method to use all epsg codes must be developed')
+    if fig_epsg_code == 'EPSG:32633':
+          p = Proj(proj='utm', zone=33, ellps='WGS84')
 
-    p = Proj(fig_epsg_code)  # p = Proj(proj='utm', zone=33, ellps='WGS84')
+    elif fig_epsg_code == 'EPSG:32632':
+        p = Proj(proj='utm', zone=32, ellps='WGS84')
+
+    else:
+        try:
+            p = Proj(fig_epsg_code)
+        except:
+             log_stream.error(' ===> EPSG Code not supported (Only supported "EPSG:32632" and "EPSG:32633")')
+             raise NotImplemented('Method to use all epsg codes must be developed')
+
+
 
     file_lons, file_lats = p(file_geo_x, file_geo_y, inverse=True)
 
@@ -147,6 +159,7 @@ def save_file_png(file_name, file_data, file_geo_x, file_geo_y,
     ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
     fig.add_axes(ax_cb)
     cb1 = plt.colorbar(sc, cax=ax_cb, extend='both')
+    cb1.clim(0, 4.5)
     cb1.set_label('water level [m]', size=12, color='gray', weight='normal')
     cb1.ax.tick_params(labelsize=10, labelcolor='gray')
 

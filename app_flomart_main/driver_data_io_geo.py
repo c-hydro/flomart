@@ -66,74 +66,67 @@ class DriverGeo:
         self.folder_name_geo_out = dst_dict[self.flag_geo_data_out][self.folder_name_tag]
         self.file_name_geo_out = dst_dict[self.flag_geo_data_out][self.file_name_tag]
 
-        self.collections_geo = self.read_geo_info_generic()
-        self.collections_hydraulic = self.read_geo_info_hydraulic()
-
         self.flag_cleaning_geo = flag_cleaning_geo
 
     # -------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------
     # Method to read geographical hydraulic information
-    def read_geo_info_hydraulic(self):
+    def read_geo_info_hydraulic(self, domain_name):
 
-        domain_name_list = self.domain_name_list
+        log_stream.info(' ---> Read geographical hydraulic information ... ')
+
         template_tags = self.alg_template_tags
 
         folder_name_raw, file_name_raw = self.folder_name_geo_in_hydraulic, self.file_name_geo_in_hydraulic
 
-        hydraulic_collections = {}
-        for domain_name in domain_name_list:
+        template_values = {'domain_name': domain_name}
+        folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values)
+        file_name_def = fill_tags2string(file_name_raw, template_tags, template_values)
 
-            template_values = {'domain_name': domain_name}
-
-            folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values)
-            file_name_def = fill_tags2string(file_name_raw, template_tags, template_values)
-
-            if os.path.exists(os.path.join(folder_name_def, file_name_def)):
-                if file_name_def.endswith('json'):
-                    hydraulic_data = read_file_hydraulic(os.path.join(folder_name_def, file_name_def))
-                    hydraulic_collections[domain_name] = hydraulic_data
-                else:
-                    log_stream.error(' ===> Hydraulic section file ' + file_name_def + ' format is not supported')
-                    raise NotImplementedError('Case not implemented yet')
+        if os.path.exists(os.path.join(folder_name_def, file_name_def)):
+            if file_name_def.endswith('json'):
+                hydraulic_data = read_file_hydraulic(os.path.join(folder_name_def, file_name_def))
             else:
-                log_stream.error(' ===> Hydraulic section file ' + file_name_def + ' not available')
-                raise IOError('Check your configuration file')
+                log_stream.error(' ===> Hydraulic section file ' + file_name_def + ' format is not supported')
+                raise NotImplementedError('Case not implemented yet')
+        else:
+            log_stream.error(' ===> Hydraulic section file ' + file_name_def + ' not available')
+            raise IOError('Check your configuration file')
 
-        return hydraulic_collections
+        log_stream.info(' ---> Read geographical hydraulic information ... DONE')
+
+        return hydraulic_data
 
     # -------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------
     # Method to read geographical generic information
-    def read_geo_info_generic(self):
+    def read_geo_info_generic(self, domain_name):
 
-        domain_name_list = self.domain_name_list
+        log_stream.info(' ---> Read geographical generic information ... ')
 
         template_tags = self.alg_template_tags
 
         folder_name_raw, file_name_raw = self.folder_name_geo_in_generic, self.file_name_geo_in_generic
 
-        geo_collections = {}
-        for domain_name in domain_name_list:
+        template_values = {'domain_name': domain_name}
+        folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values)
+        file_name_def = fill_tags2string(file_name_raw, template_tags, template_values)
 
-            template_values = {'domain_name': domain_name}
-
-            folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values)
-            file_name_def = fill_tags2string(file_name_raw, template_tags, template_values)
-
-            if os.path.exists(os.path.join(folder_name_def, file_name_def)):
-                if file_name_def.endswith('mat'):
-                    geo_data = read_file_geo(os.path.join(folder_name_def, file_name_def))
-                    geo_collections[domain_name] = geo_data
-                else:
-                    log_stream.error(' ===> Geographical section file ' + file_name_def + ' format is not supported')
-                    raise NotImplementedError('Case not implemented yet')
+        if os.path.exists(os.path.join(folder_name_def, file_name_def)):
+            if file_name_def.endswith('mat'):
+                geo_data = read_file_geo(os.path.join(folder_name_def, file_name_def))
             else:
-                log_stream.error(' ===> Geographical reference file ' + file_name_def + ' not available')
-                raise IOError('Check your configuration file')
-        return geo_collections
+                log_stream.error(' ===> Geographical section file ' + file_name_def + ' format is not supported')
+                raise NotImplementedError('Case not implemented yet')
+        else:
+            log_stream.error(' ===> Geographical reference file ' + file_name_def + ' not available')
+            raise IOError('Check your configuration file')
+
+        log_stream.info(' ---> Read geographical generic information ... DONE')
+
+        return geo_data
 
     # -------------------------------------------------------------------------------------
 
@@ -160,12 +153,16 @@ class DriverGeo:
     @staticmethod
     def organize_section_links(section_info):
 
+        log_stream.info(' -----> Organize section links ... ')
+
         section_drainage_area_tags = ['section_drainage_area', 'drainage_area']
 
         for section_tag_ref, section_fields_ref in section_info.items():
             section_name_upstream_ref = section_fields_ref['name_point_upstream']
             section_name_downstream_ref = section_fields_ref['name_point_downstream']
             section_name_ref = section_fields_ref['section_description']
+
+            log_stream.info(' ------> Section "' + section_name_ref + '" ... ')
 
             section_drainage_area_ref = None
             for section_drainage_area_tag in section_drainage_area_tags:
@@ -183,7 +180,7 @@ class DriverGeo:
                     section_fields_step = None
 
                     for section_tag_tmp, section_fields_tmp in section_info.items():
-                        if section_fields_tmp['section_description'] == section_name_step:
+                        if section_fields_tmp['section_description'].lower() == section_name_step.lower():
                             section_fields_step = section_fields_tmp.copy()
                             break
 
@@ -226,7 +223,7 @@ class DriverGeo:
                     section_fields_step = None
 
                     for section_tag_tmp, section_fields_tmp in section_info.items():
-                        if section_fields_tmp['section_description'] == section_name_step:
+                        if section_fields_tmp['section_description'].lower() == section_name_step.lower():
                             section_fields_step = section_fields_tmp.copy()
                             break
 
@@ -258,6 +255,10 @@ class DriverGeo:
 
             section_info[section_tag_ref]['area_links'] = section_obj_summary
 
+            log_stream.info(' ------> Section "' + section_name_ref + '" ... DONE')
+
+        log_stream.info(' -----> Organize section links ... DONE')
+
         return section_info
 
     # -------------------------------------------------------------------------------------
@@ -266,6 +267,8 @@ class DriverGeo:
     # Method to get section geo information
     @staticmethod
     def organize_section_geo(geo_data, geo_fields=None, section_key='section_{:}'):
+
+        log_stream.info(' -----> Organize section data ... ')
 
         if geo_fields is None:
             geo_fields = ['section_description', 'section_id', 'section_name',
@@ -308,6 +311,8 @@ class DriverGeo:
                     section_collections[section_tag][field_key] = {}
                     section_collections[section_tag][field_key] = field_value
 
+        log_stream.info(' -----> Organize section data ... DONE')
+
         return section_collections
 
     # -------------------------------------------------------------------------------------
@@ -317,12 +322,17 @@ class DriverGeo:
     @staticmethod
     def organize_section_hydraulic(section_data, hydraulic_data, hydraulic_key_expected=None):
 
+        log_stream.info(' -----> Organize section hydraulic ... ')
+
         if hydraulic_key_expected is None:
             hydraulic_key_expected = ['name_point_outlet', 'name_point_downstream',
                                       'name_point_upstream', 'name_point_obs']
 
-        for section_key, section_fields in section_data.items():
+        section_data_tmp = deepcopy(section_data)
+        for section_key, section_fields in section_data_tmp.items():
             section_description = section_fields['section_description']
+
+            log_stream.info(' ------> Section "' + section_description + '" ... ')
 
             hydraulic_ws = None
             for hydraulic_id, hydraulic_fields in hydraulic_data.items():
@@ -341,6 +351,21 @@ class DriverGeo:
 
                 section_data[section_key] = section_fields
 
+                log_stream.info(' ------> Section "' + section_description + '" ... DONE')
+
+            else:
+
+                log_stream.info(' ------> Section "' + section_description + '" ... SKIPPED')
+                log_stream.warning(' ===> Hydraulic info for section "' + section_description + '" are not available')
+                section_data.pop(section_key)
+
+        if section_data.__len__() != section_data_tmp.__len__():
+            log_stream.info(' -----> Organize section hydraulic ... FAILED')
+            log_stream.error(' ===> Hydraulic information are not available for all sections')
+            raise RuntimeError('Hydraulic information must be available for all sections defined in the geo file')
+        else:
+            log_stream.info(' -----> Organize section hydraulic ... DONE')
+
         return section_data
 
     # -------------------------------------------------------------------------------------
@@ -349,6 +374,8 @@ class DriverGeo:
     # Method to get map geo information
     @staticmethod
     def organize_map_geo(geo_data, geo_fields=None):
+
+        log_stream.info(' -----> Organize map data ... ')
 
         if geo_fields is None:
             geo_fields = ['area_reference_id', 'area_mask', 'area_mask_extended',
@@ -362,20 +389,27 @@ class DriverGeo:
             if geo_field in list(geo_data.keys()):
                 geo_value = geo_data[geo_field]
 
-                if geo_value.ndim == 1:
-                    if geo_value.shape[0] == 1:
-                        geo_value = geo_value[0]
-                        if isinstance(geo_value, str):
-                            geo_value = str(geo_value)
-                        else:
-                            geo_value = float(geo_value)
+                if hasattr(geo_value, 'ndim'):
+                    if geo_value.ndim == 1:
+                        if geo_value.shape[0] == 1:
+                            geo_value = geo_value[0]
+                            if isinstance(geo_value, str):
+                                geo_value = str(geo_value)
+                            else:
+                                geo_value = float(geo_value)
 
-                elif geo_value.ndim == 2:
-                    if geo_value.shape[0] == 1 and geo_value.shape[1] == 1:
-                        geo_value = float(geo_value[0][0])
+                    elif geo_value.ndim == 2:
+                        if geo_value.shape[0] == 1 and geo_value.shape[1] == 1:
+                            geo_value = float(geo_value[0][0])
+                    else:
+                        log_stream.error(' ===> Geo field "' + geo_field + '" format for array is not supported')
+                        raise NotImplementedError('Case not implemented yet')
                 else:
-                    log_stream.error(' ===> Geo field "' + geo_field + '" format is not supported')
-                    raise NotImplementedError('Case not implemented yet')
+                    if isinstance(geo_value, int):
+                        geo_value = str(geo_value)
+                    else:
+                        log_stream.error(' ===> Geo field "' + geo_field + '" format for scalar is not supported')
+                        raise NotImplementedError('Case not implemented yet')
 
                 map_collections[geo_field] = geo_value
             else:
@@ -416,6 +450,8 @@ class DriverGeo:
             log_stream.error(' ===> Geo field "area_epsg_code" must be defined')
             raise IOError('Field not found')
 
+        log_stream.info(' -----> Organize map data ... DONE')
+
         return map_collections
 
     # -------------------------------------------------------------------------------------
@@ -433,10 +469,11 @@ class DriverGeo:
 
             file_path_collections = self.define_domain_collection(
                 domain_name, self.folder_name_geo_out, self.file_name_geo_out)
-            geo_data = self.collections_geo[domain_name]
-            hydraulic_data = self.collections_hydraulic[domain_name]
 
             if not os.path.exists(file_path_collections):
+
+                geo_data = self.read_geo_info_generic(domain_name)
+                hydraulic_data = self.read_geo_info_hydraulic(domain_name)
 
                 section_data = self.organize_section_geo(geo_data)
                 section_data = self.organize_section_hydraulic(section_data, hydraulic_data)

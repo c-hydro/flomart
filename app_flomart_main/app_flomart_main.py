@@ -176,15 +176,13 @@ def get_args():
     parser_handle.add_argument('-time', action="store", dest="alg_time")
     parser_values = parser_handle.parse_args()
 
+    alg_settings = 'configuration.json'
     if parser_values.alg_settings:
         alg_settings = parser_values.alg_settings
-    else:
-        alg_settings = 'configuration.json'
 
+    alg_time = None
     if parser_values.alg_time:
         alg_time = parser_values.alg_time
-    else:
-        alg_time = None
 
     return alg_settings, alg_time
 

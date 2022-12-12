@@ -110,7 +110,7 @@ def read_file_hazard(file_name, file_vars=None, file_format=None, file_scale_fac
                 log_stream.error(' ===> Hazard data must be in 2D format')
                 raise NotImplementedError('Case not implemented yet')
 
-            assert file_data.dtype == var_format, "Assertion failed in expected variable " + var_name + " format "
+            # assert file_data.dtype == var_format, "Assertion failed in expected variable " + var_name + " format "
 
             file_collection = {var_name: file_data / var_scale_factor}
 

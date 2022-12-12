@@ -1,0 +1,62 @@
+{
+  "template": {
+    "dset_datetime_src": "%Y%m%d%H%M%S",
+    "dset_sub_path_src": "%Y/%m/%d",
+    "dset_datetime_dst": "%Y%m%d%H%M%S",
+    "dset_sub_path_dst": "%Y/%m/%d"
+  },
+  "method": {
+    "__comment__": "mode: [local2remote, remote2local, local2local]",
+    "mode": "local2remote",
+    "ftp": {
+      "settings": {
+        "machine_host": "",
+        "machine_user": "",
+        "machine_pwd": "",
+        "machine_folder": ""
+      },
+      "command_ancillary": {"create_folder":  null},
+      "command_exec": "lftp -c",
+      "command_line": "open ftp://{machine_user}:{machine_pwd}@{machine_host}; cd {machine_folder}; mkdir -fp {machine_folder}/{folder_name_dst}; put {folder_name_src}/{file_name_src} -o {machine_folder}/{folder_name_dst}/{file_name_dst}; close; quit"
+    },
+    "rsync": {
+      "settings": {
+        "machine_host": "10.198.26.22",
+        "machine_user": "user"
+      },
+      "command_ancillary": {"create_folder":  "ssh {machine_user}@{machine_host} mkdir -p {folder_name_dst}"},
+      "command_exec": "rsync -avr --progress",
+      "command_line": "{folder_name_src}/{file_name_src} {machine_user}@{machine_host}:{folder_name_dst}/{file_name_dst}"
+    }
+  },
+  "time": {
+    "time_run": null,
+    "time_start": null,
+    "time_end": null,
+    "time_period": 48,
+    "time_frequency": "H",
+    "time_rounding": "H"
+  },
+  "source": {
+    "datasets_tiff": {
+      "folder_name": "/hydro/analysis/flomart/map/ecmwf0100/{dset_sub_path_src}",
+      "file_name": "scenario-Chienti_{dset_datetime_src}.tiff",
+      "method": "rsync"
+    },
+    "datasets_json": {
+      "folder_name": "/hydro/analysis/flomart/map/ecmwf0100/{dset_sub_path_src}",
+      "file_name": "summary-Chienti_{dset_datetime_src}.json",
+      "method": "rsync"
+    }
+  },
+  "destination": {
+    "datasets_tiff": {
+      "folder_name": "/share/hydro/hazard/det_ecmwf0100_realtime_flomart/{dset_sub_path_dst}",
+      "file_name": "scenario-Chienti_{dset_datetime_dst}.tiff"
+    },
+    "datasets_json": {
+      "folder_name": "/share/hydro/hazard/det_ecmwf0100_realtime_flomart/{dset_sub_path_dst}",
+      "file_name": "summary-Chienti_{dset_datetime_dst}.json"
+    }        
+  }
+}
