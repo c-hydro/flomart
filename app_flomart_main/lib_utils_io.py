@@ -344,7 +344,7 @@ def read_mat(file_name):
                         elif key == 'AreeCompetenza':
                             if obj.ndim == 2:
                                 obj_tmp = np.transpose(obj)
-                                # obj_tmp = obj.copy()
+                                # obj_tmp = obj.copy() # old stuff
                                 data[key] = obj_tmp
                             else:
                                 log_stream.error(' ===> Obj must be in 2d format')

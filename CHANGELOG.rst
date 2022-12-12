@@ -24,7 +24,6 @@ Version 2.0.4 [2022-12-12]
           app_flomart_manager_nwp_ecmwf0100_realtime_CHIENTI.sh,
           app_flomart_transfer_nwp_ecmwf0100_realtime_CHIENTI.json,
           
-
 Version 2.0.3 [2022-08-01]
 **************************
 - APP: app_flomart_main.py
