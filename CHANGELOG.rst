@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 2.0.5 [2022-12-15]
+**************************
+- APP: app_flomart_main.py
+	- add time settings for both simulated and observed datasets;
+	- add datasets fields "time_period_search", "time_period_left" and "time_period_right" to define
+	  the time periods for simulated and observed datasets;
+	- add tr methods parameters in the section workspace;
+	- add tr methods selection in the scenario definition;
+
 Version 2.0.4 [2022-12-12]
 **************************
 - APP: app_flomart_main.py
@@ -24,7 +33,6 @@ Version 2.0.4 [2022-12-12]
           app_flomart_manager_nwp_ecmwf0100_realtime_CHIENTI.sh,
           app_flomart_transfer_nwp_ecmwf0100_realtime_CHIENTI.json,
           
-
 Version 2.0.3 [2022-08-01]
 **************************
 - APP: app_flomart_main.py

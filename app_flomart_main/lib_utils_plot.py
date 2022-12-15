@@ -73,8 +73,8 @@ def save_file_tiff(file_name, file_data, file_geo_x, file_geo_y, file_metadata=N
     if not isinstance(file_data, list):
         file_data = [file_data]
 
-    log_stream.info(' -----------> Converting all nan in the hazard map array into 0 ... ')
-    file_data[0] = np.nan_to_num(file_data[0] ,nan = 0)
+    #log_stream.info(' -----------> Converting all nan in the hazard map array into 0 ... ')
+    #file_data[0] = np.nan_to_num(file_data[0] ,nan = 0)
 
     write_file_tif(file_name, file_data,
                    file_data_width, file_data_height, file_data_transform, file_epsg_code,

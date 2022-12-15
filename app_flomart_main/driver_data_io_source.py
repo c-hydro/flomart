@@ -56,13 +56,18 @@ class DriverDischarge:
         self.alg_template_tags = alg_template_tags
         self.file_name_tag = 'file_name'
         self.folder_name_tag = 'folder_name'
-        self.type_tag = 'type'
-        self.variables_tag = 'variables'
+        self.file_type_tag = 'file_type'
+        self.file_variables_tag = 'file_variables'
+        self.file_prefix_tag = 'file_prefix'
+        self.file_suffix_tag = 'file_suffix'
         self.method_data_occurrence_tag = 'method_data_occurrence'
         self.method_data_analysis_tag = 'method_data_analysis'
         self.method_data_filling_tag = 'method_data_filling'
         self.method_data_null_tag = 'method_data_null'
-        self.time_period_tag = 'time_period'
+
+        self.time_period_search_tag = 'time_period_search'
+        self.time_period_right_tag = 'time_period_right'
+        self.time_period_left_tag = 'time_period_left'
         self.time_rounding_tag = 'time_rounding'
         self.time_frequency_tag = 'time_frequency'
 
@@ -95,58 +100,121 @@ class DriverDischarge:
 
         self.folder_name_discharge_sim = src_dict[self.flag_discharge_data_sim][self.folder_name_tag]
         self.file_name_discharge_sim = src_dict[self.flag_discharge_data_sim][self.file_name_tag]
-        self.variables_discharge_sim = src_dict[self.flag_discharge_data_sim][self.variables_tag]
-        self.type_sim = src_dict[self.flag_discharge_data_sim][self.type_tag]
+        if 'file_variables' in list(src_dict[self.flag_discharge_data_sim].keys()):
+            self.file_variables_discharge_sim = src_dict[self.flag_discharge_data_sim][self.file_variables_tag]
+        else:
+            self.file_variables_discharge_sim = src_dict[self.flag_discharge_data_sim]['variables']
+        if 'file_type' in list(src_dict[self.flag_discharge_data_sim].keys()):
+            self.file_type_sim = src_dict[self.flag_discharge_data_sim][self.file_type_tag]
+        else:
+            self.file_type_sim = src_dict[self.flag_discharge_data_sim]['type']
+        if 'file_prefix' in list(src_dict[self.flag_discharge_data_sim].keys()):
+            self.file_prefix_sim = src_dict[self.flag_discharge_data_sim][self.file_prefix_tag]
+        else:
+            self.file_prefix_sim = None
+        if 'file_suffix' in list(src_dict[self.flag_discharge_data_sim].keys()):
+            self.file_suffix_sim = src_dict[self.flag_discharge_data_sim][self.file_suffix_tag]
+        else:
+            self.file_suffix_sim = None
         self.method_data_occurrence_sim = src_dict[self.flag_discharge_data_sim][self.method_data_occurrence_tag]
         self.method_data_analysis_sim = src_dict[self.flag_discharge_data_sim][self.method_data_analysis_tag]
         self.method_data_filling_sim = src_dict[self.flag_discharge_data_sim][self.method_data_filling_tag]
         self.method_data_null_sim = src_dict[self.flag_discharge_data_sim][self.method_data_null_tag]
-        self.time_period_discharge_sim = src_dict[self.flag_discharge_data_sim][self.time_period_tag]
+
+        if 'time_period_search' in list(src_dict[self.flag_discharge_data_sim].keys()):
+            self.time_period_discharge_search_sim = src_dict[self.flag_discharge_data_sim][self.time_period_search_tag]
+        else:
+            self.time_period_discharge_search_sim = src_dict[self.flag_discharge_data_sim]['time_period']
+        if 'time_period_right' in list(src_dict[self.flag_discharge_data_sim].keys()):
+            self.time_period_discharge_right_sim = src_dict[self.flag_discharge_data_sim][self.time_period_right_tag]
+        else:
+            self.time_period_discharge_right_sim = 24
+        if 'time_period_left' in list(src_dict[self.flag_discharge_data_sim].keys()):
+            self.time_period_discharge_left_sim = src_dict[self.flag_discharge_data_sim][self.time_period_left_tag]
+        else:
+            self.time_period_discharge_left_sim = 72
         self.time_rounding_discharge_sim = src_dict[self.flag_discharge_data_sim][self.time_rounding_tag]
         self.time_frequency_discharge_sim = src_dict[self.flag_discharge_data_sim][self.time_frequency_tag]
 
         self.folder_name_discharge_obs = src_dict[self.flag_discharge_data_obs][self.folder_name_tag]
         self.file_name_discharge_obs = src_dict[self.flag_discharge_data_obs][self.file_name_tag]
-        self.variables_obs = src_dict[self.flag_discharge_data_obs][self.variables_tag]
-        self.type_obs = src_dict[self.flag_discharge_data_obs][self.type_tag]
+        if 'file_variables' in list(src_dict[self.flag_discharge_data_obs].keys()):
+            self.file_variables_discharge_obs = src_dict[self.flag_discharge_data_obs][self.file_variables_tag]
+        else:
+            self.file_variables_discharge_obs = src_dict[self.flag_discharge_data_obs]['variables']
+        if 'file_type' in list(src_dict[self.flag_discharge_data_obs].keys()):
+            self.file_type_obs = src_dict[self.flag_discharge_data_obs][self.file_type_tag]
+        else:
+            self.file_type_obs = src_dict[self.flag_discharge_data_obs]['type']
+        if 'file_prefix' in list(src_dict[self.flag_discharge_data_obs].keys()):
+            self.file_prefix_obs = src_dict[self.flag_discharge_data_obs][self.file_prefix_tag]
+        else:
+            self.file_prefix_obs = None
+        if 'file_suffix' in list(src_dict[self.flag_discharge_data_obs].keys()):
+            self.file_suffix_obs = src_dict[self.flag_discharge_data_obs][self.file_suffix_tag]
+        else:
+            self.file_suffix_obs = None
         self.method_data_occurrence_obs = src_dict[self.flag_discharge_data_obs][self.method_data_occurrence_tag]
         self.method_data_analysis_obs = src_dict[self.flag_discharge_data_obs][self.method_data_analysis_tag]
         self.method_data_filling_obs = src_dict[self.flag_discharge_data_obs][self.method_data_filling_tag]
         self.method_data_null_obs = src_dict[self.flag_discharge_data_obs][self.method_data_null_tag]
-        self.time_period_discharge_obs = src_dict[self.flag_discharge_data_obs][self.time_period_tag]
+
+        if 'time_period_search' in list(src_dict[self.flag_discharge_data_obs].keys()):
+            self.time_period_discharge_search_obs = src_dict[self.flag_discharge_data_obs][self.time_period_search_tag]
+        else:
+            self.time_period_discharge_search_obs = src_dict[self.flag_discharge_data_obs]['time_period']
+        if 'time_period_right' in list(src_dict[self.flag_discharge_data_obs].keys()):
+            self.time_period_discharge_right_obs = src_dict[self.flag_discharge_data_obs][self.time_period_right_tag]
+        else:
+            self.time_period_discharge_right_obs = 0
+        if 'time_period_left' in list(src_dict[self.flag_discharge_data_obs].keys()):
+            self.time_period_discharge_left_obs = src_dict[self.flag_discharge_data_obs][self.time_period_left_tag]
+        else:
+            self.time_period_discharge_left_obs = 72
         self.time_rounding_discharge_obs = src_dict[self.flag_discharge_data_obs][self.time_rounding_tag]
         self.time_frequency_discharge_obs = src_dict[self.flag_discharge_data_obs][self.time_frequency_tag]
 
-        self.file_prefix_sim, self.file_sep_sim, self.file_elem_sim = None, None, None
+        self.file_sep_sim, self.file_elem_sim = None, None
         if (self.folder_name_discharge_sim is not None) and (self.file_name_discharge_sim is not None):
             self.file_path_discharge_sim = self.define_file_discharge(
-                self.time_run, self.folder_name_discharge_sim, self.file_name_discharge_sim,
+                self.time_now, self.folder_name_discharge_sim, self.file_name_discharge_sim,
                 file_name_prefix=self.file_prefix_sim, file_name_elem=self.file_elem_sim,
                 file_name_sep=self.file_sep_sim,
-                extra_args={'section_name_obj': self.domain_section_dict,
-                            'section_description_obj': self.domain_description_dict     # MATTEO: add description
-                            })
+                extra_args={
+                    'section_name_obj': self.domain_section_dict,
+                    'time_period': self.time_period_discharge_search_sim,
+                    'time_rounding': self.time_rounding_discharge_sim,
+                    'time_frequency': self.time_frequency_discharge_sim,
+                    'section_description_obj': self.domain_description_dict     # MATTEO: add description
+                })
         else:
-            log_stream.error(' ===> Source files of "overland_flow" are not defined ')
-            raise IOError('Overflow datasets is needed by the application.')
+            log_stream.warning(' ===> Source files of "simulated discharge" are not defined ')
 
-        self.file_prefix_obs, self.file_sep_obs, self.file_elem_obs = None, None, None
-        self.file_path_discharge_obs = self.define_file_discharge(
-            self.time_run, self.folder_name_discharge_obs, self.file_name_discharge_obs,
-            file_name_prefix=self.file_prefix_obs, file_name_elem=self.file_elem_obs, file_name_sep=self.file_sep_obs,
-            extra_args={'section_name_obj': self.domain_hydro_dict,
-                        'time_rounding': self.time_rounding_discharge_obs,
-                        'time_frequency': self.time_frequency_discharge_obs,
-                        'time_period': self.time_period_discharge_obs})
+        self.file_sep_obs, self.file_elem_obs = None, None
+        if (self.folder_name_discharge_obs is not None) and (self.file_name_discharge_obs is not None):
+            self.file_path_discharge_obs = self.define_file_discharge(
+                self.time_now, self.folder_name_discharge_obs, self.file_name_discharge_obs,
+                file_name_prefix=self.file_prefix_obs, file_name_elem=self.file_elem_obs, file_name_sep=self.file_sep_obs,
+                extra_args={'section_name_obj': self.domain_hydro_dict,
+                            'time_rounding': self.time_rounding_discharge_obs,
+                            'time_frequency': self.time_frequency_discharge_obs,
+                            'time_period': self.time_period_discharge_search_obs})
+        else:
+            self.file_path_discharge_obs = None
+            log_stream.warning(' ===> Source files of "observed discharge" are not defined ')
 
-        self.var_time_discharge_sim, self.var_discharge_discharge_sim, \
-            self.var_wlevel_discharge_sim = self.define_file_variables(self.variables_discharge_sim)
-        self.var_time_obs, self.var_discharge_obs, self.var_wlevel_obs = self.define_file_variables(self.variables_obs)
+        self.var_time_discharge_sim, self.var_discharge_sim, \
+            self.var_wlevel_discharge_sim = self.define_file_variables(self.file_variables_discharge_sim)
+        self.var_time_discharge_obs, self.var_discharge_obs, \
+            self.var_wlevel_obs = self.define_file_variables(self.file_variables_discharge_obs)
 
-        self.freq_discharge = 'H'
-        self.periods_discharge_from = 72
-        self.periods_discharge_to = 24
-        self.file_time_discharge = self.define_file_time()
+        if self.time_frequency_discharge_sim == self.time_frequency_discharge_obs:
+            self.freq_discharge = self.time_frequency_discharge_sim
+        else:
+            log_stream.error(' ===> Time frequency must be the same for simulated and observed datasets')
+            raise IOError('Define the same time frequency in both datasets')
+
+        self.file_time_discharge = self.define_file_time(reference_tag='time_run')
 
         self.folder_name_anc_sim = anc_dict[self.flag_discharge_data_sim][self.folder_name_tag]
         self.file_name_anc_sim = anc_dict[self.flag_discharge_data_sim][self.file_name_tag]
@@ -181,21 +249,49 @@ class DriverDischarge:
 
     # -------------------------------------------------------------------------------------
     # Method to define time period
-    def define_file_time(self):
+    def define_file_time(self, reference_tag='time_run'):
 
-        time_run = self.time_run
+        if reference_tag == 'time_run':
+            time_ref = self.time_run
+        elif reference_tag == 'time_now':
+            time_ref = self.time_now
+        else:
+            log_stream.error(' ===> Reference time "' + reference_tag + '" is not supported.')
+            raise NotImplementedError('Case not implemented yet')
 
-        time_day_start = time_run.replace(hour=0)
-        time_day_end = time_run.replace(hour=23)
+        # time period variable(s)
+        time_period_sim_right = self.time_period_discharge_right_sim
+        if time_period_sim_right is None:
+            log_stream.warning(' ===> Time period sim right is NoneType. The period is set to 0.')
+            time_period_sim_right = 0
+        time_period_sim_left = self.time_period_discharge_left_sim
+        if time_period_sim_left is None:
+            log_stream.warning(' ===> Time period sim left is NoneType. The period is set to 0.')
+            time_period_sim_left = 0
+        time_period_obs_right = self.time_period_discharge_right_obs
+        if time_period_obs_right is None:
+            log_stream.warning(' ===> Time period obs right is NoneType. The period is set to 0.')
+            time_period_obs_right = 0
+        time_period_obs_left = self.time_period_discharge_left_obs
+        if time_period_obs_left is None:
+            log_stream.warning(' ===> Time period obs left is NoneType. The period is set to 0.')
+            time_period_obs_left = 0
 
-        time_period_from = pd.date_range(
-            end=time_day_start, periods=self.periods_discharge_from, freq=self.freq_discharge)
-        time_period_day = pd.date_range(
-            start=time_day_start, end=time_day_end, freq=self.freq_discharge)
-        time_period_to = pd.date_range(
-            start=time_day_end, periods=self.periods_discharge_to, freq=self.freq_discharge)
+        time_ref_left = deepcopy(time_ref)
+        time_ref_right = time_ref + pd.Timedelta(hours=1)
+        time_range_sim_left = pd.date_range(end=time_ref_left,
+                                            periods=time_period_sim_left, freq=self.freq_discharge)
+        time_range_sim_right = pd.date_range(start=time_ref_right,
+                                             periods=time_period_sim_right, freq=self.freq_discharge)
+        time_range_obs_left = pd.date_range(end=time_ref_left,
+                                            periods=time_period_obs_left, freq=self.freq_discharge)
+        time_range_obs_right = pd.date_range(start=time_ref_right,
+                                             periods=time_period_obs_right, freq=self.freq_discharge)
 
-        time_period = time_period_from.union(time_period_day).union(time_period_to)
+        time_period_sim = time_range_sim_left.union(time_range_sim_right)
+        time_period_obs = time_range_obs_left.union(time_range_obs_right)
+
+        time_period = time_period_sim.union(time_period_obs)
 
         return time_period
 
@@ -248,12 +344,11 @@ class DriverDischarge:
                 section_description_obj = extra_args['section_description_obj']
 
         if (time_rounding is not None) and (time_period is not None):
-            time_range = pd.date_range(end=time, periods=time_period, freq=time_frequency)
+            time_range = pd.date_range(end=time, periods=time_period, freq=time_frequency)[::-1]
             time_start = time_range[0].floor(time_rounding)
             time_end = time_range[-1]
         else:
-            time_start = time
-            time_end = time
+            time_start, time_end, time_range = time, time, [time]
 
         file_path_dict = {}
         for domain_name in self.domain_name_list:
@@ -265,115 +360,160 @@ class DriverDischarge:
                 if domain_name in list(section_name_obj.keys()):
                     section_name_list = section_name_obj[domain_name]
 
-            alg_template_values = {'domain_name': domain_name,
-                                   #"section_description": section_description_obj[domain_name],
-                                   'source_sub_path_time_discharge_sim': time,
-                                   'source_datetime_discharge_sim': time,
-                                   'source_datetime_from_discharge_sim': '*',
-                                   'source_datetime_to_discharge_sim': time_end,
-                                   'source_sub_path_time_discharge_obs': time,
-                                   'source_datetime_discharge_obs': time,
-                                   'source_datetime_from_discharge_obs': '*',
-                                   'source_datetime_to_discharge_obs': time_end,
-                                   'ancillary_sub_path_time_discharge': time,
-                                   'ancillary_datetime_discharge': time,
-                                   'mask_name': '*',
-                                   'scenario_discharge': '*'}
+            section_path_obj = {}
+            for time_step in time_range:
 
-            if section_name_list is None:
-                folder_name_def = fill_tags2string(folder_name_raw, alg_template_tags, alg_template_values)
-                file_name_def = fill_tags2string(file_name_raw, alg_template_tags, alg_template_values)
+                alg_template_values = {'domain_name': domain_name,
+                                       #"section_description": section_description_obj[domain_name],
+                                       'source_sub_path_time_discharge_sim': time_step,
+                                       'source_datetime_discharge_sim': time_step,
+                                       'source_datetime_from_discharge_sim': '*',
+                                       'source_datetime_to_discharge_sim': time_step,
+                                       'source_sub_path_time_discharge_obs': time_step,
+                                       'source_datetime_discharge_obs': time_step,
+                                       'source_datetime_from_discharge_obs': '*',
+                                       'source_datetime_to_discharge_obs': time_step,
+                                       'ancillary_sub_path_time_discharge': time_step,
+                                       'ancillary_datetime_discharge': time_step,
+                                       'mask_name': '*',
+                                       'scenario_discharge': '*'}
 
-                file_path_def = os.path.join(folder_name_def, file_name_def)
+                if section_name_list is None:
 
-                section_path_found = glob.glob(file_path_def)
-                if file_name_elem is not None:
-                    section_path_obj = []
-                    for section_path_step in section_path_found:
-                        folder_name_step, file_name_step = os.path.split(section_path_step)
-                        if (file_name_prefix is not None) and (file_name_suffix is None):
-                            if file_name_step.startswith(file_name_prefix):
+                    log_stream.error(' ===> Section name list must be defined. Old codes are available')
+                    raise SyntaxError('Check the codes, before uncomment the block')
 
-                                prefix_check = False
-                                file_name_parts = file_name_step.split(file_name_sep)
-                                file_prefix_parts = file_name_prefix.split(file_name_sep)
-                                if file_name_parts.__len__() == file_name_elem:
-                                    for prefix_id, prefix_step in enumerate(file_prefix_parts):
-                                        if prefix_step == file_name_parts[prefix_id]:
-                                            prefix_check = True
-                                        else:
-                                            prefix_check = False
-                                            break
-                                    if prefix_check:
-                                        section_path_obj.append(section_path_step)
-
-                        elif (file_name_suffix is not None) and (file_name_prefix is None):
-                            if file_name_step.endswith(file_name_suffix):
-                                section_path_obj.append(section_path_step)
-                        else:
-                            log_stream.error(' ===> Filter using "prefix" and "suffix" is not supported ')
-                            raise NotImplementedError('Case not implemented yet')
-                else:
-                    section_path_obj = deepcopy(section_path_found)
-
-                if not section_path_obj:
-
-                    log_stream.error(' ===> Discharge simulated file are not available using the following ' +
-                                     file_path_def + '. Try to use unfilled template string')
-
-                    file_name_root = deepcopy(file_name_raw)
-                    for template_key, template_value in alg_template_tags.items():
-                        string_key = '{' + template_key + '}'
-
-                        file_name_root = file_name_root.replace(string_key, '*')
-
-                    file_part_start = file_name_root.split('*')[0]
-                    file_part_end = file_name_root.split('*')[-1]
-
-                    file_part_merge = ''
-                    if file_part_start == file_part_end:
-                        file_part_merge = file_part_start + '*'
-                    elif file_part_start != file_part_end:
-                        file_part_merge = file_part_start + '*' + file_part_end
-
-                    log_stream.warning(' ===> Discharge simulated file are not available using the following ' +
-                                       file_name_def + '. Try to use unfilled template string ' + file_part_merge)
-
-                    file_path_def = os.path.join(folder_name_def, file_part_merge)
-                    section_path_obj = glob.glob(file_path_def)
-
-                section_path_obj.sort(reverse=file_sort_descending)
-            else:
-                section_path_obj = {}
-                for section_name_step in section_name_list:
-
-                    section_name_all, section_name_part1, section_name_part2 = None, None, None
-                    if '_' in section_name_step:
-                        section_name_parts = section_name_step.split('_')
-                        if section_name_parts.__len__() == 2:
-                            section_name_part1, section_name_part2 = section_name_parts[0], section_name_parts[1]
-                        else:
-                            log_stream.error(' ===> Section name must be defined by two elements')
-                            raise RuntimeError('Define string using two elements with "_" separator')
-                    else:
-                        section_name_all = deepcopy(section_name_step)
-
-                    alg_template_extra = {'section_name': section_name_all,
-                                          'section_name_part1': section_name_part1,
-                                          'section_name_part2': section_name_part2
-                                          }
-
-                    alg_template_values = {**alg_template_values, **alg_template_extra}
-
+                    '''
                     folder_name_def = fill_tags2string(folder_name_raw, alg_template_tags, alg_template_values)
                     file_name_def = fill_tags2string(file_name_raw, alg_template_tags, alg_template_values)
 
                     file_path_def = os.path.join(folder_name_def, file_name_def)
 
-                    file_path_list = glob.glob(file_path_def)
-                    file_path_list.sort(reverse=file_sort_descending)
+                    section_path_found = glob.glob(file_path_def)
+                    if file_name_elem is not None:
+                        section_path_obj = []
+                        for section_path_step in section_path_found:
+                            folder_name_step, file_name_step = os.path.split(section_path_step)
+                            if (file_name_prefix is not None) and (file_name_suffix is None):
+                                if file_name_step.startswith(file_name_prefix):
 
-                    section_path_obj[section_name_step] = file_path_list
+                                    prefix_check = False
+                                    file_name_parts = file_name_step.split(file_name_sep)
+                                    file_prefix_parts = file_name_prefix.split(file_name_sep)
+                                    if file_name_parts.__len__() == file_name_elem:
+                                        for prefix_id, prefix_step in enumerate(file_prefix_parts):
+                                            if prefix_step == file_name_parts[prefix_id]:
+                                                prefix_check = True
+                                            else:
+                                                prefix_check = False
+                                                break
+                                        if prefix_check:
+                                            section_path_obj.append(section_path_step)
+
+                            elif (file_name_suffix is not None) and (file_name_prefix is None):
+                                if file_name_step.endswith(file_name_suffix):
+                                    section_path_obj.append(section_path_step)
+                            else:
+                                log_stream.error(' ===> Filter using "prefix" and "suffix" is not supported ')
+                                raise NotImplementedError('Case not implemented yet')
+                    else:
+                        section_path_obj = deepcopy(section_path_found)
+
+                    if not section_path_obj:
+
+                        log_stream.error(' ===> Discharge simulated file are not available using the following ' +
+                                         file_path_def + '. Try to use unfilled template string')
+
+                        file_name_root = deepcopy(file_name_raw)
+                        for template_key, template_value in alg_template_tags.items():
+                            string_key = '{' + template_key + '}'
+
+                            file_name_root = file_name_root.replace(string_key, '*')
+
+                        file_part_start = file_name_root.split('*')[0]
+                        file_part_end = file_name_root.split('*')[-1]
+
+                        file_part_merge = ''
+                        if file_part_start == file_part_end:
+                            file_part_merge = file_part_start + '*'
+                        elif file_part_start != file_part_end:
+                            file_part_merge = file_part_start + '*' + file_part_end
+
+                        log_stream.warning(' ===> Discharge simulated file are not available using the following ' +
+                                           file_name_def + '. Try to use unfilled template string ' + file_part_merge)
+
+                        file_path_def = os.path.join(folder_name_def, file_part_merge)
+                        section_path_obj = glob.glob(file_path_def)
+
+                    section_path_obj.sort(reverse=file_sort_descending)
+                    '''
+                else:
+
+                    for section_name_step in section_name_list:
+
+                        if section_name_step not in list(section_path_obj.keys()):
+                            section_path_obj[section_name_step] = {}
+
+                        section_name_all, section_name_part1, section_name_part2 = None, None, None
+                        if '_' in section_name_step:
+                            section_name_parts = section_name_step.split('_')
+                            if section_name_parts.__len__() == 2:
+                                section_name_part1, section_name_part2 = section_name_parts[0], section_name_parts[1]
+                            else:
+                                log_stream.error(' ===> Section name must be defined by two elements')
+                                raise RuntimeError('Define string using two elements with "_" separator')
+                        else:
+                            section_name_all = deepcopy(section_name_step)
+
+                        alg_template_extra = {'section_name': section_name_all,
+                                              'section_name_part1': section_name_part1,
+                                              'section_name_part2': section_name_part2
+                                              }
+
+                        alg_template_values = {**alg_template_values, **alg_template_extra}
+
+                        folder_name_def = fill_tags2string(folder_name_raw, alg_template_tags, alg_template_values)
+                        file_name_def = fill_tags2string(file_name_raw, alg_template_tags, alg_template_values)
+
+                        file_path_def = os.path.join(folder_name_def, file_name_def)
+
+                        file_path_list = glob.glob(file_path_def)
+                        file_path_list.sort(reverse=file_sort_descending)
+
+                        file_path_select = []
+                        if file_path_list:
+
+                            for file_path_step in file_path_list:
+                                file_root_step, file_ext_step = os.path.splitext(file_path_step)
+                                folder_name_step, file_name_step = os.path.split(file_root_step)
+
+                                file_parts_list = file_name_step.split('_')
+                                if file_name_prefix is not None:
+                                    file_default_prefix = file_name_prefix.split('_')
+                                else:
+                                    file_default_prefix = None
+
+                                if file_default_prefix:
+                                    if file_parts_list:
+                                        file_prefix_list = []
+                                        for file_parts_step in file_parts_list:
+                                            if file_parts_step.isalpha():
+                                                file_prefix_list.append(file_parts_step)
+
+                                        if set(file_prefix_list) == set(file_default_prefix):
+                                            file_path_select.append(file_path_step)
+
+                                    else:
+                                        file_path_select.append(file_path_step)
+                                else:
+                                    file_path_select.append(file_path_step)
+
+                        section_path_obj[section_name_step][time_step] = {}
+                        if file_path_select:
+                            section_path_obj[section_name_step][time_step] = file_path_select
+                        else:
+                            section_path_obj[section_name_step][time_step] = None
+                            log_stream.warning(' ===> Section file list is empty. Check if files are available or not.')
 
             file_path_dict[domain_name] = section_path_obj
 
@@ -745,7 +885,7 @@ class DriverDischarge:
 
     # -------------------------------------------------------------------------------------
     # Method to organize simulated discharge
-    def organize_discharge_sim(self, data_type='simulated'):
+    def organize_discharge_sim(self, data_type='simulated', data_reverse=True):
 
         time_run = self.time_run
         geo_data_collection = self.geo_data_collection
@@ -784,26 +924,47 @@ class DriverDischarge:
 
                     if section_name in list(file_path_discharge.keys()):
 
-                        file_path_data = file_path_discharge[section_name]
-                        log_stream.info(' ------> File path(s): "' + ','.join(file_path_data) + '"')
-                        driver_type = DriverType(
-                            section_name, file_path_data,
-                            file_time=file_time_discharge,
-                            variables_names=self.variables_discharge_sim,
-                            file_type=self.type_sim,
-                            data_type=data_type,
-                            method_data_occurrence=self.method_data_occurrence_sim,
-                            method_data_filling=self.method_data_filling_sim)
+                        file_path_workspace = file_path_discharge[section_name]
 
-                        section_dframe = driver_type.get_data()
-                        if section_dframe is not None:
-                            log_stream.info(' ------> Section "' + section_description + '" ... DONE')
+                        if (file_path_workspace is not None) and (isinstance(file_path_workspace, dict)):
+
+                            file_path_list, file_path_tmp = [], []
+                            for time_step, file_path_step in file_path_workspace.items():
+                                file_path_tmp.extend(file_path_step)
+                            file_path_list = sorted(list(set(file_path_tmp)))
+                            if data_reverse:
+                                file_path_list = file_path_list[::-1]
+
+                            log_stream.info(' -------> Get data ... ')
+                            for file_id, file_path_step in enumerate(file_path_list):
+                                log_stream.info('   (' + str(file_id + 1) + ') File: "' + file_path_step + '"')
+
+                            # Set data driver
+                            driver_type = DriverType(
+                                section_name, file_path_list,
+                                file_time=file_time_discharge,
+                                variables_names=self.file_variables_discharge_sim,
+                                file_type=self.file_type_sim,
+                                data_type=data_type,
+                                method_data_occurrence=self.method_data_occurrence_sim,
+                                method_data_filling=self.method_data_filling_sim)
+                            # Get data
+                            section_dframe = driver_type.get_data()
+
+                            log_stream.info(' -------> Get data ... DONE')
+
+                            if section_dframe is not None:
+                                log_stream.info(' ------> Section "' + section_description + '" ... DONE')
+                            else:
+                                log_stream.info(' ------> Section "' + section_description +
+                                                '" ... SKIPPED. Datasets are not available')
                         else:
                             log_stream.info(' ------> Section "' + section_description +
-                                            '" ... SKIPPED. Files not available')
+                                            '" ... SKIPPED. File(s) is/are not available')
+                            section_dframe = None
                     else:
                         log_stream.info(' ------> Section "' + section_description +
-                                        '" ... SKIPPED. Section not available')
+                                        '" ... SKIPPED. Section is not available')
                         section_dframe = None
 
                     section_workspace[section_description] = section_dframe
@@ -954,7 +1115,7 @@ class DriverDischarge:
 
     # -------------------------------------------------------------------------------------
     # Method to organize observed discharge
-    def organize_discharge_obs(self, data_type='observed'):
+    def organize_discharge_obs(self, data_type='observed', data_reverse=True):
 
         time_run = self.time_run
         geo_data_collection = self.geo_data_collection
@@ -993,20 +1154,44 @@ class DriverDischarge:
 
                     if section_name in list(file_path_discharge.keys()):
 
-                        file_path_data = file_path_discharge[section_name]
+                        file_path_workspace = file_path_discharge[section_name]
 
-                        driver_type = DriverType(
-                            section_name, file_path_data,
-                            file_time=file_time_discharge,
-                            variables_names=self.variables_obs,
-                            file_type=self.type_obs,
-                            data_type=data_type,
-                            method_data_occurrence=self.method_data_occurrence_obs,
-                            method_data_filling=self.method_data_filling_obs)
+                        if (file_path_workspace is not None) and (isinstance(file_path_workspace, dict)):
 
-                        section_dframe = driver_type.get_data()
+                            file_path_list, file_path_tmp = [], []
+                            for time_step, file_path_step in file_path_workspace.items():
+                                file_path_tmp.extend(file_path_step)
+                            file_path_list = sorted(list(set(file_path_tmp)))
+                            if data_reverse:
+                                file_path_list = file_path_list[::-1]
 
-                        log_stream.info(' ------> Section "' + section_description + '" ... DONE')
+                            log_stream.info(' -------> Get data ... ')
+                            for file_id, file_path_step in enumerate(file_path_list):
+                                log_stream.info('   (' + str(file_id + 1) + ') File: "' + file_path_step + '"')
+
+                            # Set data driver
+                            driver_type = DriverType(
+                                section_name, file_path_list,
+                                file_time=file_time_discharge,
+                                variables_names=self.file_variables_discharge_obs,
+                                file_type=self.file_type_obs,
+                                data_type=data_type,
+                                method_data_occurrence=self.method_data_occurrence_obs,
+                                method_data_filling=self.method_data_filling_obs)
+                            # Get data
+                            section_dframe = driver_type.get_data()
+
+                            log_stream.info(' -------> Get data ... DONE')
+
+                            if section_dframe is not None:
+                                log_stream.info(' ------> Section "' + section_description + '" ... DONE')
+                            else:
+                                log_stream.info(' ------> Section "' + section_description +
+                                                '" ... SKIPPED. Datasets are not available')
+                        else:
+                            log_stream.info(' ------> Section "' + section_description +
+                                            '" ... SKIPPED. File(s) is/are not available')
+                            section_dframe = None
                     else:
                         log_stream.info(' ------> Section "' + section_description + '" ... SKIPPED. Datasets are empty')
                         section_dframe = None

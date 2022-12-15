@@ -18,6 +18,7 @@ from copy import deepcopy
 from lib_utils_geo import read_file_geo, check_epsg_code
 from lib_utils_hydraulic import read_file_hydraulic
 
+from lib_utils_tr import get_tr_params
 from lib_utils_io import read_obj, write_obj
 from lib_utils_system import fill_tags2string, make_folder
 from lib_utils_generic import convert_array_2_list
@@ -146,6 +147,35 @@ class DriverGeo:
                 os.remove(file_path)
 
         return file_path
+    # -------------------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------------------
+    # Method to define section tr
+    @staticmethod
+    def organize_section_tr(section_info):
+
+        log_stream.info(' -----> Organize section tr ... ')
+
+        for section_tag_ref, section_fields_ref in section_info.items():
+            section_name_ref = section_fields_ref['section_description']
+
+            log_stream.info(' ------> Section "' + section_name_ref + '" ... ')
+
+            section_par_a, section_par_b, section_par_correction_factor, \
+                section_par_tr, section_par_qr = get_tr_params(section_tag_ref)
+
+            section_info[section_tag_ref]['section_par_a'] = section_par_a
+            section_info[section_tag_ref]['section_par_b'] = section_par_b
+            section_info[section_tag_ref]['section_par_correction_factor'] = section_par_correction_factor
+            section_info[section_tag_ref]['section_par_qr'] = section_par_tr
+            section_info[section_tag_ref]['section_par_tr'] = section_par_qr
+
+            log_stream.info(' ------> Section "' + section_name_ref + '" ... DONE')
+
+        log_stream.info(' -----> Organize section tr ... DONE')
+
+        return section_info
+
     # -------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------
@@ -478,6 +508,7 @@ class DriverGeo:
                 section_data = self.organize_section_geo(geo_data)
                 section_data = self.organize_section_hydraulic(section_data, hydraulic_data)
                 section_data = self.organize_section_links(section_data)
+                section_data = self.organize_section_tr(section_data)
 
                 map_data = self.organize_map_geo(geo_data)
 
