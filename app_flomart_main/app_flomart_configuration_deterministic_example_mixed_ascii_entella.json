@@ -10,16 +10,16 @@
     },
     "flags": {
       "cleaning_static_data": true,
-      "cleaning_ancillary_data_discharge_obs": true,
-      "cleaning_ancillary_data_discharge_sim": true,
-      "cleaning_ancillary_data_scenario_info": true,
+      "cleaning_ancillary_data_discharge_obs": false,
+      "cleaning_ancillary_data_discharge_sim": false,
+      "cleaning_ancillary_data_scenario_info": false,
       "cleaning_ancillary_data_scenario_file": true,
       "cleaning_ancillary_data_scenario_maps": true,
       "cleaning_dynamic_plot": true,
       "cleaning_dynamic_data": true
     },
     "ancillary": {
-      "__comment__": "scenario_discharge_correction_factor: [1.16 (liguria), 0.1486 (marche)], scenario_analysis: [max_period, all_period], scenario_tiling: [rounded, weighted], scenario_type: [observed, simulated, mixed], scenario_method: [max]",
+      "__comment__": "scenario_analysis: [max_period, all_period], scenario_tiling: [rounded, weighted], scenario_type: [observed, simulated, mixed], scenario_method: [max]",
       "domain_name" : ["Entella"],
       "tr_min" : 1,
       "tr_max" : 150,
@@ -27,7 +27,7 @@
       "scenario_tiling": "weighted",
       "scenario_boundary": "both",
       "scenario_analysis": "all_period",
-      "scenario_type": "simulated"
+      "scenario_type": "mixed"
     },
     "template": {
       "tr": "string_tr",
@@ -59,7 +59,7 @@
         "geo_data": {
           "generic": {
             "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_static/opchain_liguria/geo_data/",
-            "file_name": "info_{domain_name}Completo.mat"
+            "file_name": "info_{domain_name}.mat"
           },
           "hydraulic": {
             "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/flomart-ws/data_static/opchain_liguria/geo_data/",

@@ -23,6 +23,16 @@ log_stream = logging.getLogger(logger_name)
 # -------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------
+# File Variable(s) - Version 1
+# AreeCompetenza, EPSG_domain, LonArea, LatArea, LatLL, LatUR, LonLL, LonUR,
+# bacino_sezione_sort, nomi_sezioni_sort, indici_sort, a1dQindex,
+# mappa_aree, mappa_aree_allargata, drainage_area_section_km2
+
+# File Variable(s) - Version 2
+# AreeCompetenza, EPSG_domain, {LonArea}, {LatArea}, LatLL, LatUR, LonLL, LonUR,
+# bacino_sezione_sort, nomi_sezioni_sort, indici, a1dQindex_sort,
+# mappa_aree, mappa_aree_allargata, drainage_area_section_km2
+
 # Geographical lookup table
 geo_lookup_table = {'AreeCompetenza': 'area_reference_id',
                     'EPSG_domain': 'area_epsg_code',
@@ -30,9 +40,19 @@ geo_lookup_table = {'AreeCompetenza': 'area_reference_id',
                     'LatLL': 'coord_bottom_y', 'LatUR': 'coord_top_y',
                     'LonLL': 'coord_left_x', 'LonUR': 'coord_right_x',
                     'bacino_sezione_sort': 'section_description', 'nomi_sezioni_sort': 'section_name',
-                    'indici_sort': 'section_id', 'a1dQindex': 'section_discharge_idx',
+                    'indici': 'section_id', 'a1dQindex_sort': 'section_discharge_idx',
                     'mappa_aree': 'area_mask', 'mappa_aree_allargata': 'area_mask_extended',
                     'drainage_area_section_km2': 'section_drainage_area'}
+# Geographical type table
+geo_type_table = {'AreeCompetenza': 'ancillary',
+                  'EPSG_domain': 'mandatory',
+                  'LonArea': 'ancillary', 'LatArea': 'ancillary',
+                  'LatLL': 'mandatory', 'LatUR': 'mandatory',
+                  'LonLL': 'mandatory', 'LonUR': 'mandatory',
+                  'bacino_sezione_sort': 'mandatory', 'nomi_sezioni_sort': 'mandatory',
+                  'indici': 'mandatory', 'a1dQindex_sort': 'section_discharge_idx',
+                  'mappa_aree': 'area_mask', 'mappa_aree_allargata': 'mandatory',
+                  'drainage_area_section_km2': 'mandatory'}
 # -------------------------------------------------------------------------------------
 
 
@@ -45,10 +65,34 @@ def read_file_geo(file_name, excluded_fields=None):
 
     if file_name.endswith('mat'):
 
+        # read geo datasets
         file_data = read_mat(file_name)
 
+        # check the keys in type and the lut dict(s)
+        key_list_lut = sorted(list(geo_lookup_table.keys()))
+        key_list_type = sorted(list(geo_type_table.keys()))
+        if key_list_lut != key_list_type:
+            log_stream.error(' ===> Geographical LUT and Type lists are not the same')
+            raise RuntimeError('The keys must be the same in both lists')
+
+        # check fields
+        for file_key, file_type in geo_type_table.items():
+            if file_key not in list(file_data.keys()):
+                if file_type == 'mandatory':
+                    log_stream.error(' ===> File mandatory field "' + file_key +
+                                     '" is not find in the geographical reference file "' + file_name + '"')
+                    raise RuntimeError('Field is mandatory and must be in the geographical reference file')
+                elif file_type == 'ancillary':
+                    log_stream.warning(' ===> File ancillary field "' + file_key +
+                                       '" is not find in the geographical reference file "' + file_name + '"')
+                else:
+                    log_stream.error(' ===> File type "' + file_type + '" is not supported')
+                    raise NotImplementedError('Case not implemented yet')
+
+        # organize fields
         file_collections = {}
         for file_key, file_values in file_data.items():
+
             if (file_key not in excluded_fields) and (file_key in list(geo_lookup_table.keys())):
                 var_idx = list(geo_lookup_table.keys()).index(file_key)
                 var_name = list(geo_lookup_table.values())[var_idx]
@@ -81,6 +125,8 @@ def check_epsg_code(epsg_value, epsg_prefix='EPSG', epsg_sep=':'):
         epsg_parts = re.findall(r'\d+', epsg_value)
 
         if isinstance(epsg_parts, list) and (epsg_parts.__len__() == 1):
+            epsg_value = epsg_parts[0]
+        elif isinstance(epsg_parts, list) and (epsg_parts.__len__() == 2):
             epsg_value = epsg_parts[0]
         else:
             log_stream.error(' ===> EPSG format is not supported')
