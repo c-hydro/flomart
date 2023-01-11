@@ -930,7 +930,8 @@ class DriverDischarge:
 
                             file_path_list, file_path_tmp = [], []
                             for time_step, file_path_step in file_path_workspace.items():
-                                file_path_tmp.extend(file_path_step)
+                                if file_path_step is not None:
+                                    file_path_tmp.extend(file_path_step)
                             file_path_list = sorted(list(set(file_path_tmp)))
                             if data_reverse:
                                 file_path_list = file_path_list[::-1]
@@ -1160,7 +1161,8 @@ class DriverDischarge:
 
                             file_path_list, file_path_tmp = [], []
                             for time_step, file_path_step in file_path_workspace.items():
-                                file_path_tmp.extend(file_path_step)
+                                if file_path_step is not None:
+                                    file_path_tmp.extend(file_path_step)
                             file_path_list = sorted(list(set(file_path_tmp)))
                             if data_reverse:
                                 file_path_list = file_path_list[::-1]

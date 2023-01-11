@@ -939,6 +939,9 @@ class DriverScenario:
                                             if file_data_hazard_right is not None:
                                                 file_data_h_right = file_data_hazard_right[self.domain_scenario_hazard_name]
                                                 file_shape_h_right = file_data_h_right.shape
+
+                                                print(file_shape_h_right)
+                                                print(map_shape_data)
                                                 if (map_shape_data[0] != file_shape_h_right[0]) or \
                                                         (map_shape_data[1] != file_shape_h_right[1]):
                                                     log_stream.error(' ===> File hazard right "' + file_path_hazard_right +
