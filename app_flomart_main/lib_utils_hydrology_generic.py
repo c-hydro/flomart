@@ -24,38 +24,51 @@ log_stream = logging.getLogger(logger_name)
 
 
 # -------------------------------------------------------------------------------------
-# Method to read info file in ascii format
-def read_file_info_OLD(file_name, file_id, file_header=None, file_skip_rows=1,
-                   index_name=0, index_group_start=1, index_group_end=10):
+# method to map description hydro and hydraulic
+def map_description_hydro_2_hydraulic(hydro_data_in, hydraulic_data):
 
-    df_data_raw = pd.read_table(file_name, header=file_header, skiprows=file_skip_rows)
+    if hydro_data_in is not None:
+        section_data_out = {}
+        for section_id, section_fields in hydro_data_in.items():
+            section_description_tmp = section_fields['section_name']
 
-    name_list = list(df_data_raw.iloc[:, index_name])
-    id_list = [file_id] * name_list.__len__()
+            section_description_def, hydraulic_id = None, None
+            for hydraulic_id, hydraulic_fields in hydraulic_data.items():
 
-    data_tmp = df_data_raw.iloc[:, index_group_start:index_group_end].values
+                hydraulic_description = hydraulic_fields['description']
+                if 'alias' in list(hydraulic_fields.keys()):
+                    hydraulic_alias = hydraulic_fields['alias']
+                else:
+                    hydraulic_alias = None
 
-    data_collections = []
-    for data_step in data_tmp:
+                if section_description_tmp == hydraulic_description:
+                    section_description_def = deepcopy(section_description_tmp)
+                else:
+                    if hydraulic_alias is not None:
+                        if section_description_tmp in hydraulic_alias:
+                            idx_alias = hydraulic_alias.index(section_description_tmp)
+                            tmp_alias = hydraulic_alias[idx_alias]
+                            section_description_def = deepcopy(hydraulic_description)
 
-        data_parsed = []
-        for data_tmp in data_step:
-            if isinstance(data_tmp, str):
-                data_str = data_tmp.split(' ')
-                for data_char in data_str:
-                    data_parsed.append(int(data_char))
+                if section_description_def is not None:
+                    break
+
+            # fill the section fields
+            if section_description_def is not None:
+                # add fields to the hydro datasets
+                section_fields['section_name'] = section_description_def
+                # update the hydro tag according to the hydraulic tag
+                section_data_out[hydraulic_id] = section_fields
             else:
-                data_parsed.append(data_tmp)
+                log_stream.warning(' ===> Section "' + section_description_tmp +
+                                   '" is not available in the hydraulic description or alias')
+    else:
+        section_data_out = None
 
-        data_collections.append(data_parsed)
+    if section_data_out is not None:
+        section_data_out = dict(sorted(section_data_out.items()))
 
-    dict_data = {}
-    for name_step, id_step, data_step in zip(name_list, id_list, data_collections):
-        dict_data[name_step] = {}
-        dict_data[name_step]['id'] = id_step
-        dict_data[name_step]['dataset'] = data_step
-
-    return dict_data
+    return section_data_out
 # -------------------------------------------------------------------------------------
 
 

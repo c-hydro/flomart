@@ -10,8 +10,12 @@ Version:       '1.0.0'
 #######################################################################################
 # Library
 import logging
+import warnings
 import numpy as np
-import h5py
+try:
+    import h5py
+except ImportError:
+    warnings.warn(" ===> H5py library is not imported. File .mat will not correctly read")
 
 from copy import deepcopy
 

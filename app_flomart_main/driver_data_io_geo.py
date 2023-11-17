@@ -15,10 +15,13 @@ import numpy as np
 
 from copy import deepcopy
 
+from lib_utils_section import join_name_and_alias
 from lib_utils_geo import read_file_geo, check_epsg_code
-from lib_utils_hydraulic import read_file_hydraulic
+from lib_utils_hydraulic import read_file_hydraulic, map_description_section_2_hydraulic
+from lib_utils_hydrology_ascii import read_file_hydro_section
+from lib_utils_hydrology_generic import map_description_hydro_2_hydraulic
 
-from lib_utils_tr import get_tr_params
+from lib_utils_tr import get_tr_params, get_tr_file
 from lib_utils_io import read_obj, write_obj
 from lib_utils_system import fill_tags2string, make_folder
 from lib_utils_generic import convert_array_2_list
@@ -41,13 +44,14 @@ class DriverGeo:
     def __init__(self, src_dict, dst_dict,
                  alg_ancillary=None, alg_template_tags=None,
                  flag_geo_data='geo_data',
-                 flag_telemac_data='telemac_data', flag_hazard_data='hazard_data',
+                 flag_hydro_data='hydro_data', flag_hazard_data='hazard_data',
                  flag_geo_data_in='geo_data', flag_geo_data_out='geo_data',
                  flag_cleaning_geo=True):
 
         self.flag_geo_data = flag_geo_data
-        self.flag_telemac_data = flag_telemac_data
+        self.flag_hydro_data = flag_hydro_data
         self.flag_hazard_data = flag_hazard_data
+
         self.flag_geo_data_in = flag_geo_data_in
         self.flag_geo_data_out = flag_geo_data_out
 
@@ -56,18 +60,77 @@ class DriverGeo:
         self.alg_template_tags = alg_template_tags
         self.file_name_tag = 'file_name'
         self.folder_name_tag = 'folder_name'
+        self.file_type_tag = 'file_type'
 
         self.domain_name_list = self.alg_ancillary['domain_name']
+        if 'tr_method' in list(self.alg_ancillary.keys()):
+            self.method_tr = self.alg_ancillary['tr_method']
+        else:
+            self.method_tr = 'regional_method'
 
         self.folder_name_geo_in_generic = src_dict[self.flag_geo_data_in]['generic'][self.folder_name_tag]
         self.file_name_geo_in_generic = src_dict[self.flag_geo_data_in]['generic'][self.file_name_tag]
         self.folder_name_geo_in_hydraulic = src_dict[self.flag_geo_data_in]['hydraulic'][self.folder_name_tag]
         self.file_name_geo_in_hydraulic = src_dict[self.flag_geo_data_in]['hydraulic'][self.file_name_tag]
 
+        self.file_name_hydro_sections, self.folder_name_hydro_sections, self.file_type_hydro_sections = None, None, None
+        self.file_name_hydro_qt, self.folder_name_hydro_qt, self.file_type_hydro_qt = None, None, None
+        if self.flag_hydro_data in list(src_dict.keys()):
+            self.file_name_hydro_sections = src_dict[self.flag_hydro_data]['sections'][self.file_name_tag]
+            self.folder_name_hydro_sections = src_dict[self.flag_hydro_data]['sections'][self.folder_name_tag]
+            self.file_type_hydro_sections = src_dict[self.flag_hydro_data]['sections'][self.file_type_tag]
+            self.file_name_hydro_qt = src_dict[self.flag_hydro_data]['q_t'][self.file_name_tag]
+            self.folder_name_hydro_qt = src_dict[self.flag_hydro_data]['q_t'][self.folder_name_tag]
+            self.file_type_hydro_qt = src_dict[self.flag_hydro_data]['q_t'][self.file_type_tag]
+
+        self.file_name_hazard = src_dict[self.flag_hazard_data][self.file_name_tag]
+        self.folder_name_hazard = src_dict[self.flag_hazard_data][self.folder_name_tag]
+        self.file_type_hazard = src_dict[self.flag_hazard_data][self.file_type_tag]
+
         self.folder_name_geo_out = dst_dict[self.flag_geo_data_out][self.folder_name_tag]
         self.file_name_geo_out = dst_dict[self.flag_geo_data_out][self.file_name_tag]
 
         self.flag_cleaning_geo = flag_cleaning_geo
+
+    # -------------------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------------------
+    # method to read hydrological information
+    def read_hydro_info(self, domain_name):
+
+        log_stream.info(' ---> Read hydrological information ... ')
+
+        template_tags = self.alg_template_tags
+
+        if (self.file_name_hydro_sections is not None) and (self.folder_name_hydro_sections is not None):
+
+            folder_name_raw, file_name_raw = self.folder_name_hydro_sections, self.file_name_hydro_sections
+
+            template_values = {'domain_name': domain_name}
+            folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values)
+            if isinstance(folder_name_def, tuple):
+                folder_name_def = folder_name_def[0]
+            file_name_def = fill_tags2string(file_name_raw, template_tags, template_values)
+            if isinstance(file_name_def, tuple):
+                file_name_def = file_name_def[0]
+
+            if os.path.exists(os.path.join(folder_name_def, file_name_def)):
+                if file_name_def.endswith('txt'):
+                    hydrological_data = read_file_hydro_section(os.path.join(folder_name_def, file_name_def))
+                else:
+                    log_stream.error(' ===> Hydrological section file ' + file_name_def + ' format is not supported')
+                    raise NotImplementedError('Case not implemented yet')
+            else:
+                log_stream.error(' ===> Hydrological section file ' + file_name_def + ' not available')
+                raise IOError('Check your configuration file')
+
+            log_stream.info(' ---> Read hydrological information ... DONE')
+
+        else:
+            log_stream.info(' ---> Read hydrological information ... DATA NOT DEFINED')
+            hydrological_data = None
+
+        return hydrological_data
 
     # -------------------------------------------------------------------------------------
 
@@ -83,7 +146,11 @@ class DriverGeo:
 
         template_values = {'domain_name': domain_name}
         folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values)
+        if isinstance(folder_name_def, tuple):
+            folder_name_def = folder_name_def[0]
         file_name_def = fill_tags2string(file_name_raw, template_tags, template_values)
+        if isinstance(file_name_def, tuple):
+            file_name_def = file_name_def[0]
 
         if os.path.exists(os.path.join(folder_name_def, file_name_def)):
             if file_name_def.endswith('json'):
@@ -113,7 +180,11 @@ class DriverGeo:
 
         template_values = {'domain_name': domain_name}
         folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values)
+        if isinstance(folder_name_def, tuple):
+            folder_name_def = folder_name_def[0]
         file_name_def = fill_tags2string(file_name_raw, template_tags, template_values)
+        if isinstance(file_name_def, tuple):
+            file_name_def = file_name_def[0]
 
         if os.path.exists(os.path.join(folder_name_def, file_name_def)):
             if file_name_def.endswith('mat'):
@@ -139,7 +210,11 @@ class DriverGeo:
         template_values = {'domain_name': domain_name}
 
         folder_name = fill_tags2string(folder_name, template_tags, template_values)
+        if isinstance(folder_name, tuple):
+            folder_name = folder_name[0]
         file_name = fill_tags2string(file_name, template_tags, template_values)
+        if isinstance(file_name, tuple):
+            file_name = file_name[0]
         file_path = os.path.join(folder_name, file_name)
 
         if self.flag_cleaning_geo:
@@ -151,24 +226,76 @@ class DriverGeo:
 
     # -------------------------------------------------------------------------------------
     # Method to define section tr
-    @staticmethod
-    def organize_section_tr(section_info):
+    def organize_section_tr(self, section_info, domain_name):
 
         log_stream.info(' -----> Organize section tr ... ')
 
+        template_tags = self.alg_template_tags
+
         for section_tag_ref, section_fields_ref in section_info.items():
+
             section_name_ref = section_fields_ref['section_description']
+            if 'alias' in list(section_fields_ref.keys()):
+                section_alias_ref = section_fields_ref['alias']
+            else:
+                section_alias_ref = []
+
+            section_name_generic = [section_name_ref]
+            section_name_generic.extend(section_alias_ref)
 
             log_stream.info(' ------> Section "' + section_name_ref + '" ... ')
 
-            section_par_a, section_par_b, section_par_correction_factor, \
-                section_par_tr, section_par_qr = get_tr_params(section_tag_ref)
+            if self.method_tr == 'method_regional':
 
-            section_info[section_tag_ref]['section_par_a'] = section_par_a
-            section_info[section_tag_ref]['section_par_b'] = section_par_b
-            section_info[section_tag_ref]['section_par_correction_factor'] = section_par_correction_factor
-            section_info[section_tag_ref]['section_par_qr'] = section_par_tr
-            section_info[section_tag_ref]['section_par_tr'] = section_par_qr
+                section_par_a, section_par_b, section_par_correction_factor, \
+                    section_par_tr, section_par_qr = get_tr_params(section_name_ref)
+
+                section_info[section_tag_ref]['section_par_a'] = section_par_a
+                section_info[section_tag_ref]['section_par_b'] = section_par_b
+                section_info[section_tag_ref]['section_par_correction_factor'] = section_par_correction_factor
+                section_info[section_tag_ref]['section_par_qr'] = section_par_tr
+                section_info[section_tag_ref]['section_par_tr'] = section_par_qr
+
+            elif self.method_tr == 'method_q_t':
+
+                file_type = self.file_type_hydro_qt
+                folder_name_raw, file_name_raw = self.folder_name_hydro_qt, self.file_name_hydro_qt
+
+                file_path_def = None
+                for section_name_tmp in section_name_generic:
+
+                    template_values = {'section_name': section_name_tmp, 'domain_name': domain_name}
+                    folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values)
+                    if isinstance(folder_name_def, tuple):
+                        folder_name_def = folder_name_def[0]
+                    file_name_def = fill_tags2string(file_name_raw, template_tags, template_values)
+                    if isinstance(file_name_def, tuple):
+                        file_name_def = file_name_def[0]
+
+                    if os.path.exists(os.path.join(folder_name_def, file_name_def)):
+                        file_path_def = os.path.join(folder_name_def, file_name_def)
+                        break
+
+                if file_path_def is not None:
+                    if file_type is not None:
+                        if file_type == 'csv':
+                            section_tr_series = get_tr_file(file_path_def)
+                            section_info[section_tag_ref]['section_q_t'] = section_tr_series
+                        else:
+                            log_stream.error(' ===> File type of tr "' + file_type + '" is not supported')
+                            raise NotImplemented('Case not implemented yet')
+                    else:
+                        log_stream.error(' ===> File type of tr is defined by NoneType')
+                        raise NotImplemented('Case not implemented yet')
+                else:
+                    log_stream.error(' ===> File tr was not defined by the procedure. '
+                                     'Probably the file does not exist. Check the section name(s).')
+                    raise RuntimeError("File tr must be defined to correctly run the algorithm")
+
+            else:
+                log_stream.error(' ===> Tr method "' + self.method_tr +
+                                 '" is not available. Supported methods are: "method_regional" or "method_q_t"')
+                raise NotImplemented('Case not implemented yet')
 
             log_stream.info(' ------> Section "' + section_name_ref + '" ... DONE')
 
@@ -210,8 +337,18 @@ class DriverGeo:
                     section_fields_step = None
 
                     for section_tag_tmp, section_fields_tmp in section_info.items():
-                        if section_fields_tmp['section_description'].lower() == section_name_step.lower():
-                            section_fields_step = section_fields_tmp.copy()
+
+                        section_field_list = join_name_and_alias(
+                            section_fields_tmp, field_description='section_description', field_alias='alias')
+                        section_name_tmp = section_name_step.lower()
+
+                        for section_field_step in section_field_list:
+                            section_field_step = section_field_step.lower()
+                            if section_field_step == section_name_tmp:
+                                section_fields_step = section_fields_tmp.copy()
+                                break
+
+                        if section_fields_step is not None:
                             break
 
                     section_drainage_area_step = None
@@ -253,8 +390,18 @@ class DriverGeo:
                     section_fields_step = None
 
                     for section_tag_tmp, section_fields_tmp in section_info.items():
-                        if section_fields_tmp['section_description'].lower() == section_name_step.lower():
-                            section_fields_step = section_fields_tmp.copy()
+
+                        section_field_list = join_name_and_alias(
+                            section_fields_tmp, field_description='section_description', field_alias='alias')
+                        section_name_tmp = section_name_step.lower()
+
+                        for section_field_step in section_field_list:
+                            section_field_step = section_field_step.lower()
+                            if section_field_step == section_name_tmp:
+                                section_fields_step = section_fields_tmp.copy()
+                                break
+
+                        if section_fields_step is not None:
                             break
 
                     section_drainage_area_step = None
@@ -356,7 +503,7 @@ class DriverGeo:
 
         if hydraulic_key_expected is None:
             hydraulic_key_expected = ['name_point_outlet', 'name_point_downstream',
-                                      'name_point_upstream', 'name_point_obs']
+                                      'name_point_upstream', 'name_point_obs', 'alias']
 
         section_data_tmp = deepcopy(section_data)
         for section_key, section_fields in section_data_tmp.items():
@@ -367,8 +514,23 @@ class DriverGeo:
             hydraulic_ws = None
             for hydraulic_id, hydraulic_fields in hydraulic_data.items():
                 hydraulic_description = hydraulic_fields['description']
-                if hydraulic_description == section_description:
-                    hydraulic_ws = deepcopy(hydraulic_fields)
+
+                if not isinstance(hydraulic_description, list):
+                    hydraulic_description = [hydraulic_description]
+
+                hydraulic_alias = None
+                if "alias" in list(hydraulic_fields.keys()):
+                    hydraulic_alias = hydraulic_fields['alias']
+
+                if hydraulic_alias is not None:
+                    hydraulic_description.extend(hydraulic_alias)
+
+                for hydraulic_tmp in hydraulic_description:
+                    if hydraulic_tmp == section_description:
+                        hydraulic_ws = deepcopy(hydraulic_fields)
+                        break
+
+                if hydraulic_ws is not None:
                     break
 
             if hydraulic_ws is not None:
@@ -502,17 +664,26 @@ class DriverGeo:
 
             if not os.path.exists(file_path_collections):
 
+                # get static information
                 geo_data = self.read_geo_info_generic(domain_name)
                 hydraulic_data = self.read_geo_info_hydraulic(domain_name)
+                hydro_data = self.read_hydro_info(domain_name)
 
+                # adjust section data from raw format
                 section_data = self.organize_section_geo(geo_data)
+
+                # remap description names (to match section and hydraulic objects)
+                section_data = map_description_section_2_hydraulic(section_data, hydraulic_data)
+                # remap description names (to match hydrological and hydraulic objects)
+                hydro_data = map_description_hydro_2_hydraulic(hydro_data, hydraulic_data)
+
                 section_data = self.organize_section_hydraulic(section_data, hydraulic_data)
                 section_data = self.organize_section_links(section_data)
-                section_data = self.organize_section_tr(section_data)
+                section_data = self.organize_section_tr(section_data, domain_name)
 
                 map_data = self.organize_map_geo(geo_data)
 
-                obj_data = {'section_data': section_data, 'map_data': map_data}
+                obj_data = {'section_data': section_data, 'map_data': map_data, 'hydro_data': hydro_data}
 
                 folder_name_collections, file_name_collections = os.path.split(file_path_collections)
                 make_folder(folder_name_collections)

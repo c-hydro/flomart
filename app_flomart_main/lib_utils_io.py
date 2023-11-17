@@ -10,6 +10,7 @@ Version:       '1.0.0'
 #######################################################################################
 # Libraries
 import logging
+import warnings
 import tempfile
 import os
 import json
@@ -19,7 +20,10 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 import scipy.io
-import h5py
+try:
+    import h5py
+except ImportError:
+    warnings.warn(" ===> H5py library is not imported. File .mat will not correctly read")
 
 from copy import deepcopy
 from rasterio.transform import Affine
@@ -118,11 +122,11 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
         if isinstance(file_value, list):
             file_value = [str(i) for i in file_value]
             file_value = file_sep.join(file_value)
-        elif isinstance(file_value, np.int):
+        elif isinstance(file_value, int):
             if np.isnan(value_step):
                 value_step = file_nodata
-            file_value = str(np.int(file_value))
-        elif isinstance(file_value, np.float):
+            file_value = str(int(file_value))
+        elif isinstance(file_value, float):
             if np.isnan(value_step):
                 value_step = file_nodata
             file_value = str(round(file_value, file_float_decimals))
@@ -141,11 +145,11 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
 
                         if isinstance(value_step, pd.Timestamp):
                             value_obj = value_step.strftime(time_format_algorithm)
-                        elif isinstance(value_step, np.int):
+                        elif isinstance(value_step, int):
                             if np.isnan(value_step):
                                 value_step = file_nodata
-                            value_obj = str(np.int(value_step))
-                        elif isinstance(value_step, np.float):
+                            value_obj = str(int(value_step))
+                        elif isinstance(value_step, float):
                             if np.isnan(value_step):
                                 value_step = file_nodata
                             value_obj = str(round(value_step, file_float_decimals))
@@ -164,11 +168,11 @@ def save_file_json(file_name, file_data_dict, file_indent=4, file_sep=',', file_
                             value_obj = value_step.strftime(time_format_algorithm)
                         elif isinstance(value_step, bool):
                             value_obj = str(deepcopy(value_step))
-                        elif isinstance(value_step, np.int):
+                        elif isinstance(value_step, int):
                             if np.isnan(value_step):
                                 value_step = file_nodata
-                            value_obj = str(np.int(value_step))
-                        elif isinstance(value_step, np.float):
+                            value_obj = str(int(value_step))
+                        elif isinstance(value_step, float):
                             if np.isnan(value_step):
                                 value_step = file_nodata
                             value_obj = str(round(value_step, file_float_decimals))

@@ -2,6 +2,21 @@
 Changelog
 =========
 
+Version 2.1.0 [2023-11-06]
+**************************
+- APP: app_flomart_main.py
+	- improve and refactor codes, methods and classes to adapt code to expected new cases and formats
+	- add method and classes to compute tr (method_regional, method_q_t)
+	- add q(t) file to extract the value of tr as function of q
+	- add discharge sources file (drift, hmc) and different formats and the sections file reader (for continuum txt data)
+
+- FIX: app_flomart_main.py
+	- fix "tr_left" boundary lower and "tr_right" boundary upper; add function to check the array of tr to try the
+	new settings in all cases and configurations
+	- fix weights for tr greater than tr_max
+	- fix numpy errors about int and float deprecated methods 
+	
+	
 Version 2.0.5 [2022-12-15]
 **************************
 - APP: app_flomart_main.py

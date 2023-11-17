@@ -313,6 +313,11 @@ class DriverDischarge:
             folder_name_def = fill_tags2string(folder_name_raw, alg_template_tags, alg_template_values)
             file_name_def = fill_tags2string(file_name_raw, alg_template_tags, alg_template_values)
 
+            if isinstance(folder_name_def, tuple):
+                folder_name_def = folder_name_def[0]
+            if isinstance(file_name_def, tuple):
+                file_name_def = file_name_def[0]
+
             file_path_def = os.path.join(folder_name_def, file_name_def)
 
             file_path_dict[domain_name] = file_path_def
@@ -473,7 +478,11 @@ class DriverDischarge:
                         alg_template_values = {**alg_template_values, **alg_template_extra}
 
                         folder_name_def = fill_tags2string(folder_name_raw, alg_template_tags, alg_template_values)
+                        if isinstance(folder_name_def, tuple):
+                            folder_name_def = folder_name_def[0]
                         file_name_def = fill_tags2string(file_name_raw, alg_template_tags, alg_template_values)
+                        if isinstance(file_name_def, tuple):
+                            file_name_def = file_name_def[0]
 
                         file_path_def = os.path.join(folder_name_def, file_name_def)
 
@@ -912,13 +921,26 @@ class DriverDischarge:
             if not os.path.exists(file_path_ancillary):
 
                 log_stream.info(' -----> Get datasets ... ')
+
+                # get geo section collection
                 section_geo_collection = geo_data_collection[domain_name_step]['section_data']
+                # get hydro section collection
+                if 'hydro_data' in list(geo_data_collection[domain_name_step].keys()):
+                    section_hydro_collection = geo_data_collection[domain_name_step]['hydro_data']
+                else:
+                    section_hydro_collection = None
 
                 section_workspace = {}
-                for section_key, section_data in section_geo_collection.items():
+                for section_key, section_geo_data in section_geo_collection.items():
 
-                    section_description = section_data['section_description']
-                    section_name = section_data['name_point_outlet']
+                    section_description = section_geo_data['section_description']
+                    section_name = section_geo_data['name_point_outlet']
+
+                    section_id = -1
+                    if section_hydro_collection is not None:
+                        if section_key in list(section_hydro_collection.keys()):
+                            section_hydro_data = section_hydro_collection[section_key]
+                            section_id = section_hydro_data['section_loc']
 
                     log_stream.info(' ------> Section "' + section_description + '" ... ')
 
@@ -943,6 +965,7 @@ class DriverDischarge:
                             # Set data driver
                             driver_type = DriverType(
                                 section_name, file_path_list,
+                                section_id=section_id,
                                 file_time=file_time_discharge,
                                 variables_names=self.file_variables_discharge_sim,
                                 file_type=self.file_type_sim,

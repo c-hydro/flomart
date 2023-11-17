@@ -111,3 +111,24 @@ def read_file_section(file_name, file_sep=';'):
     file_data = pd.read_csv(file_name, sep=file_sep)
     return file_data
 # -------------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------------
+# method to join name and alias
+def join_name_and_alias(data_obj, field_description='section_description', field_alias='alias'):
+
+    data_description, data_alias = data_obj[field_description], None
+    if field_alias in list(data_obj.keys()):
+        data_alias = data_obj[field_alias]
+
+    if not isinstance(data_description, list):
+        data_description = [data_description]
+    if data_alias is not None:
+        if not isinstance(data_alias, list):
+            data_alias = [data_alias]
+
+    if data_alias is not None:
+        data_description.extend(data_alias)
+
+    return data_description
+# -------------------------------------------------------------------------------------

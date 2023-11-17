@@ -94,6 +94,7 @@ def fill_tags2string(string_raw, tags_format=None, tags_filling=None, tags_templ
     apply_tags = False
     if string_raw is not None:
         for tag in list(tags_format.keys()):
+
             if tag in string_raw:
                 apply_tags = True
                 break
@@ -107,14 +108,14 @@ def fill_tags2string(string_raw, tags_format=None, tags_filling=None, tags_templ
             if tag_value is not None:
 
                 tag_id = tags_template.format(tag_id)
-                tag_dictionary[tag_id] = {'key': None, 'value': None}
+                tag_dictionary[tag_id] = {'key': None, 'type': None}
 
                 if tag_key_tmp in string_raw:
-                    tag_dictionary[tag_id] = {'key': tag_key, 'value': tag_value}
+                    tag_dictionary[tag_id] = {'key': tag_key, 'type': tag_value}
                     string_filled = string_raw.replace(tag_key_tmp, tag_id)
                     string_raw = string_filled
                 else:
-                    tag_dictionary[tag_id] = {'key': tag_key, 'value': None}
+                    tag_dictionary[tag_id] = {'key': tag_key, 'type': None}
 
         dim_max = 1
         for tags_filling_values_tmp in tags_filling.values():
@@ -125,15 +126,15 @@ def fill_tags2string(string_raw, tags_format=None, tags_filling=None, tags_templ
 
         string_filled_list = [string_filled] * dim_max
 
-        string_filled_def = []
+        string_filled_def, string_list_key, string_list_value, string_list_type = [], [], [], []
         for string_id, string_filled_step in enumerate(string_filled_list):
 
             for tag_dict_template, tag_dict_fields in tag_dictionary.items():
                 tag_dict_key = tag_dict_fields['key']
-                tag_dict_value = tag_dict_fields['value']
+                tag_dict_type = tag_dict_fields['type']
 
-                if tag_dict_template in string_filled_step:
-                    if tag_dict_value is not None:
+                if string_filled_step is not None and tag_dict_template in string_filled_step:
+                    if tag_dict_type is not None:
 
                         if tag_dict_key in list(tags_filling.keys()):
 
@@ -147,24 +148,40 @@ def fill_tags2string(string_raw, tags_format=None, tags_filling=None, tags_templ
                             string_filled_step = string_filled_step.replace(tag_dict_template, tag_dict_key)
 
                             if isinstance(value_filling, datetime):
-                                tag_dict_value = value_filling.strftime(tag_dict_value)
+                                tag_dict_value = value_filling.strftime(tag_dict_type)
                             elif isinstance(value_filling, (float, int)):
                                 tag_dict_value = tag_dict_key.format(value_filling)
                             else:
                                 tag_dict_value = value_filling
 
-                            string_filled_step = string_filled_step.replace(tag_dict_key, tag_dict_value)
+                            if tag_dict_value is None:
+                                tag_dict_undef = '{' + tag_dict_key + '}'
+                                string_filled_step = string_filled_step.replace(tag_dict_key, tag_dict_undef)
+
+                            if tag_dict_value:
+                                string_filled_step = string_filled_step.replace(tag_dict_key, tag_dict_value)
+                                string_list_key.append(tag_dict_key)
+                                string_list_value.append(tag_dict_value)
+                                string_list_type.append(tag_dict_type)
+                            else:
+                                log_stream.warning(' ===> The key "' + tag_dict_key + '" for "' + string_filled_step +
+                                                   '" is not correctly filled; the value is set to NoneType')
 
             string_filled_def.append(string_filled_step)
 
         if dim_max == 1:
-            string_filled_out = string_filled_def[0].replace('//', '/')
+            if string_filled_def[0]:
+                string_filled_out = string_filled_def[0].replace('//', '/')
+            else:
+                string_filled_out = []
         else:
             string_filled_out = []
             for string_filled_tmp in string_filled_def:
-                string_filled_out.append(string_filled_tmp.replace('//', '/'))
+                if string_filled_tmp:
+                    string_filled_out.append(string_filled_tmp.replace('//', '/'))
 
-        return string_filled_out
+        return string_filled_out, string_list_key, string_list_value, string_list_type
     else:
-        return string_raw
+        string_list_key, string_list_value, string_list_type = [], [], []
+        return string_raw, string_list_key, string_list_value, string_list_type
 # -------------------------------------------------------------------------------------

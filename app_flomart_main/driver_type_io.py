@@ -3,26 +3,25 @@ Class Features
 
 Name:          driver_type_io
 Author(s):     Fabio Delogu (fabio.delogu@cimafoundation.org)
-Date:          '20220630'
-Version:       '1.0.0'
+Date:          '20231114'
+Version:       '1.1.0'
 """
 
 ######################################################################################
 # Library
 import logging
 import os
-
-from copy import deepcopy
-
 import pandas as pd
 
 from lib_utils_hydrology_generic import analyze_obj_hydro, create_obj_hydro
 
 from lib_utils_hydrology_generic import fill_obj_hydro
 
-from lib_utils_hydrology_ascii import read_file_hydro_sim as read_file_hydro_sim_ascii
+from lib_utils_hydrology_ascii import read_file_hydro_sim_drift as read_file_hydro_sim_ascii_drift
+from lib_utils_hydrology_ascii import read_file_hydro_sim_hmc as read_file_hydro_sim_ascii_hmc
 from lib_utils_hydrology_ascii import read_file_hydro_obs as read_file_hydro_obs_ascii
 from lib_utils_hydrology_ascii import parse_file_hydro_name as parse_file_hydro_name_ascii
+from lib_utils_hydrology_ascii import get_file_hydro_time as get_file_hydro_time_ascii
 from lib_utils_hydrology_ascii import create_file_hydro_tag as create_file_hydro_tag_ascii
 
 from lib_utils_hydrology_mat import read_file_hydro_obs as read_file_hydro_obs_mat
@@ -32,7 +31,6 @@ from lib_utils_hydrology_mat import create_file_hydro_tag as create_file_hydro_t
 from lib_utils_hydrology_json import read_file_hydro as read_file_hydro_json
 from lib_utils_hydrology_json import parse_file_hydro_name as parse_file_hydro_name_json
 from lib_utils_hydrology_json import create_file_hydro_tag as create_file_hydro_tag_json
-
 
 from lib_info_args import logger_name
 
@@ -50,10 +48,12 @@ class DriverType:
     # -------------------------------------------------------------------------------------
     # Initialize class
     def __init__(self, section_name, file_name, file_time, variables_names,
+                 section_id=-1,
                  file_type='json', data_type='simulated',
                  method_data_filling='ffill', method_data_occurrence='all'):
 
         self.section_name = section_name
+        self.section_id = section_id
         self.file_name = file_name
         self.file_time = file_time
         self.variables_names = variables_names
@@ -67,10 +67,17 @@ class DriverType:
     # Method to get data
     def get_data(self):
 
-        if self.file_type == 'ascii_arpal_sim':
+        if (self.file_type == 'ascii_arpal_sim') or (self.file_type == 'ascii_arpal_sim_drift'):
             section_ts = self.wrap_data_ascii(
-                self.section_name, self.file_name, self.file_time, file_data=self.data_type,
-                file_method_filling=self.method_data_filling, file_method_occurrence=self.method_data_occurrence)
+                self.section_name, self.section_id, self.file_name, self.file_time, file_data=self.data_type,
+
+                file_method_filling=self.method_data_filling, file_method_occurrence=self.method_data_occurrence,
+                file_type='drift')
+        elif self.file_type == 'ascii_arpal_sim_hmc':
+            section_ts = self.wrap_data_ascii(
+                self.section_name, self.section_id, self.file_name, self.file_time, file_data=self.data_type,
+                file_method_filling=self.method_data_filling, file_method_occurrence=self.method_data_occurrence,
+                file_type='hmc')
         elif self.file_type == 'ascii_arpal_obs':
             section_ts = self.wrap_data_ascii(
                 self.section_name, self.file_name, self.file_time, file_data=self.data_type,
@@ -101,48 +108,65 @@ class DriverType:
     # -------------------------------------------------------------------------------------
     # # Method to wrap ascii data
     @staticmethod
-    def wrap_data_ascii(section_name, file_path_list, file_time,
+    def wrap_data_ascii(section_name, section_id, file_path_list, file_time,
                         file_data='simulated',
-                        file_method_occurrence='first', file_method_filling='ffill'):
+                        file_method_occurrence='first', file_method_filling='ffill', file_type='drift'):
 
+        # check file list format
         if not isinstance(file_path_list, list):
             file_path_list = [file_path_list]
 
+        # iterate over file list
         section_ts_discharge, section_ts_water_level, section_dframe_discharge = None, None, None
         for file_path_step in file_path_list:
 
+            # get section series obj
             if file_data == 'simulated':
-                section_ts_discharge = read_file_hydro_sim_ascii(section_name, file_path_step)
+                if file_type == 'drift':
+                    section_ts_discharge = read_file_hydro_sim_ascii_drift(section_name, file_path_step)
+                elif file_type == 'hmc':
+                    section_ts_discharge = read_file_hydro_sim_ascii_hmc(section_name, section_id, file_path_step)
+                else:
+                    log_stream.error(' ===> File type "' + file_type + '" is not supported')
+                    raise NotImplementedError('Case not implemented yet')
             elif file_data == 'observed':
                 section_ts_discharge, section_ts_water_level = read_file_hydro_obs_ascii(section_name, file_path_step)
             else:
                 log_stream.error(' ===> File data "' + file_data + '" is not supported')
                 raise NotImplementedError('Case not implemented yet')
 
+            # check section series object
             if section_ts_discharge is not None:
 
+                # get folder and file name(s)
                 folder_name_step, file_name_step = os.path.split(file_path_step)
-
+                # initialize dataframe object
                 if section_dframe_discharge is None:
                     section_dframe_discharge = pd.DataFrame(index=file_time)
 
+                # method to fill empty step(s)
                 section_ts_discharge = fill_obj_hydro(
                     obj_hydro=section_ts_discharge, obj_method_filling=file_method_filling)
+                # method to get file time(s)
+                file_time_start, file_time_end = get_file_hydro_time_ascii(section_ts_discharge)
 
+                # method to parse file name(s)
                 file_part_timestamp_start, file_part_timestamp_end, \
                     file_part_mask, file_part_n_ens = parse_file_hydro_name_ascii(
-                        file_name_step, file_data=file_data)
-
+                        file_name_step, file_data=file_data,
+                        file_time_start=file_time_start, file_time_end=file_time_end)
+                # method to create file tag(s)
                 file_tag = create_file_hydro_tag_ascii(
                     file_part_timestamp_start, file_part_timestamp_end, file_part_n_ens, section_name)
-
+                # organize file attributes
                 section_ts_discharge.attrs = {
                     'file_name': file_name_step, 'section_name': section_name,
                     'file_mask': file_part_mask, 'file_ensemble': file_part_n_ens, 'file_tag': file_tag,
                     'time_start': file_part_timestamp_start, 'time_end': file_part_timestamp_end}
-
+                # store data according to file tag
                 section_dframe_discharge[file_tag] = section_ts_discharge
 
+            # keep the occurrence of the first file or all file(s)
             if section_dframe_discharge is not None:
                 if file_method_occurrence == 'first':
                     break
@@ -152,6 +176,7 @@ class DriverType:
                     log_stream.error(' ===> File occurrence "' + file_method_occurrence + '" is not supported')
                     raise NotImplementedError('Case not implemented yet')
 
+        # check the section collections object
         if section_dframe_discharge is None:
             log_stream.warning(' ===> Dataframe for section "' + section_name + '" is empty')
 

@@ -3,8 +3,8 @@ Library Features:
 
 Name:          lib_utils_hydrology_ascii
 Author(s):     Fabio Delogu (fabio.delogu@cimafoundation.org)
-Date:          '20220208'
-Version:       '1.0.0'
+Date:          '20231114'
+Version:       '1.1.0'
 """
 
 #######################################################################################
@@ -24,6 +24,29 @@ from lib_info_args import logger_name
 # Logging
 log_stream = logging.getLogger(logger_name)
 #######################################################################################
+
+
+# -------------------------------------------------------------------------------------
+# method to read hydrological section file
+def read_file_hydro_section(file_name, file_sep=' ', file_columns=None):
+
+    if file_columns is None:
+        file_columns = ['x', 'y',
+                        'basin_name', 'section_name', 'org_name',
+                        'drainage_area', 'thr_1', 'thr_2', 'domain_name', 'code']
+
+    file_table = pd.read_table(file_name, sep=file_sep, names=file_columns)
+
+    file_dict = {}
+    for row_id, row_fields in enumerate(file_table.iterrows()):
+        row_dict = row_fields[1].to_dict()
+        row_dict['section_loc'] = int(row_id)
+
+        file_dict['section_{:}'.format(row_id)] = row_dict
+
+    return file_dict
+
+# -------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------
@@ -48,8 +71,20 @@ def create_file_hydro_tag(section_ts_start, section_ts_end, section_ens=None, se
 
 
 # -------------------------------------------------------------------------------------
+# method to get time(s)
+def get_file_hydro_time(section_series):
+    if isinstance(section_series, pd.Series):
+        section_time_start = section_series.index[0].to_datetime64()
+        section_time_end = section_series.index[-1].to_datetime64()
+    else:
+        section_time_start, section_time_end = None, None
+    return section_time_start, section_time_end
+# -------------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------------
 # Parse file hydro name
-def parse_file_hydro_name(file_name, file_data='simulated'):
+def parse_file_hydro_name(file_name, file_data='simulated', file_time_start=None, file_time_end=None):
 
     file_parts = re.findall(r'\d+', file_name)
     file_root, file_extension = os.path.splitext(file_name)
@@ -93,6 +128,25 @@ def parse_file_hydro_name(file_name, file_data='simulated'):
         else:
             log_stream.error(' ===> Parser of filename ' + file_name + ' failed for unknown file type')
             raise NotImplementedError('Case not implemented yet')
+
+    elif file_parts.__len__() == 1:
+
+        # deterministic simulated file(s)
+        if file_data == 'simulated':
+            if file_time_start is not None:
+                file_part_datetime_start = file_time_start
+            else:
+                file_part_datetime_start = datetime.strptime(file_parts[0], "%Y%m%d%H%M")
+            if file_time_end is not None:
+                file_part_datetime_end = file_time_end
+            else:
+                file_part_datetime_end = datetime.strptime(file_parts[0], "%Y%m%d%H%M")
+            file_part_mask = None
+            file_part_n_ens = None
+        else:
+            log_stream.error(' ===> Parser of filename ' + file_name + ' failed for unknown file type')
+            raise NotImplementedError('Case not implemented yet')
+
     else:
         log_stream.error(' ===> Parser of filename ' + file_name + ' failed for unknown format')
         raise NotImplementedError('Case not implemented yet')
@@ -162,8 +216,8 @@ def read_file_hydro_obs(section_name, file_name,
 
 
 # -------------------------------------------------------------------------------------
-# Method to read hydro simulated file in ascii format
-def read_file_hydro_sim(section_name, file_name, column_time_idx=0):
+# Method to read hydro simulated file in ascii format (drift)
+def read_file_hydro_sim_drift(section_name, file_name, column_time_idx=0):
 
     file_data = pd.read_table(file_name)
     file_data = file_data.loc[:, ~file_data.columns.str.match("Unnamed")]
@@ -218,3 +272,51 @@ def read_file_hydro_sim(section_name, file_name, column_time_idx=0):
 
 # -------------------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------------------
+# Method to read hydro simulated file in ascii format (hmc)
+def read_file_hydro_sim_hmc(section_name, section_id, file_name, column_time_idx=0):
+
+    file_data = pd.read_table(file_name)
+    file_data = file_data.loc[:, ~file_data.columns.str.match("Unnamed")]
+
+    row_n = file_data.shape[0]
+
+    time_obj, data_obj, name_obj = [], None, None
+    for row_id, row_obj in enumerate(file_data.iterrows()):
+        string_row = row_obj[1].values[0]
+        parts_row_raw = string_row.split(' ')
+        parts_row_def = [x for x in parts_row_raw if x]
+
+        time_tmp = parts_row_def[0]
+        time_stamp = pd.Timestamp(time_tmp)
+        time_obj.append(time_stamp)
+
+        row_tmp = parts_row_def[1:]
+        row_data = [float(x) for x in row_tmp]
+        row_data = np.asarray(row_data)
+        col_n = row_data.shape[0]
+
+        if data_obj is None:
+            data_obj = np.zeros(shape=(row_n, col_n))
+            data_obj[:, :] = np.nan
+        if name_obj is None:
+            name_obj = []
+            for col_step in range(0, col_n):
+                name_obj.append('section_{:}'.format(col_step))
+
+        data_obj[row_id, :] = row_data
+
+    data_df = pd.DataFrame(data=data_obj, index=time_obj)
+    data_df.columns = name_obj
+    data_df.index.name = 'time'
+
+    tmp_series = data_df.iloc[:, section_id]
+    section_period = pd.DatetimeIndex(tmp_series.index.values)
+    section_data = tmp_series.values
+
+    section_series = pd.Series(index=section_period, data=section_data)
+
+    return section_series
+
+# -------------------------------------------------------------------------------------

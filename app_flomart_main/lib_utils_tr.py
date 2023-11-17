@@ -3,14 +3,16 @@ Library Features:
 
 Name:          lib_utils_tr
 Author(s):     Fabio Delogu (fabio.delogu@cimafoundation.org)
-Date:          '20220208'
-Version:       '1.0.0'
+Date:          '20231116'
+Version:       '1.5.0'
 """
 
-#######################################################################################
-# Libraries
+# ----------------------------------------------------------------------------------------------------------------------
+# libraries
 import logging
+import pandas as pd
 import numpy as np
+
 from numpy.linalg import lstsq
 from copy import deepcopy
 
@@ -19,10 +21,10 @@ from scipy.interpolate import interp1d # MATTEO: added this for linear interpola
 
 # Logging
 log_stream = logging.getLogger(logger_name)
-#######################################################################################
+# ----------------------------------------------------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # Method to get tr parameters
 def get_tr_params(section_name):
 
@@ -86,10 +88,80 @@ def get_tr_params(section_name):
         par_correction_factor = 1.16
 
     return par_a, par_b, par_correction_factor, tr, qr
-# -------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# method to compute tr values and weights based on series
+def cmp_tr_series(section_discharge_value, section_q_t,
+                  var_q='Q', var_t='T',
+                  decimal_discharge=2, decimal_weight=3, decimal_tr=3):
+
+    # organize discharge information
+    section_discharge_min, section_discharge_max = section_q_t[var_q].min(), section_q_t[var_q].max()
+    section_discharge_min = np.round(section_discharge_min, decimals=decimal_discharge)
+    section_discharge_max = np.round(section_discharge_max, decimals=decimal_discharge)
+    section_discharge_value = np.round(section_discharge_value, decimals=decimal_discharge)
+
+    # compute tr and weight(s)
+    if (section_discharge_value > section_discharge_min) and (section_discharge_value < section_discharge_max):
+
+        section_qt_bounds = section_q_t.iloc[(section_q_t[var_q] - section_discharge_value).abs().argsort()[:2]]
+        section_qt_bounds = section_qt_bounds.sort_values(var_q)
+
+        section_discharge_lower = section_qt_bounds.iloc[0][var_q]
+        section_scenario_tr_lower = section_qt_bounds.iloc[0][var_t]
+        section_discharge_upper = section_qt_bounds.iloc[1][var_q]
+        section_scenario_tr_upper = section_qt_bounds.iloc[1][var_t]
+
+        section_scenario_weight_lower = np.abs(1 - np.abs(
+            (section_discharge_value - section_discharge_lower) / (section_discharge_upper - section_discharge_lower)))
+        section_scenario_weight_upper = np.abs(1 - np.abs(
+            (section_discharge_value - section_discharge_upper) / (section_discharge_upper - section_discharge_lower)))
+
+        section_scenario_tr_tmp = (section_scenario_tr_lower * section_scenario_weight_lower +
+                                   section_scenario_tr_upper * section_scenario_weight_upper)
+
+        section_scenario_tr_rounded = np.round(section_scenario_tr_tmp)
+
+    elif section_discharge_value <= section_discharge_min:
+
+        section_scenario_tr_min = section_q_t['T'].min()
+        section_scenario_tr_rounded = section_scenario_tr_min
+        section_scenario_tr_lower, section_scenario_tr_upper = section_scenario_tr_min, section_scenario_tr_min
+        section_scenario_weight_lower, section_scenario_weight_upper = 0.5, 0.5
+
+    elif section_discharge_value >= section_discharge_max:
+
+        section_scenario_tr_max = section_q_t['T'].max()
+        section_scenario_tr_rounded = section_scenario_tr_max
+        section_scenario_tr_lower, section_scenario_tr_upper = section_scenario_tr_max, section_scenario_tr_max
+        section_scenario_weight_lower, section_scenario_weight_upper = 0.5, 0.5
+
+    else:
+        log_stream.error(' ===> Discharge value is not supported by the procedure')
+        raise NotImplemented('Case not implemented yet')
+
+    # check the tr values boundaries
+    if (section_scenario_tr_rounded >= section_scenario_tr_lower) and (section_scenario_tr_rounded <= section_scenario_tr_upper):
+        pass
+    else:
+        logging.error(' ===> The tr value is not in the range of tr left and right')
+        raise NotImplemented('Case not implemented yet')
+
+    section_scenario_weight_lower = np.round(section_scenario_weight_lower, decimals=decimal_weight)
+    section_scenario_weight_upper = np.round(section_scenario_weight_upper, decimals=decimal_weight)
+
+    section_scenario_tr_rounded = np.round(section_scenario_tr_rounded, decimals=decimal_tr)
+    section_scenario_tr_lower = np.round(section_scenario_tr_lower, decimals=decimal_tr)
+    section_scenario_tr_upper = np.round(section_scenario_tr_upper, decimals=decimal_tr)
+
+    return section_scenario_tr_rounded, \
+        section_scenario_tr_lower, section_scenario_tr_upper, \
+        section_scenario_weight_lower, section_scenario_weight_upper
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Method to compute tr:
 def cmp_tr_general(section_discharge_idx, section_discharge_value,
                    section_tr_par_a=None, section_tr_par_b=None,
@@ -168,24 +240,36 @@ def cmp_tr_general(section_discharge_idx, section_discharge_value,
         section_scenario_tr_right, section_scenario_tr_left, \
         section_scenario_weight_right, section_scenario_weight_left
 
-# -------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # Method to compute tr values and weights
 def cmp_tr_weights(value_tr, decimal_tr=3):
 
+    # define tr values (cmp, left, right)
     section_scenario_tr_cmp = deepcopy(value_tr)
-    section_scenario_tr_left = np.ceil(section_scenario_tr_cmp)
-    section_scenario_tr_right = np.floor(section_scenario_tr_cmp)
+    section_scenario_tr_left = np.floor(section_scenario_tr_cmp)    # lower side
+    section_scenario_tr_right = np.ceil(section_scenario_tr_cmp)    # upper side
 
-    section_scenario_weight_right = np.around(1 - (section_scenario_tr_cmp - section_scenario_tr_right),
-                                              decimals=decimal_tr)
-    section_scenario_weight_left = np.around(1 - (section_scenario_tr_left - section_scenario_tr_cmp),
+    # lower side
+    section_scenario_weight_left = np.around(1 - (section_scenario_tr_cmp - section_scenario_tr_left),
                                              decimals=decimal_tr)
+    # upper side
+    section_scenario_weight_right = np.around(1 - (section_scenario_tr_right - section_scenario_tr_cmp),
+                                              decimals=decimal_tr)
 
+    # compute tr rounded
     section_scenario_tr_rounded = np.round(section_scenario_tr_cmp)
 
     return section_scenario_tr_rounded, \
         section_scenario_tr_right, section_scenario_tr_left, section_scenario_weight_right, section_scenario_weight_left
-# -------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# method to get tr values from ascii file
+def get_tr_file(file_name, file_sep=';'):
+    file_data = pd.read_csv(file_name, sep=file_sep)
+    return file_data
+# ----------------------------------------------------------------------------------------------------------------------

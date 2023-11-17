@@ -12,6 +12,7 @@ Version:       '1.0.0'
 import logging
 import os
 import numpy as np
+import warnings
 
 from copy import deepcopy
 
@@ -28,8 +29,11 @@ from lib_utils_tr import cmp_tr_general
 
 from lib_info_args import logger_name, time_format_algorithm
 
+from driver_type_tr import DriverType
+
 # Logging
 log_stream = logging.getLogger(logger_name)
+warnings.simplefilter(action='ignore', category=FutureWarning)
 # Debug
 import matplotlib.pylab as plt
 ######################################################################################
@@ -83,6 +87,11 @@ class DriverScenario:
             self.scenario_tiling = alg_ancillary['scenario_tiling']
         else:
             self.scenario_tiling = 'rounded'
+
+        if 'tr_method' in list(alg_ancillary.keys()):
+            self.tr_method = alg_ancillary['tr_method']
+        else:
+            self.tr_method = 'method_regional'
 
         #if 'scenario_discharge_correction_factor' in list(alg_ancillary.keys()):
         #    # marche: 0.1486 -- liguria: 1.16
@@ -198,7 +207,11 @@ class DriverScenario:
         template_values_step = {'domain_name': domain_name, 'tr': self.format_tr.format(section_tr)}
 
         folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values_step)
+        if isinstance(folder_name_def, tuple):
+            folder_name_def = folder_name_def[0]
         file_name_def = fill_tags2string(file_name_raw, template_tags, template_values_step)
+        if isinstance(file_name_def, tuple):
+            file_name_def = file_name_def[0]
         path_name_def = os.path.join(folder_name_def, file_name_def)
 
         return path_name_def
@@ -218,7 +231,8 @@ class DriverScenario:
 
     # -------------------------------------------------------------------------------------
     # Method to compute tr for evaluating scenario
-    def compute_scenario_tr(self, section_discharge_idx, section_discharge_times, section_discharge_values,
+    @staticmethod
+    def compute_scenario_tr(section_discharge_idx, section_discharge_times, section_discharge_values,
                             section_scenario_tr_par_a=None, section_scenario_tr_par_b=None,
                             section_scenario_tr_corr_factor=None,
                             section_scenario_tr_par_tr=None, section_scenario_tr_par_qr=None,
@@ -228,8 +242,6 @@ class DriverScenario:
             section_discharge_values = [section_discharge_values]
         if not isinstance(section_discharge_times, list):
             section_discharge_times = [section_discharge_times]
-
-        #correction_discharge_factor = self.correction_discharge_factor
 
         if section_scenario_tr_corr_factor is None:
             log_stream.warning(' ===> The "section_scenario_tr_corr_factor" is defined by NoneType; '
@@ -400,7 +412,11 @@ class DriverScenario:
                                     }
 
             folder_name_def = fill_tags2string(folder_name_raw, template_tags, template_values_step)
+            if isinstance(folder_name_def, tuple):
+                folder_name_def = folder_name_def[0]
             file_name_def = fill_tags2string(file_name_raw, template_tags, template_values_step)
+            if isinstance(file_name_def, tuple):
+                file_name_def = file_name_def[0]
             path_name_def = os.path.join(folder_name_def, file_name_def)
 
             file_path_dict[domain_name] = path_name_def
@@ -557,7 +573,8 @@ class DriverScenario:
                                     domain_info_dframe = pd.DataFrame(domain_info_fields, index=domain_info_fields['time'])
 
                                     if not domain_info_dframe[domain_info_dframe.index.isin([domain_map_time])].empty:
-                                            section_info_fields = domain_info_dframe[domain_info_dframe.index.isin([domain_map_time])].to_dict('r')[0]
+                                            section_info_fields = domain_info_dframe[
+                                                domain_info_dframe.index.isin([domain_map_time])].to_dict('records')[0]
                                     else:
                                         section_info_fields = {}
                                         log_stream.warning(' ===> Section information for "' + domain_info_key +
@@ -675,36 +692,48 @@ class DriverScenario:
     # Method to compute scenario map
     def compute_scenario_map(self, scenario_data_collection):
 
+        # get time run
         time = self.time_run
+        # get static information
         geo_data_collection = self.geo_data_collection
-
+        # get ancillary filename collections
         file_path_scenario_anc_collections_file = self.file_path_scenario_anc_file
 
+        # info algorithm start
         log_stream.info(' ---> Compute scenario maps [' + time.strftime(time_format_algorithm) + '] ... ')
+
+        # iterate over domain(s)
         scenario_map_collection = {}
         scenario_dframe_collection = {}
-
         for domain_name_step in self.domain_name_list:
 
+            # info domain start
             log_stream.info(' ----> Domain "' + domain_name_step + '" ... ')
 
+            # get section datasets
             domain_scenario_data = scenario_data_collection[domain_name_step]
             section_geo_data = geo_data_collection[domain_name_step]['section_data'] # domain_section_db
             map_geo_data = geo_data_collection[domain_name_step]['map_data']
             domain_epsg_code = map_geo_data['area_epsg_code']  # MATTEO: I have added this, because before epsg in the tiff saving was hardcoded
 
+            # get ancillary filename section
             file_path_scenario_anc_domain_file = file_path_scenario_anc_collections_file[domain_name_step]
+
+            # check scenarios datasets
             if domain_scenario_data is not None:
 
+                # initialize scenarios data (gridded 2D format)
                 domain_scenario_merged_default = np.zeros(
                     [map_geo_data[self.domain_scenario_area_tag].shape[0],
                      map_geo_data[self.domain_scenario_area_tag].shape[1]])
                 domain_scenario_merged_default[:, :] = np.nan
 
+                # get domain geographical datasets
                 domain_geo_data = map_geo_data[self.domain_scenario_area_tag]
                 domain_geo_x = map_geo_data[self.domain_scenario_grid_x_tag]
                 domain_geo_y = map_geo_data[self.domain_scenario_grid_y_tag]
 
+                # clean old scenario workspace (according with flags)
                 if self.flag_cleaning_anc_scenario_info or self.flag_cleaning_anc_scenario_file or \
                         self.flag_cleaning_anc_scenario_map:
                     file_path_scenario_tmp = []
@@ -717,9 +746,11 @@ class DriverScenario:
                         if os.path.exists(file_path_step):
                             os.remove(file_path_step)
 
+                # check availability of scenarios ancillary file
                 flag_cleaning_old_scenario_workspace = True
                 if not os.path.exists(file_path_scenario_anc_domain_file):
 
+                    # iterate over section(s)
                     section_dframe_collections = {}
                     file_path_scenarios_collections = {}
                     for section_scenario_id, \
@@ -729,18 +760,22 @@ class DriverScenario:
                         # section_scenario_key = 'Lavagna_Carasco'
                         # section_scenario_data = domain_scenario_data[section_scenario_key]
 
+                        # info section analysis start
                         log_stream.info('')
                         log_stream.info(' -----> ***********************************************************')
                         log_stream.info(' -----> Section "' + section_scenario_key + '" ... ')
 
+                        # select section datasets
                         section_db_data = None
                         for section_key, section_fields in section_geo_data.items():
                             if section_fields['section_description'] == section_scenario_key:
                                 section_db_data = section_fields.copy()
                                 break
 
+                        # check section datasets
                         if section_db_data is not None:
 
+                            # get section information
                             section_db_id = section_db_data['section_id']
                             section_db_description = section_db_data['section_description']
                             section_db_name_outlet = section_db_data['name_point_outlet']
@@ -749,15 +784,19 @@ class DriverScenario:
                             section_db_name_obs = section_db_data['name_point_obs']
                             # section_db_idx_terrain = section_db_data['idx_data_terrain']
 
+                            # check section hydraulic data availability
                             if 'idx_data_hydraulic' in list(section_db_data.keys()):
                                 section_db_idx_hydraulic = section_db_data['idx_data_hydraulic']
                             else:
                                 section_db_idx_hydraulic = None
 
+                            # check name(s) to control the input information (of the same section)
                             assert section_db_description == section_scenario_key
 
+                            # check scenarios data
                             if section_scenario_data is not None:
 
+                                # get scenario information
                                 section_scenario_discharges = section_scenario_data[self.domain_scenario_discharge_tag]
                                 section_scenario_trs_cmp = section_scenario_data[self.domain_scenario_index_tag]
                                 section_scenario_trs_right = section_scenario_data[self.domain_scenario_index_right_tag]
@@ -765,6 +804,7 @@ class DriverScenario:
                                 section_scenario_wgs_right = section_scenario_data[self.domain_scenario_weight_right_tag]
                                 section_scenario_wgs_left = section_scenario_data[self.domain_scenario_weight_left_tag]
 
+                                # adjust temporal information (according with the analysis flag)
                                 if self.scenario_analysis == 'max_period':
                                     section_scenario_times = [time]
                                 elif self.scenario_analysis == 'all_period':
@@ -775,7 +815,7 @@ class DriverScenario:
                                     log_stream.info(' -----> Section "' + section_scenario_key + '" ... FAILED')
                                     raise NotImplementedError('Case not implemented yet')
 
-                                # Clean all files that are still available and flag the process to false
+                                # clean all files that are still available and flag the process to false
                                 if flag_cleaning_old_scenario_workspace:
                                     if self.flag_cleaning_anc_scenario_info or self.flag_cleaning_anc_scenario_file or \
                                             self.flag_cleaning_anc_scenario_map:
@@ -795,6 +835,7 @@ class DriverScenario:
                                 section_scenario_tr_list_right, section_scenario_tr_list_left = [], []
                                 for id_scenario_time, section_scenario_time in enumerate(section_scenario_times):
 
+                                    # get scenario information step by step
                                     section_scenario_discharge = section_scenario_discharges[id_scenario_time]
                                     section_scenario_tr_cmp = section_scenario_trs_cmp[id_scenario_time]
                                     section_scenario_tr_right = section_scenario_trs_right[id_scenario_time]
@@ -802,9 +843,11 @@ class DriverScenario:
                                     section_scenario_wg_right = section_scenario_wgs_right[id_scenario_time]
                                     section_scenario_wg_left = section_scenario_wgs_left[id_scenario_time]
 
+                                    # info time start
                                     log_stream.info(' ------> Time step "' + section_scenario_time.strftime(
                                         time_format_algorithm) + '" ... ')
 
+                                    # define ancillary scenario filename
                                     file_path_scenario_anc_map = self.define_file_scenario(
                                         time, self.folder_name_scenario_anc_map,
                                         self.file_name_scenario_anc_map,
@@ -824,9 +867,9 @@ class DriverScenario:
                                                     os.remove(file_path_scenario_ancillary)
                                     '''
 
-                                    # Find tr value
+                                    # find tr value
                                     if np.isnan(section_scenario_tr_cmp):
-
+                                        # tr nan(s)
                                         section_scenario_tr_other = get_dict_value(
                                             domain_scenario_data, self.domain_scenario_index_tag, [])
                                         section_scenario_tr_check = int(np.nanmax(section_scenario_tr_other))
@@ -838,29 +881,33 @@ class DriverScenario:
                                                            section_db_description + '". Check the datasets')
 
                                     else:
+                                        # tr finite
                                         section_scenario_tr_check = section_scenario_tr_cmp
                                         section_scenario_tr_right_check = section_scenario_tr_right
                                         section_scenario_tr_left_check = section_scenario_tr_left
                                         section_scenario_wg_right_check = section_scenario_wg_right
                                         section_scenario_wg_left_check = section_scenario_wg_left
 
-                                    # Compare tr value with tr min
+                                    # compare tr value with tr min
                                     if section_scenario_tr_check >= self.tr_min:
 
-                                        # Case defined by the available abacus
+                                        # case defined by the available abacus
                                         section_area_idx = np.argwhere(
                                             map_geo_data[self.domain_scenario_area_tag] == section_db_id)
                                         map_shape_data = map_geo_data[self.domain_scenario_area_tag].shape
 
+                                        # scenario tr selection
                                         section_scenario_tr_select = max(
                                             self.tr_min, min(self.tr_max, section_scenario_tr_check))
-                                        section_scenario_tr_right_select = max(
-                                            self.tr_min, min(self.tr_max, section_scenario_tr_right_check))
                                         section_scenario_tr_left_select = max(
                                             self.tr_min, min(self.tr_max, section_scenario_tr_left_check))
+                                        section_scenario_tr_right_select = max(
+                                            self.tr_min, min(self.tr_max, section_scenario_tr_right_check))
 
-                                        if section_scenario_tr_right_select > section_scenario_tr_left_select:
-                                            log_stream.error(' ===> Left scenario must be greater then right scenario')
+                                        # check scenarios left and right values to avoid misleadings
+                                        if section_scenario_tr_left_select > section_scenario_tr_right_select:
+                                            log_stream.error(' ===> Scenario "right_side" '
+                                                             'must be greater then scenario "left_side"')
                                             raise RuntimeError('Check the evaluation of scenario boundaries')
 
                                         if self.scenario_tiling == 'rounded':
@@ -912,39 +959,40 @@ class DriverScenario:
                                                             'from abacus (weighted method) ...')
 
                                             # define path of hazard maps right and left
-                                            log_stream.info('   (1a) Define hazard map right')
-                                            file_path_hazard_right = self.define_file_hazard(
-                                                self.folder_name_hazard, self.file_name_hazard,
-                                                domain_name_step, section_scenario_tr_right_select)
-
-                                            log_stream.info('   (1b) Define hazard map left')
+                                            log_stream.info('   (1a) Define hazard map left')
                                             file_path_hazard_left = self.define_file_hazard(
                                                 self.folder_name_hazard, self.file_name_hazard,
                                                 domain_name_step, section_scenario_tr_left_select)
 
-                                            # read hazard maps right and left
-                                            log_stream.info('   (2a) Read hazard map right')
-                                            file_data_hazard_right = read_file_hazard(
-                                                file_path_hazard_right,
-                                                file_vars=[self.domain_scenario_hazard_name],
-                                                file_format=[self.domain_scenario_hazard_format],
-                                                file_scale_factor=[self.domain_scenario_hazard_scale_factor])
-                                            log_stream.info('   (2b) Read hazard map left')
+                                            log_stream.info('   (1b) Define hazard map right')
+                                            file_path_hazard_right = self.define_file_hazard(
+                                                self.folder_name_hazard, self.file_name_hazard,
+                                                domain_name_step, section_scenario_tr_right_select)
+
+                                            # read hazard maps left and right
+                                            log_stream.info('   (2a) Read hazard map left')
                                             file_data_hazard_left = read_file_hazard(
                                                 file_path_hazard_left,
                                                 file_vars=[self.domain_scenario_hazard_name],
                                                 file_format=[self.domain_scenario_hazard_format],
                                                 file_scale_factor=[self.domain_scenario_hazard_scale_factor])
 
+                                            log_stream.info('   (2b) Read hazard map right')
+                                            file_data_hazard_right = read_file_hazard(
+                                                file_path_hazard_right,
+                                                file_vars=[self.domain_scenario_hazard_name],
+                                                file_format=[self.domain_scenario_hazard_format],
+                                                file_scale_factor=[self.domain_scenario_hazard_scale_factor])
+
+                                            # get hazard data right
                                             if file_data_hazard_right is not None:
                                                 file_data_h_right = file_data_hazard_right[self.domain_scenario_hazard_name]
                                                 file_shape_h_right = file_data_h_right.shape
 
-                                                print(file_shape_h_right)
-                                                print(map_shape_data)
                                                 if (map_shape_data[0] != file_shape_h_right[0]) or \
                                                         (map_shape_data[1] != file_shape_h_right[1]):
-                                                    log_stream.error(' ===> File hazard right "' + file_path_hazard_right +
+                                                    log_stream.error(' ===> File hazard right "' +
+                                                                     file_path_hazard_right +
                                                                      '" and map gep area does not have the same dims')
                                                     raise RuntimeError('Hazard map and area map dims must be the same')
                                             elif file_data_hazard_right is None:
@@ -952,16 +1000,19 @@ class DriverScenario:
                                                     ' ===> File hazard right is "NoneType". Check your folder.')
                                                 raise TypeError('File not found.')
                                             else:
-                                                log_stream.error(' ===> File hazard "' + file_data_hazard_right +
+                                                log_stream.error(' ===> File hazard "' + file_path_hazard_right +
                                                                  '" is not available. Check your folder.')
                                                 raise FileNotFoundError('File not found.')
 
+                                            # get hazard data left
                                             if file_data_hazard_left is not None:
+
                                                 file_data_h_left = file_data_hazard_left[self.domain_scenario_hazard_name]
                                                 file_shape_h_left = file_data_h_left.shape
                                                 if (map_shape_data[0] != file_shape_h_left[0]) or \
                                                         (map_shape_data[1] != file_shape_h_left[1]):
-                                                    log_stream.error(' ===> File hazard left "' + file_path_hazard_left +
+                                                    log_stream.error(' ===> File hazard left "' +
+                                                                     file_path_hazard_left +
                                                                      '" and map gep area does not have the same dims')
                                                     raise RuntimeError('Hazard map and area map dims must be the same')
                                             elif file_data_hazard_left is None:
@@ -1215,160 +1266,167 @@ class DriverScenario:
     # Method to organize scenario datasets
     def organize_scenario_datasets(self):
 
+        # get time run
         time = self.time_run
+        # get static information
         discharge_data_collection = self.discharge_data_collection
         geo_data_collection = self.geo_data_collection
-
+        # get ancillary filename(s) collections
         file_path_scenario_anc_collections_info = self.file_path_scenario_anc_info
         file_path_scenario_anc_collections_file = self.file_path_scenario_anc_file
 
+        # info algorithm start
         log_stream.info(' ---> Organize scenario datasets [' + time.strftime(time_format_algorithm) + '] ... ')
 
+        # iterate over domain(s)
         scenario_info_collection = {}
         for domain_name_step in self.domain_name_list:
 
+            # info domain start
             log_stream.info(' ----> Domain "' + domain_name_step + '" ... ')
 
+            # get domain datasets
             section_obj_data = discharge_data_collection[domain_name_step]
             section_geo_data = geo_data_collection[domain_name_step]['section_data']
             map_geo_data = geo_data_collection[domain_name_step]['map_data']
 
+            # get ancillary filename(s) domain
             file_path_scenario_anc_domain_info = file_path_scenario_anc_collections_info[domain_name_step]
             file_path_scenario_anc_domain_file = file_path_scenario_anc_collections_file[domain_name_step]
 
+            # check the cleaning flags
             if self.flag_cleaning_anc_scenario_info or self.flag_cleaning_anc_scenario_file:
                 if os.path.exists(file_path_scenario_anc_domain_info):
                     os.remove(file_path_scenario_anc_domain_info)
 
+            # check the ancillary scenario file
             if not os.path.exists(file_path_scenario_anc_domain_info):
 
+                # check the section data
                 if section_obj_data is not None:
 
+                    # iterate over section(s)
                     domain_scenario_workspace = {}
                     for section_obj_key, section_obj_dframe in section_obj_data.items():
+
+                        # info section start
                         log_stream.info(' -----> Section "' + section_obj_key + '" ... ')
                         section_db_data = None
-
+                        # get the section fields
                         for section_key, section_fields in section_geo_data.items():
                             if section_fields['section_description'] == section_obj_key:
                                 section_db_data = section_fields.copy()
                                 break
 
+                        # check the section datasets
                         if (section_db_data is not None) and (section_obj_dframe is not None):
 
+                            # section datasets
                             section_discharge_data = section_obj_dframe[self.var_name_discharge]
                             section_type_data = section_obj_dframe[self.var_name_type]
 
-                            # section_db_n = section_db_data['section_id']
-                            section_db_description = section_db_data['section_description']
-                            # section_db_name_outlet = section_db_data['name_point_outlet']
-                            # section_db_name_obs = section_db_data['name_point_obs']
-                            # section_db_idx = section_db_data['idx_data_terrain']
-                            section_db_discharge_idx = section_db_data['section_discharge_idx']
-                            section_db_par_a = section_db_data['section_par_a']
-                            section_db_par_b = section_db_data['section_par_a']
-                            section_db_par_tr = section_db_data['section_par_tr']
-                            section_db_par_qr = section_db_data['section_par_qr']
-                            section_db_par_correction_factor = section_db_data['section_par_correction_factor']
+                            # initialize method class
+                            drv_tr_method = DriverType(
+                                method_scenario_tr=self.tr_method,
+                                section_name=section_obj_key,
+                                section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max,
+                                scenario_index_tag=self.domain_scenario_index_tag,
+                                scenario_index_right_tag=self.domain_scenario_index_right_tag,
+                                scenario_index_left_tag=self.domain_scenario_index_left_tag,
+                                scenario_weight_right_tag=self.domain_scenario_weight_right_tag,
+                                scenario_weight_left_tag=self.domain_scenario_weight_left_tag,
+                                scenario_discharge_tag=self.domain_scenario_discharge_tag,
+                                scenario_type_tag=self.domain_scenario_type_tag,
+                                scenario_time_tag=self.domain_scenario_time_tag,
+                                scenario_n_tag=self.domain_scenario_n_tag,
+                                scenario_attrs_tag=self.domain_scenario_attrs_tag)
 
-                            assert section_db_description == section_obj_key
+                            # initialize method variable(s)
+                            drv_tr_method.init_scenario_tr(section_db_data)
 
                             # Compute scenario idx:
                             if self.scenario_analysis == 'max_period':
 
-                                log_stream.info(' ------> Scenario_analysis will be performed on the max period!')
+                                # info scenario discharge analysis
+                                log_stream.info(
+                                    ' ------> Scenario_analysis will be performed on the "max_period" type')
 
                                 # Compute discharge for evaluating scenario:
                                 section_discharge_run, section_discharge_times, \
                                     section_discharge_values, section_type_values, \
                                     section_n_values = self.compute_scenario_discharge(
                                         section_discharge_data, section_type_data, analysis_freq=self.scenario_analysis)
-                                # Get discharge attr(s)
+                                # get discharge attr(s)
                                 section_discharge_attrs = section_discharge_data.attrs
 
-                                log_stream.info(' ------> QIndex: ' + str(section_db_discharge_idx) + ' [m^3/s]')
-                                log_stream.info(' ------> QMax: ' + str(np.max(section_discharge_values)) + ' [m^3/s]')
-
-                                section_scenario_trs,\
+                                # method to wrap scenario tr
+                                section_scenario_trs, \
                                     section_scenario_trs_right, section_scenario_trs_left, \
-                                    section_scenario_weights_right, section_scenario_weights_left\
-                                    = self.compute_scenario_tr(
-                                        section_db_discharge_idx, section_discharge_times, section_discharge_values,
-                                        section_scenario_tr_par_a=section_db_par_a,
-                                        section_scenario_tr_par_b=section_db_par_b,
-                                        section_scenario_tr_corr_factor=section_db_par_correction_factor,
-                                        section_scenario_tr_par_tr=section_db_par_tr,
-                                        section_scenario_tr_par_qr=section_db_par_qr,
-                                        section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max)
+                                    section_scenario_weights_right, section_scenario_weights_left \
+                                    = drv_tr_method.wrap_scenario_tr(section_discharge_times, section_discharge_values)
 
+                                # method to collect scenario tr
+                                section_scenario_obj = drv_tr_method.collect_scenario_tr(
+                                    section_scenario_trs, section_scenario_trs_right, section_scenario_trs_left,
+                                    section_scenario_weights_right, section_scenario_weights_left,
+                                    section_discharge_values, section_type_values, section_discharge_times,
+                                    section_n_values, section_discharge_attrs)
+
+                                # store information in a common workspace
                                 domain_scenario_workspace[section_obj_key] = {}
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_tag] = section_scenario_trs
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_right_tag] = section_scenario_trs_right
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_left_tag] = section_scenario_trs_left
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_right_tag] = section_scenario_weights_right
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_left_tag] = section_scenario_weights_left
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_discharge_tag] = section_discharge_values
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_type_tag] = section_type_values
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_time_tag] = section_discharge_times
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_n_tag] = section_n_values
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_attrs_tag] = section_discharge_attrs
+                                domain_scenario_workspace[section_obj_key] = section_scenario_obj
+
                                 log_stream.info(' -----> Section "' + section_obj_key + '" ... DONE')
 
                             elif self.scenario_analysis == 'all_period':
 
-                                log_stream.info(' ------> Scenario_analysis will be performed on the all period!')
+                                # info scenario discharge analysis
+                                log_stream.info(
+                                    ' ------> Scenario_analysis will be performed on the "all_period" type')
 
                                 # Compute discharge for evaluating scenario
                                 section_discharge_runs, section_discharge_times, \
                                     section_discharge_values, section_type_values, \
                                     section_n_values = self.compute_scenario_discharge(
                                         section_discharge_data, section_type_data, analysis_freq=self.scenario_analysis)
-                                # Get discharge attr(s)
+
+                                # get discharge attr(s)
                                 section_discharge_attrs = section_discharge_data.attrs
 
-                                log_stream.info(' ------> QIndex: ' + str(section_db_discharge_idx) + ' [m^3/s]')
-                                log_stream.info(' ------> QMax: ' + str(np.max(section_discharge_values)) + ' [m^3/s]')
-
-                                section_scenario_trs,\
+                                # method to wrap scenario tr
+                                section_scenario_trs, \
                                     section_scenario_trs_right, section_scenario_trs_left, \
-                                    section_scenario_weights_right, section_scenario_weights_left\
-                                    = self.compute_scenario_tr(
-                                        section_db_discharge_idx, section_discharge_times, section_discharge_values,
-                                        section_scenario_tr_par_a=section_db_par_a,
-                                        section_scenario_tr_par_b=section_db_par_b,
-                                        section_scenario_tr_corr_factor=section_db_par_correction_factor,
-                                        section_scenario_tr_par_tr=section_db_par_tr,
-                                        section_scenario_tr_par_qr=section_db_par_qr,
-                                        section_scenario_tr_min=self.tr_min, section_scenario_tr_max=self.tr_max)
+                                    section_scenario_weights_right, section_scenario_weights_left \
+                                    = drv_tr_method.wrap_scenario_tr(section_discharge_times, section_discharge_values)
 
-                                section_tmp = list(zip(section_discharge_values,
-                                                       section_scenario_trs,
-                                                       section_scenario_trs_right,
-                                                       section_scenario_trs_left))
+                                # debug
+                                section_scenario_debug = list(zip(
+                                    section_discharge_values,
+                                    section_scenario_trs, section_scenario_trs_right, section_scenario_trs_left))
 
+                                # method to collect scenario tr
+                                section_scenario_obj = drv_tr_method.collect_scenario_tr(
+                                    section_scenario_trs, section_scenario_trs_right, section_scenario_trs_left,
+                                    section_scenario_weights_right, section_scenario_weights_left,
+                                    section_discharge_values, section_type_values, section_discharge_times,
+                                    section_n_values, section_discharge_attrs)
+
+                                # store information in a common workspace
                                 domain_scenario_workspace[section_obj_key] = {}
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_tag] = section_scenario_trs
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_right_tag] = section_scenario_trs_right
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_index_left_tag] = section_scenario_trs_left
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_right_tag] = section_scenario_weights_right
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_weight_left_tag] = section_scenario_weights_left
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_discharge_tag] = section_discharge_values
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_type_tag] = section_type_values
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_time_tag] = section_discharge_times
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_n_tag] = section_n_values
-                                domain_scenario_workspace[section_obj_key][self.domain_scenario_attrs_tag] = section_discharge_attrs
+                                domain_scenario_workspace[section_obj_key] = section_scenario_obj
 
+                                # info section end
                                 log_stream.info(' -----> Section "' + section_obj_key + '" ... DONE')
 
                             else:
-
+                                # exit due to wrong scenario analysis name
                                 log_stream.error(' ===> Scenario frequency value "' + str(self.scenario_analysis) +
                                                  '" is not allowed')
                                 log_stream.info(' -----> Section "' + section_obj_key + '" ... FAILED')
                                 raise NotImplementedError('Case not implemented yet')
 
                         else:
-
+                            # condition of section datasets defined by NoneType
                             log_stream.info(' -----> Section "' + section_obj_key + '" ... SKIPPED. Datasets are empty')
                             log_stream.warning(' ===> Datasets is defined by NoneType')
                             domain_scenario_workspace[section_obj_key] = None
@@ -1379,21 +1437,24 @@ class DriverScenario:
                     make_folder(folder_name_scenario_anc_domain_info)
                     write_obj(file_path_scenario_anc_domain_info, domain_scenario_workspace)
 
+                    # info domain end
                     log_stream.info(' ----> Domain "' + domain_name_step + '" ... DONE')
 
                 else:
+                    # info domain end (for empty datasets)
                     domain_scenario_workspace = None
                     log_stream.info(' ----> Domain "' + domain_name_step + '" ... SKIPPED. All datasets are undefined')
 
             else:
 
-                # Load scenario information file
+                # load scenario information (previously computed)
                 domain_scenario_workspace = read_obj(file_path_scenario_anc_domain_info)
                 log_stream.info(' ----> Domain "' + domain_name_step + '" ... SKIPPED. File previously saved.')
 
-            # Update collection workspace
+            # update collection workspace
             scenario_info_collection[domain_name_step] = domain_scenario_workspace
 
+        # info algorithm end
         log_stream.info(' ---> Organize scenario datasets [' + time.strftime(time_format_algorithm) + '] ... DONE')
 
         return scenario_info_collection
