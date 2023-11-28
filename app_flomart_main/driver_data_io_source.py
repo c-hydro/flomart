@@ -950,13 +950,31 @@ class DriverDischarge:
 
                         if (file_path_workspace is not None) and (isinstance(file_path_workspace, dict)):
 
+                            log_stream.info(' -------> Select filename according with the time period ... ')
+
+                            time_path_list, time_path_tmp = [], []
                             file_path_list, file_path_tmp = [], []
                             for time_step, file_path_step in file_path_workspace.items():
-                                if file_path_step is not None:
-                                    file_path_tmp.extend(file_path_step)
+                                if time_step <= time_run:
+                                    if file_path_step is not None:
+                                        file_path_tmp.extend(file_path_step)
+                                        time_path_tmp.append(time_step)
+                                    else:
+                                        log_stream.warning(
+                                            ' ===> File path is undefined for time step "' + str(time_step) +
+                                            '". Datasets will be skipped')
+                                else:
+                                    log_stream.warning(
+                                        ' ===> Time step "' + str(time_step) + '" is out of the maximum time step "' +
+                                        str(time_run) + '". Datasets will be skipped')
+
                             file_path_list = sorted(list(set(file_path_tmp)))
+                            time_path_list = sorted(list(set(time_path_tmp)))
                             if data_reverse:
                                 file_path_list = file_path_list[::-1]
+                                time_path_list = time_path_list[::-1]
+
+                            log_stream.info(' -------> Select filename according with the time period ... DONE')
 
                             log_stream.info(' -------> Get data ... ')
                             for file_id, file_path_step in enumerate(file_path_list):
