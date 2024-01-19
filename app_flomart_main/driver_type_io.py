@@ -70,7 +70,6 @@ class DriverType:
         if (self.file_type == 'ascii_arpal_sim') or (self.file_type == 'ascii_arpal_sim_drift'):
             section_ts = self.wrap_data_ascii(
                 self.section_name, self.section_id, self.file_name, self.file_time, file_data=self.data_type,
-
                 file_method_filling=self.method_data_filling, file_method_occurrence=self.method_data_occurrence,
                 file_type='drift')
         elif self.file_type == 'ascii_arpal_sim_hmc':

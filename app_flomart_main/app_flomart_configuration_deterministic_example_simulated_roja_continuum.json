@@ -10,25 +10,25 @@
     },
     "flags": {
       "cleaning_static_data": true,
-      "cleaning_ancillary_data_discharge_obs": false,
-      "cleaning_ancillary_data_discharge_sim": false,
-      "cleaning_ancillary_data_scenario_info": false,
+      "cleaning_ancillary_data_discharge_obs": true,
+      "cleaning_ancillary_data_discharge_sim": true,
+      "cleaning_ancillary_data_scenario_info": true,
       "cleaning_ancillary_data_scenario_file": true,
       "cleaning_ancillary_data_scenario_maps": true,
       "cleaning_dynamic_plot": true,
       "cleaning_dynamic_data": true
     },
     "ancillary": {
-      "__comment_scenario__": "scenario_analysis: [max_period, all_period], scenario_tiling: [rounded, weighted], scenario_type: [observed, simulated, mixed], scenario_method: [max]",
+      "__comment_scenario__": "scenario_analysis: [max_period, all_period], scenario_tiling: [rounded, weighted], scenario_type: [observed, simulated, mixed], scenario_method: [max_period, all_period]",
       "__comment_tr__": "tr_method: [method_regional, method_q_t]",
       "domain_name" : ["Roja"],
       "tr_method": "method_q_t",
       "tr_min" : 1,
-      "tr_max" : 200,
+      "tr_max" : 500,
       "tr_freq": 1,
       "scenario_tiling": "weighted",
       "scenario_boundary": "both",
-      "scenario_analysis": "all_period",
+      "scenario_analysis": "max_period",
       "scenario_type": "simulated"
     },
     "template": {
@@ -159,24 +159,24 @@
       "destination" : {
         "plot": {
           "scenario_tiff": {
-            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_liguria/destination/scenario_run_mixed/{destination_sub_path_time_scenario_plot}",
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_liguria/destination/scenario_run_mixed/{destination_sub_path_time_scenario_plot}/maps/max_period",
             "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.tiff",
             "save_status": true
           },
           "scenario_png": {
-            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_liguria/destination/scenario_run_mixed/{destination_sub_path_time_scenario_plot}",
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_liguria/destination/scenario_run_mixed/{destination_sub_path_time_scenario_plot}/iamge/max_period/",
             "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.png",
             "save_status": false
           },
           "scenario_info": {
-            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_liguria/destination/scenario_run_mixed/{destination_sub_path_time_scenario_plot}",
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_liguria/destination/scenario_run_mixed/{destination_sub_path_time_scenario_plot}/maps/max_period/",
             "file_name": "scenario_{domain_name}_{destination_datetime_scenario_plot}_graph.json",
             "save_status": true
           }
         },
         "data": {
           "scenario_time_series": {
-            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_liguria/destination/scenario_run_mixed/{destination_sub_path_time_scenario_data}/time_series/",
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_liguria/destination/scenario_run_mixed/{destination_sub_path_time_scenario_data}/time_series/max_period/",
             "file_name": "scenario_{domain_name}_{destination_datetime_scenario_data}_ts.json",
             "save_status": true
           }
@@ -186,11 +186,11 @@
   },
   "log": {
     "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/log/opchain_liguria/",
-    "file_name": "app_flomart_logging_ascii_roja_neptune.txt"
+    "file_name": "app_flomart_logging_ascii_roja_continuum.txt"
   },
   "time": {
     "time_now": null,
-    "time_period": 1,
+    "time_period": 23,
     "time_frequency": "H",
     "time_rounding": "H"
   }

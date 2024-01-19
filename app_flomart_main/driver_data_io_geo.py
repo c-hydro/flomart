@@ -66,7 +66,7 @@ class DriverGeo:
         if 'tr_method' in list(self.alg_ancillary.keys()):
             self.method_tr = self.alg_ancillary['tr_method']
         else:
-            self.method_tr = 'regional_method'
+            self.method_tr = 'method_regional'
 
         self.folder_name_geo_in_generic = src_dict[self.flag_geo_data_in]['generic'][self.folder_name_tag]
         self.file_name_geo_in_generic = src_dict[self.flag_geo_data_in]['generic'][self.file_name_tag]
@@ -85,7 +85,10 @@ class DriverGeo:
 
         self.file_name_hazard = src_dict[self.flag_hazard_data][self.file_name_tag]
         self.folder_name_hazard = src_dict[self.flag_hazard_data][self.folder_name_tag]
-        self.file_type_hazard = src_dict[self.flag_hazard_data][self.file_type_tag]
+        if 'file_type' in list(src_dict[self.flag_hazard_data].keys()):
+            self.file_type_hazard = src_dict[self.flag_hazard_data][self.file_type_tag]
+        else:
+            self.file_type_hazard = 'tiff'
 
         self.folder_name_geo_out = dst_dict[self.flag_geo_data_out][self.folder_name_tag]
         self.file_name_geo_out = dst_dict[self.flag_geo_data_out][self.file_name_tag]
