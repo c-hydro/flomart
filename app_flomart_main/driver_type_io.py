@@ -79,7 +79,7 @@ class DriverType:
                 file_type='hmc')
         elif self.file_type == 'ascii_arpal_obs':
             section_ts = self.wrap_data_ascii(
-                self.section_name, self.file_name, self.file_time, file_data=self.data_type,
+                self.section_name, self.section_id, self.file_name, self.file_time, file_data=self.data_type,
                 file_method_filling=self.method_data_filling, file_method_occurrence=self.method_data_occurrence)
         elif self.file_type == 'matlab':
             section_ts = self.wrap_data_mat(

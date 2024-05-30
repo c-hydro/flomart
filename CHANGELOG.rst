@@ -2,6 +2,18 @@
 Changelog
 =========
 
+Version 2.1.1 [2024-05-30]
+**************************
+
+- FIX: app_flomart_main.py
+	- fix the case of missing data in the observed dataset (no links mode)
+
+- DOCS: Flomart_Manual_20221130.pdf
+- DOCS: Flomart_Training_20221121.pdf
+
+- PALETTE: palette_water_level.qml (QGIS application)
+
+	
 Version 2.1.0 [2023-11-06]
 **************************
 - APP: app_flomart_main.py

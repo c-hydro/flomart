@@ -2,8 +2,8 @@
 """
 FLOMART - FLOod MAp in Real Time
 
-__date__ = '20231106'
-__version__ = '2.1.0'
+__date__ = '20240530'
+__version__ = '2.1.1'
 __author__ =
         'Fabio Delogu (fabio.delogu@cimafoundation.org)',
         'Matteo Darienzo (matteo.darienzo@cimafoundation.org)',
@@ -18,6 +18,7 @@ General command line:
 python3 app_flomart_main.py -settings_file configuration.json -time "YYYY-MM-DD HH:MM"
 
 Version(s):
+20240530 (2.1.1) --> Fix bugs to manage the case of missing data in the observed dataset (no links mode)
 20231106 (2.1.0) --> Add mode using Q_T file(s), bugs fixing and code refactoring (to adapt new sources and format)
 20221215 (2.0.5) --> FLOMART refactor for liguria operational chain
 20221212 (2.0.4) --> FLOMART refactor for marche operational chain
@@ -57,8 +58,8 @@ log_stream = logging.getLogger(logger_name)
 
 # -------------------------------------------------------------------------------------
 # Algorithm information
-alg_version = '2.1.0'
-alg_release = '2023-11-06'
+alg_version = '2.1.1'
+alg_release = '2024-05-30'
 alg_name = 'FLOMART'
 # -------------------------------------------------------------------------------------
 

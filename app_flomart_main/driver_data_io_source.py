@@ -1355,11 +1355,22 @@ class DriverDischarge:
                 log_stream.info(' -----> Check datasets ... DONE')
 
                 # Save datasets
-                flag_save_obj = True
+                check_save_obj, flag_save_obj = [], True
                 for section_key, section_data in section_workspace.items():
-                    if section_data is None:
-                        flag_save_obj = False
-                        break
+                    if self.method_data_null_obs is not None:
+                        if section_data is None:
+                            check_save_obj.append(False)
+                            break
+                    else:
+                        if section_data is None:
+                            check_save_obj.append(False)
+                        else:
+                            check_save_obj.append(True)
+
+                if any(check_save_obj):
+                    flag_save_obj = True
+                else:
+                    flag_save_obj = False
 
                 if flag_save_obj:
 
@@ -1370,7 +1381,7 @@ class DriverDischarge:
                     log_stream.info(' ----> Domain "' + domain_name_step + '" ... DONE')
                 else:
                     log_stream.info(' ----> Domain "' + domain_name_step +
-                                    '" ... SKIPPED. All or some datasets are empty')
+                                    '" ... SKIPPED. Links are activated but all or some datasets are empty')
 
             else:
 
