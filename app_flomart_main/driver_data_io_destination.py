@@ -187,6 +187,9 @@ class DriverScenario:
         self.domain_scenario_hazard_scale_factor = 1
         self.domain_scenario_hazard_units = 'm'
 
+        self.domain_scenario_output_no_data = np.nan
+        self.domain_scenario_output_fill_value = -9998
+
         self.domain_name_tag = 'domain_name'
 
         self.var_name_time = 'time'
@@ -553,6 +556,43 @@ class DriverScenario:
                     domain_geo_x = map_geo_collection[self.domain_scenario_grid_x_tag]
                     domain_geo_y = map_geo_collection[self.domain_scenario_grid_y_tag]
                     domain_epsg_code = map_geo_collection[self.domain_epsg_code]
+
+                    log_stream.info(' --------> Find undefined sub-areas ... ')
+                    domain_ids = np.unique(domain_geo_data)
+                    for domain_id in domain_ids:
+                        if domain_id > 0:
+
+                            log_stream.info(' ---------> Sub-Area ID "' + str(domain_id) + '" ... ')
+
+                            idx_collections = np.argwhere(domain_geo_data == domain_id)
+
+                            idx_x = idx_collections[:, 0]
+                            idx_y = idx_collections[:, 1]
+
+                            domain_arr_data = domain_map_data[idx_x, idx_y]
+                            domain_unique_data = np.unique(domain_arr_data)
+
+                            if domain_unique_data.shape[0] == 1 and np.isnan(domain_unique_data[0]):
+
+                                domain_map_data[idx_x, idx_y] = self.domain_scenario_output_fill_value
+                                log_stream.info(' ---------> Sub-Area ID "' + str(domain_id) +
+                                                '" ... not defined. Initialize with no data value')
+                            else:
+                                log_stream.info(' ---------> Sub-Area ID "' + str(domain_id) +
+                                                '" ... defined by computed values')
+
+                    log_stream.info(' --------> Find undefined sub-areas ... DONE')
+
+                    ''' debug
+                    plt.figure()
+                    plt.imshow(domain_map_data)
+                    plt.colorbar()
+                    plt.show()
+                    plt.figure()
+                    plt.imshow(domain_geo_data)
+                    plt.colorbar()
+                    plt.show()
+                    '''
 
                     time_step_string = domain_map_time.strftime(time_format_algorithm)
 
@@ -1137,8 +1177,8 @@ class DriverScenario:
 
                                             # Convert values <= 0 to nan(s)
                                             domain_scenario_merged_out[domain_scenario_merged_out <= 0] = np.nan
-                                            # Convert nan(s) to 0
-                                            domain_scenario_merged_out[np.isnan(domain_scenario_merged_out)] = 0
+                                            # Convert nan(s) to 0 (commented to have the nans in the output)
+                                            # domain_scenario_merged_out[np.isnan(domain_scenario_merged_out)] = 0
 
                                             # Delete old map file
                                             if os.path.exists(file_path_scenario_anc_map):
