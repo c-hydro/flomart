@@ -324,8 +324,20 @@ class DriverType:
             log_stream.warning(' ===> The "section_scenario_tr_corr_factor" is defined by NoneType; '
                                'this could create some errors in the execution of the code')
 
-        # check discharge index
+        # conditions to activate fx computation
+        active_fx = False
         if section_discharge_idx > 0.0:
+            active_fx = True
+        elif (section_discharge_idx <= 0.0) and (
+                (self.section_scenario_tr_par_tr is not None) and
+                (self.section_scenario_tr_par_qr is not None)):
+            active_fx = True
+        else:
+            log_stream.warning(' ===> The scenario computation is not activated due to the datasets information. '
+                               'Information are not enough to compute the scenario or the case is not implemented yet')
+
+        # check the fx activation
+        if active_fx:
 
             # iterate over time and discharge values
             section_scenario_trs = []

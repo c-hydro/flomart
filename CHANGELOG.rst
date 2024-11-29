@@ -2,10 +2,21 @@
 Changelog
 =========
 
+Version 2.2.0 [2024-11-29]
+**************************
+
+- APP: app_flomart_main.py
+	- add safe memory mode to manage the ram memory usage (big domain case)
+	- extend codes to manage the info domain file
+	- fix bugs in applyng regional_mode (using the q/t points)
+	
+- PREPROCESSING: 
+    - update and modify the matlab preprocessing main script (app_flomart_preprocessing.m) to manage the big domain case
+
 Version 2.1.1 [2024-05-30]
 **************************
 
-- FIX: app_flomart_main.py
+- APP: app_flomart_main.py
 	- fix the case of missing data in the observed dataset (no links mode)
 
 - DOCS: Flomart_Manual_20221130.pdf
@@ -21,8 +32,6 @@ Version 2.1.0 [2023-11-06]
 	- add method and classes to compute tr (method_regional, method_q_t)
 	- add q(t) file to extract the value of tr as function of q
 	- add discharge sources file (drift, hmc) and different formats and the sections file reader (for continuum txt data)
-
-- FIX: app_flomart_main.py
 	- fix "tr_left" boundary lower and "tr_right" boundary upper; add function to check the array of tr to try the
 	new settings in all cases and configurations
 	- fix weights for tr greater than tr_max
@@ -37,8 +46,6 @@ Version 2.0.5 [2022-12-15]
 	  the time periods for simulated and observed datasets
 	- add tr methods parameters in the section workspace
 	- add tr methods selection in the scenario definition
-
-- FIX: app_flomart_main.py
 	- add checking for no data case in simulated and observed discharge methods
 
 Version 2.0.4 [2022-12-12]

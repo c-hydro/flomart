@@ -1,0 +1,187 @@
+{
+  "algorithm": {
+    "general": {
+      "title": "FLOMART",
+      "web-site": "",
+      "source": "Python application developed by CIMA Research Foundation",
+      "history": "2.1.1 [20220701]",
+      "project-info": "flomart",
+      "algorithm": ""
+    },
+    "flags": {
+      "cleaning_static_data": false,
+      "cleaning_ancillary_data_discharge_obs": false,
+      "cleaning_ancillary_data_discharge_sim": false,
+      "cleaning_ancillary_data_scenario_info": false,
+      "cleaning_ancillary_data_scenario_file": false,
+      "cleaning_ancillary_data_scenario_maps": false,
+      "cleaning_dynamic_plot": true,
+      "cleaning_dynamic_data": true
+    },
+    "ancillary": {
+      "__comment_scenario__": "scenario_analysis: [max_period, all_period], scenario_tiling: [rounded, weighted], scenario_type: [observed, simulated, mixed], scenario_method: [max]",
+      "__comment_tr__": "tr_method: [method_regional, method_q_t]",
+      "memory_saver": true,
+      "domain_name" : ["Misa"],
+      "tr_method": "method_regional",
+      "tr_min" : 1,
+      "tr_max" : 20,
+      "tr_freq": 1,
+      "scenario_tiling": "weighted",
+      "scenario_boundary": "both",
+      "scenario_analysis": "max_period",
+      "scenario_type": "simulated"
+    },
+    "template": {
+      "tr": "string_tr",
+      "section_name": "string_section_name",
+      "section_description": "string_section_description",
+      "section_name_part1": "string_section_name_part1",
+      "section_name_part2": "string_section_name_part2",
+      "mask_name": "string_mask",
+      "domain_name": "string_domain",
+      "scenario_discharge" : "string_discharge",
+      "source_sub_path_time_discharge_sim": "%Y/%m/%d/%H",
+      "source_datetime_discharge_sim": "%Y%m%d%H%M",
+      "source_datetime_to_discharge_sim": "%y%j",
+      "source_datetime_from_discharge_sim": "%Y%m%d%H%M",
+      "source_sub_path_time_discharge_obs": "%Y/%m/%d/%H",
+      "source_datetime_discharge_obs": "%Y%m%d%H%M",
+      "source_datetime_to_discharge_obs": "%Y%m%d*",
+      "source_datetime_from_discharge_obs": "%Y%m%d%H%M",
+      "ancillary_sub_path_time_discharge": "%Y%m%d%H%M",
+      "ancillary_datetime_discharge": "%Y%m%d",
+      "ancillary_sub_path_time_scenario": "%Y/%m/%d",
+      "ancillary_datetime_scenario": "%Y%m%d%H%M",
+      "destination_sub_path_time_scenario_plot": "%Y/%m/%d",
+      "destination_datetime_scenario_plot": "%Y%m%d%H%M%S",
+      "destination_sub_path_time_scenario_data": "%Y/%m/%d",
+      "destination_datetime_scenario_data": "%Y%m%d%H%M%S"
+    }
+  },
+  "data": {
+    "static" : {
+      "source" : {
+        "geo_data": {
+          "generic": {
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_static/opchain_marche/geo_data/",
+            "file_name": "info_{domain_name}.mat"
+          },
+          "hydraulic": {
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_static/opchain_marche/geo_data/",
+            "file_name": "info_{domain_name}.json"
+          }
+        },
+        "hazard_data": {
+          "__comment__": "filename: {domain_name}_WD_max_T{tr}.tif ",
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_static/opchain_marche/hazard_data/Abaco_Misa",
+          "file_name": "Misa_MS_hazmap_T{tr}.tif"
+        }
+      },
+      "destination": {
+        "geo_data": {
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_static/opchain_marche/geo_data/",
+          "file_name": "info_{domain_name}.workspace"
+        },
+        "geo_memory_area": {
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_static/opchain_marche/memory_data/",
+          "file_name": "memory_{domain_name}_domain.workspace"
+        },
+        "geo_memory_idx": {
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_static/opchain_marche/memory_data/",
+          "file_name": "memory_{domain_name}_section_{section_description}.workspace"
+        }
+      }
+    },
+    "dynamic": {
+      "source": {
+        "discharge_data_simulated": {
+          "_comment" : "file_name_string: [hydrograph_{section_name_part1}_{section_name_part2}_{source_datetime_discharge_sim}.json]",
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_marche/archive/nwp_ecmwf0100/{source_sub_path_time_discharge_sim}/collections/",
+          "file_name": "hydrograph_{section_name_part2}_{section_name_part1}_{source_datetime_discharge_sim}.json",
+          "type": "json",
+          "variables": {"time":  "time_period", "discharge":  "time_series_discharge_simulated", "water_level": null},
+          "method_data_occurrence": "all",
+          "method_data_analysis" : "max",
+          "method_data_filling": "interpolate",
+          "method_data_null": "links",
+          "time_period": 24,
+          "time_frequency": "H",
+          "time_rounding": "H"
+        },
+        "discharge_data_observed": {
+          "__comment__": "json_file: hydrograph_{section_name_part1}_{section_name_part2}_{source_datetime_discharge_obs}.json",
+          "folder_name": "/home/fabio/Desktop/PyCharm_Workspace/hmc-ws/opchain_marche/archive/nwp_ecmwf0100/{source_sub_path_time_discharge_obs}/collections/",
+          "file_name": "hydrograph_{section_name_part2}_{section_name_part1}_{source_datetime_discharge_obs}.json",
+          "type": "json",
+          "variables": {"time":  "time_period", "discharge":  "time_series_discharge_observed", "water_level": null},
+          "method_data_occurrence": "all",
+          "method_data_analysis" : "max",
+          "method_data_filling": "interpolate",
+          "method_data_null": "links",
+          "time_period": 24,
+          "time_frequency": "H",
+          "time_rounding": "H"
+        }
+      },
+      "ancillary": {
+        "discharge_data_simulated": {
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/ancillary/discharge_run_nwp_ecmwf0100_marche/{ancillary_sub_path_time_discharge}/",
+          "file_name": "discharge-{domain_name}_{ancillary_datetime_discharge}_simulated.workspace"
+        },
+        "discharge_data_observed": {
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/ancillary/discharge_run_nwp_ecmwf0100_marche/{ancillary_sub_path_time_discharge}/",
+          "file_name": "discharge-{domain_name}_{ancillary_datetime_discharge}_observed.workspace"
+        },
+        "scenario_data_info": {
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/ancillary/discharge_run_nwp_ecmwf0100_marche/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario-{domain_name}_{ancillary_datetime_scenario}_info.workspace"
+        },
+        "scenario_data_file": {
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/ancillary/discharge_run_nwp_ecmwf0100_marche/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario-{domain_name}_{ancillary_datetime_scenario}_file.workspace"
+        },
+        "scenario_data_map": {
+          "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/ancillary/discharge_run_nwp_ecmwf0100_marche/{ancillary_sub_path_time_scenario}",
+          "file_name": "scenario-{domain_name}_{ancillary_datetime_scenario}_map.tiff"
+        }
+      },
+      "destination" : {
+        "plot": {
+          "scenario_tiff": {
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/destination/discharge_run_nwp_ecmwf0100_marche/map/{destination_sub_path_time_scenario_plot}/",
+            "file_name": "scenario-{domain_name}_{destination_datetime_scenario_plot}.tiff",
+            "save_status": true
+          },
+          "scenario_png": {
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/destination/discharge_run_nwp_ecmwf0100_marche/map/{destination_sub_path_time_scenario_plot}/",
+            "file_name": "scenario-{domain_name}_{destination_datetime_scenario_plot}.png",
+            "save_status": false
+          },
+          "scenario_info": {
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/destination/discharge_run_nwp_ecmwf0100_marche/map/{destination_sub_path_time_scenario_plot}/",
+            "file_name": "summary-{domain_name}_{destination_datetime_scenario_plot}.json",
+            "save_status": true
+          }
+        },
+        "data": {
+          "scenario_time_series": {
+            "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/data_dynamic/opchain_marche/destination/discharge_run_nwp_ecmwf0100_marche/time_series/{destination_sub_path_time_scenario_data}/time_series/",
+            "file_name": "timeseries-{domain_name}_{destination_datetime_scenario_data}.json",
+            "save_status": true
+          }
+        }
+      }
+    }
+  },
+  "log": {
+    "folder_name": "/home/fabio/Desktop/Flomart_Workspace/flomart-ws/log/",
+    "file_name": "app_flomart_logging_ecmwf0100_realtime_MISA.txt"
+  },
+  "time": {
+    "time_now": null,
+    "time_period": 2,
+    "time_frequency": "H",
+    "time_rounding": "H"
+  }
+}

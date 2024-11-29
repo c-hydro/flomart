@@ -43,10 +43,18 @@ def map_description_section_2_hydraulic(section_data_in, hydraulic_data):
     for section_id, section_fields in section_data_in.items():
         section_description_tmp = section_fields['section_description']
 
-        section_description_def, hydraulic_id = None, None
+        section_description_def, hydraulic_id, hydraulic_area = None, None, None
         for hydraulic_id, hydraulic_fields in hydraulic_data.items():
 
             hydraulic_description = hydraulic_fields['description']
+            if 'id_area' in list(hydraulic_fields.keys()):
+                hydraulic_area = hydraulic_fields['id_area']
+            else:
+                log_stream.error(' ===> Section "id_area" is not defined. '
+                                 'For some algorithm mode the key must be defined'
+                                 'in the json hydraulic file')
+                raise RuntimeError('Set "id_area" key for each sections in the hydraulic file')
+
             if 'alias' in list(hydraulic_fields.keys()):
                 hydraulic_alias = hydraulic_fields['alias']
             else:
@@ -70,6 +78,7 @@ def map_description_section_2_hydraulic(section_data_in, hydraulic_data):
 
         # update section fields according to the hydraulic id
         section_fields['section_description'] = section_description_def
+        section_fields['section_area'] = hydraulic_area
         section_data_out[hydraulic_id] = section_fields
 
     return section_data_out

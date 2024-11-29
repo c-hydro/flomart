@@ -83,6 +83,24 @@ def get_tr_params(section_name):
     elif section_name == 'Chienti_FoceChienti':
         tr = [0, 2, 5, 10, 20, 50, 100, 150, 200, 500]
         qr = [0, 317, 549.4, 744.9, 931.2, 1163.4, 1363.6, 1425.1, 1461.4, 1643.2]
+    elif section_name == 'Misa_Nevola':
+        tr = [0, 5, 10, 20, 50, 100, 200, 500]
+        qr = [0, 149, 200, 244,	313, 355, 393, 476]
+    elif section_name == 'Misa_Misa':
+        tr = [0, 5, 10, 20, 50, 100, 200, 500]
+        qr = [0, 322, 424, 531, 663, 772, 882, 971]
+    elif section_name == 'Misa_PonteGaribaldi':
+        tr = [0, 5, 10, 20, 50, 100, 200, 500]
+        qr = [0, 347, 449, 569,	722, 826, 949, 1052]
+    elif section_name == 'Misa_FlomartCasine':
+        tr = [0, 5, 10, 20, 50, 100, 200, 500]
+        qr = [0, 311, 395, 456, 539, 576, 628, 735]
+    elif section_name == 'Misa_FlomartBrugnetto':
+        tr = [0, 5, 10, 20, 50, 100, 200, 500]
+        qr = [0, 161, 210, 259, 327, 367, 406, 492]
+    elif section_name == 'Misa_FlomartContradaMolino':
+        tr = [0, 5, 10, 20, 50, 100, 200, 500]
+        qr = [0, 289, 354, 416, 486, 526, 563, 656]
     else:
         par_a, par_b = 0.5239, 1.0433
         par_correction_factor = 1.16
@@ -170,10 +188,13 @@ def cmp_tr_general(section_discharge_idx, section_discharge_value,
 
     if (section_tr_par_tr and section_tr_par_qr) and (section_tr_par_a is None and section_tr_par_b is None):
 
-        # for example:  domain_name == 'Chienti, Foglia'  REGIONALIZZAZ. MARCHE
+        # for example:  domain_name == 'Chienti, Foglia, Misa'  REGIONALIZZAZ. MARCHE
 
         log_stream.info(' --------> Apply linear interpolation to compute tr ... ')
-        section_scenario_tr_tmp = interp1d(section_tr_par_qr, section_tr_par_tr)(section_discharge_value)
+
+        fx_scenario_tr = interp1d(section_tr_par_qr, section_tr_par_tr)
+        section_scenario_tr_tmp = fx_scenario_tr(section_discharge_value)
+
         log_stream.info(' --------> Apply linear interpolation to compute tr ... DONE')
 
         section_scenario_tr_rounded, section_scenario_tr_right, section_scenario_tr_left, \

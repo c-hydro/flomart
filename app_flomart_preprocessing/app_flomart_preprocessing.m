@@ -1,4 +1,6 @@
 clc; clear;
+clear all
+close all
 
 %%
 %%%%%%%%%%%%%%
@@ -7,12 +9,34 @@ clc; clear;
 % please, if a new case study need to be analysed, then insert the name of the 
 % new domain in the list below. Then execute next command to select the
 % case study from prompt pop-up:
-list_domains = {'Foglia', 'Entella', 'Scrivia', 'Chienti'}
+list_domains = {'Misa', 'Foglia', 'Entella', 'Scrivia', 'Chienti'};
 domain_name = strjoin(list_domains([listdlg('ListString', ['Choose case study:', ' ', list_domains])]-2))
 
+if strcmp(domain_name,'Misa')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % percorso dove si trova questo script matlab (e i suoi moduli) per il preprocessing in Flomart:
+    path_code = '/home/idrologia/FLOMART_APP/app_flomart_preprocessing';
+    % percorso dove preparare i files statici:
+    path_preparation_data = '/home/idrologia/FLOMART_APP/data/marche/source/';
+    % percorso dove cercare dati statici geografici con griglia: 
+    %sPathGridGeoData = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/data/data_Marche_Foglia/data_static/PREPARATION/fp_marche';
+    sPathGridGeoData = '/home/idrologia/FLOMART_APP/data/marche/source/gridded/';
+    % Percorso dove salvare il file mat output 'info_{domain_name}.mat':
+    sPathOutputInfoMat = '/home/idrologia/FLOMART_APP/data/marche/destination/geo/';
+    % percorso dove si trovano le simulazioni:
+    sPathHazardData = '/home/idrologia/FLOMART_APP/data/marche/source/hazard/';
+    %name_hazardmaps = [domain_name,'_WD_max_Q.tif'];% nome delle hazard maps di partenza senza le tre cifre finali (es:  "Foglia_WD_max_Q001.tif" )
+    name_hazardmaps = ['Misa_MS_hazmap_T'];
+    type_hazardmaps ='.tif';  % format of the hazard map files
+    % tempo di ritorno al di sotto (strettamente) del quale la mappa di hazard si annulla
+    TR_min=1;
+    % tempo di ritorno massimo (eventuali valori superiori vengono saturati a questo valore)
+    TR_max=20;
+    modeSelectionSections = 'hardcoded';  % mode for the selection of control sections ('hardcoded' or 'byprompt')
+    % coordinate system EPSG utm: 
+    EPSG_domain = '32633';
 
-
-if strcmp(domain_name,'Foglia')
+elseif strcmp(domain_name,'Foglia')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % percorso dove si trova questo script matlab (e i suoi moduli) per il preprocessing in Flomart:
     path_code = '/home/matteo/Documents/CIMA_projects/RT_FloodMapping/flomart-2.0.0_test/app_flomart_preprocessing';
@@ -131,8 +155,56 @@ end
 %% Read geographical gridded information:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-if strcmp(domain_name,'Foglia')
+if strcmp(domain_name,'Misa')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    sFileName_choice = [sPathGridGeoData, '/marche.choice.txt'];
+    sFileName_area = [sPathGridGeoData, '/marche.area.txt'];
+    sFileName_cell = [sPathGridGeoData, '/marche.areacell.txt'];
+    sFileName_dem = [sPathGridGeoData, '/marche.dem.txt'];
+    sFileName_lon = [sPathGridGeoData, '/marche.lon.txt'];
+    sFileName_lat = [sPathGridGeoData, '/marche.lat.txt'];
+    sFileName_pnt = [sPathGridGeoData, '/marche.pnt.txt'];
+    % Choice:
+    [a2dMap_choice, a2dCoord_choice] = arcgridread(sFileName_choice);
+    a2iChoice = a2dMap_choice;
+    a2iChoice(isnan(a2iChoice)) = -1;  %replace all NaN with -1
+    % Area:
+    [a2dMap_area, a2dCoord_area] = arcgridread(sFileName_area);
+    a2dArea = a2dMap_area;
+    % Cell:
+    [a2dMap_cell, a2dCoord_cell] = arcgridread(sFileName_cell);
+    a2dCelle = a2dMap_cell;
+    a2dCelle(isnan(a2dCelle)) = 1; %replace all NaN with 1
+    % Dem:
+    [a2dMap_dem, a2dCoord_dem] = arcgridread(sFileName_dem);
+    a2dDem = a2dMap_dem;
+    a2dDem(isnan(a2dDem)) = -99;  %replace all NaN with -99
+    % Pointers:
+    [a2dMap_pnt, a2dCoord_pnt] = arcgridread(sFileName_pnt);
+    a2iPunt = a2dMap_pnt;
+    a2iPunt(isnan(a2iPunt)) = 0;   %replace all NaN with 0
+    % Lon:
+    [a2dMap_lon, a2dCoord_lon] = arcgridread(sFileName_lon);
+    Londem = a2dMap_lon;
+    Londem(isnan(Londem)) = -99;
+    % Lat:
+    [a2dMap_lat, a2dCoord_lat] = arcgridread(sFileName_lat);
+    Latdem = a2dMap_lat;
+    Latdem(isnan(Latdem)) = -99;
+    %Qindex: (da capire che formato vuole)
+    
+    file_path_index  = [path_preparation_data, '/Qindex_Misa.mat'];
+    
+    if isfile(file_path_index)
+        load(file_path_index) 
+    else
+        dims = size(a2dDem);
+        a2dQindice = ones(dims) * -9999;
+    end
+    
+    disp('ciao')
+    
+elseif strcmp(domain_name,'Foglia')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% names of files with gridded info (choice, dem, ...):
     %MARCHE:
@@ -297,7 +369,15 @@ end
 %% Define the new domain grid
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% define the new domain grid (corners): 
-if strcmp(domain_name,'Foglia')
+if strcmp(domain_name,'Misa')
+
+	% Extent 12.8081887873980520,43.4332032770869105 : 13.2611824494151698,43.7312576127615387
+        Lat_min=43.54;
+        Lat_max=43.73;
+        Lon_min=12.99;
+        Lon_max=13.24;
+        
+elseif strcmp(domain_name,'Foglia')
         Lat_min=43.776;
         Lat_max=43.926;
         Lon_min=12.485;
@@ -401,16 +481,61 @@ if strcmp(modeSelectionSections,'byprompt')
     end
     sezioni_indici_relativi_corr2 = sezioni_indici_relativi;
     
-    
-    
-    
-    
-    
-  
 %% Instead, here chosen sections are hard-coded:
 elseif strcmp(modeSelectionSections,'hardcoded')
+      
+        if strcmp(domain_name,'Misa')
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % define the number of control sections:
+        quante_sez=6;
+        Ymax = length(Latdem(:,1));
+        Xmax = length(Latdem(1,:));
+        % define indexes of the selected sections [Y X]:
+        sezioni_indici_relativi=[
+             162 345;...  % Nevola
+             %192 328;...  % SerraDeiConti
+             181 347;...  % FlomartContradaMolino
+             161 368;...  % FlomartCasine
+             158 367;...  % FlomartBrugnetto
+             155 374;...  % Misa
+             137 390];    % PonteGaribaldi
+
+        % define the names of each selected section:
+        nomi_sezioni{1}='Nevola_Misa';
+        %nomi_sezioni{2}='SerraDeiConti_Misa';
+        nomi_sezioni{2}='FlomartContradaMolino_Misa';
+        nomi_sezioni{3}='FlomartCasine_Misa';
+        nomi_sezioni{4}='FlomartBrugnetto_Misa';
+        nomi_sezioni{5}='Misa_Misa';
+        nomi_sezioni{6}='PonteGaribaldi_Misa';
         
-    if strcmp(domain_name,'Foglia')
+        % define name of catchment and section:--- campo che viene usato
+        % come campo descrizione da unire al file json delle sezioni in
+        % flomart (devono essere uguali i nomi al campo description
+        bacino_sezione{1} = 'Misa_Nevola'; 
+        %bacino_sezione{2} = 'Misa_SerraDeiConti'; 
+        bacino_sezione{2} = 'Misa_FlomartContradaMolino'; 
+        bacino_sezione{3} = 'Misa_FlomartCasine';
+        bacino_sezione{4} = 'Misa_FlomartBrugnetto'; 
+        bacino_sezione{5} = 'Misa_Misa';
+        bacino_sezione{6} = 'Misa_PonteGaribaldi';
+
+        % verifica aree e calcolo Qindex)
+        for i=1:size(sezioni_indici_relativi,1)
+            AreaBas(i)=a2dArea(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+            a1dQindex(i)=a2dQindice(sezioni_indici_relativi(i,1),sezioni_indici_relativi(i,2));
+            %%
+            % 
+            %   for x = 1:10
+            %       disp(x)
+            %   end
+            % 
+        end
+        %Ricavo indici relativi al ritaglio
+        sezioni_indici_relativi_corr2(:,1)=sezioni_indici_relativi(:,1)-indice_x_min+1;
+        sezioni_indici_relativi_corr2(:,2)=sezioni_indici_relativi(:,2)-indice_y_min+1;
+    
+    elseif strcmp(domain_name,'Foglia')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % define the number of control sections:
         quante_sez=6;
@@ -448,9 +573,6 @@ elseif strcmp(modeSelectionSections,'hardcoded')
         sezioni_indici_relativi_corr2(:,1)=sezioni_indici_relativi(:,1)-indice_x_min+1;
         sezioni_indici_relativi_corr2(:,2)=sezioni_indici_relativi(:,2)-indice_y_min+1;
 
-                  
-        
-        
     elseif strcmp(domain_name,'Scrivia')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %% define the number of control sections:
@@ -682,8 +804,6 @@ end
 
 
 
-     
-
 
 %% AREE DRENATE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -792,7 +912,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % manually modify "mappa_aree_allargata" in order to include the river 
 % delta or other zones known to be flooded that are not included in the domain:
-if strcmp(domain_name,'Foglia')
+if strcmp(domain_name,'Misa')
+        disp('No allargamento');
+elseif strcmp(domain_name,'Foglia')
 %       mappa_aree_allargata(2:6,83:89) = quante_sez;        %foce  GRID FP
 %        mappa_aree_allargata(5:18,161:171) = quante_sez;    %foce GRID MARCHE
         mappa_aree_allargata(3:10,135:145) = quante_sez;     %foce GRID MARCHE
@@ -840,7 +962,8 @@ save([path_preparation_data,'/mappa_aree_allargata_', domain_name,'.mat'], 'mapp
 %%
 % recover info of metric grid UTM from the hazard maps:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-name_file_hazard_read=[sPathHazardData, '/', domain_name, '/', name_hazardmaps, sprintf('%03.0f',TR_min), type_hazardmaps];
+%name_file_hazard_read=[sPathHazardData, '/', domain_name, '/', name_hazardmaps, sprintf('%03.0f',TR_min), type_hazardmaps];
+name_file_hazard_read=[sPathHazardData, '/', name_hazardmaps, sprintf('%03.0f',TR_min), type_hazardmaps];
 % name_file_hazard_read=[sPathHazardData, '/', domain_name, '/', name_hazardmaps, sprintf('%03.0f',13), type_hazardmaps];
 
 %name_file_read=[sPathHazardData, '/', domain_name,'/', name_hazardmaps, num2str(TR_max),nome_hazmaps1];
@@ -860,14 +983,14 @@ name_file_hazard_read=[sPathHazardData, '/', domain_name, '/', name_hazardmaps, 
 [new_x,new_y]= meshgrid(R.XWorldLimits(1):R.CellExtentInWorldX:R.XWorldLimits(2) - R.CellExtentInWorldX, ...
                         R.YWorldLimits(1):R.CellExtentInWorldY:R.YWorldLimits(2) - R.CellExtentInWorldY);
 %AGGIUNTO Francesco S.
-LonLL=R.XWorldLimits(1);
-LonUR=R.XWorldLimits(2);
-LatLL=R.YWorldLimits(1);
-LatUR=R.YWorldLimits(2);
+LonLL=R.XWorldLimits(1)
+LonUR=R.XWorldLimits(2)
+LatLL=R.YWorldLimits(1)
+LatUR=R.YWorldLimits(2)
 
 % convert coord lat/lon to coordinates utm32: 
-[coord_left, coord_bottom] = latlon2utm(Lat_min, Lon_min);
-[coord_right, coord_top]   = latlon2utm(Lat_max, Lon_max);
+[coord_left, coord_bottom] = latlon2utm(Lat_min, Lon_min)
+[coord_right, coord_top]   = latlon2utm(Lat_max, Lon_max)
 
 
 
@@ -882,7 +1005,7 @@ res_Lat = ((coord_top - coord_bottom)/(size(mappa_aree_allargata,1)-1));
               
                                           
 % Compute drainage area in km2 for each selected section:                                  
-if strcmp(domain_name,'Foglia') | strcmp(domain_name,'Chienti') 
+if strcmp(domain_name,'Foglia') | strcmp(domain_name,'Chienti') | strcmp(domain_name,'Misa')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for  i=1:length(drainage_area_sort)
         drainage_area_section_km2{i} = drainage_area_sort{i}/1000000*res_Lon*res_Lat; 
@@ -940,25 +1063,39 @@ figure; imagesc(AreeCompetenza);
 
 %% ! please, verify the geo reference system code in the inputs!  EPSG_domain  
 % salvo geotiff e .mat aree competenza (controllare):
-save([path_preparation_data,'/AreeCompetenza_', domain_name,'.mat'], 'AreeCompetenza')
+save([path_preparation_data,'/AreeCompetenza_', domain_name,'.mat'], 'AreeCompetenza', '-v7.3')
 geotiffwrite([path_preparation_data,'/prova_area', domain_name,'.tif'], double(AreeCompetenza),R, 'CoordRefSysCode',['EPSG:',EPSG_domain])
 
 
-    
 % Save obtained information into mat file (this file is used as static input by Flomart application):
+[status, message, id] = mkdir(sPathOutputInfoMat);
+
+a1dQindex_sort = a1dQindex;
+indici = indici_sort; % in flomart viene richiamato indici (nelle versioni vecchie indici_sort)
+
+LatArea = Lat_dominio_UTM;
+LonArea = Lon_dominio_UTM;
+
+
+% if an error occurs while saving mat file (mainly because of size of variabile AreeCompetenza then save into h5df format ('-v7.3'):
 save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
     'LonLL','LonUR','LatLL','LatUR',...
-    'AreeCompetenza','mappa_aree_allargata','mappa_aree','Lat_dominio_UTM','Lon_dominio_UTM','a1dQindex','nomi_sezioni_sort', ...
-     'indici_sort','bacino_sezione_sort', 'EPSG_domain', 'drainage_area_section_km2');
+    'AreeCompetenza','mappa_aree_allargata','mappa_aree','Lat_dominio_UTM','Lon_dominio_UTM','a1dQindex_sort','nomi_sezioni_sort', ...
+     'indici','bacino_sezione_sort', 'EPSG_domain', 'drainage_area_section_km2', '-v7.3');
 
+% save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
+%     'LonLL','LonUR','LatLL','LatUR',...
+%     'AreeCompetenza','mappa_aree_allargata','mappa_aree','LatArea','LonArea','a1dQindex_sort','nomi_sezioni_sort', ...
+%      'indici','bacino_sezione_sort', 'EPSG_domain', 'drainage_area_section_km2');
 
+disp('fine del preprocessing dei dati di flomart')
 
  
 % % if an error occurs while saving mat file (mainly because of size of variabile AreeCompetenza then save into h5df format ('-v7.3'):
 % save([sPathOutputInfoMat, '/info_',domain_name,'.mat'], ...
 %     'LonLL','LonUR','LatLL','LatUR',...
 %     'AreeCompetenza','mappa_aree_allargata','mappa_aree','Lat_dominio_UTM','Lon_dominio_UTM','a1dQindex','nomi_sezioni_sort', ...
-%      'indici_sort','bacino_sezione_sort', 'EPSG_domain', 'drainage_area_section_km2', '-v7.3');
+%      'indici','bacino_sezione_sort', 'EPSG_domain', 'drainage_area_section_km2', '-v7.3');
 
 
 

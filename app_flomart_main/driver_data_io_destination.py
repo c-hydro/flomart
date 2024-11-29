@@ -93,11 +93,10 @@ class DriverScenario:
         else:
             self.tr_method = 'method_regional'
 
-        #if 'scenario_discharge_correction_factor' in list(alg_ancillary.keys()):
-        #    # marche: 0.1486 -- liguria: 1.16
-        #    self.correction_discharge_factor = alg_ancillary['scenario_discharge_correction_factor']
-        #else:
-        #    self.correction_discharge_factor = None
+        if 'memory_saver' in list(self.alg_ancillary.keys()):
+            self.memory_saver = self.alg_ancillary['memory_saver']
+        else:
+            self.memory_saver = False
 
         self.alg_template_tags = alg_template_tags
         self.file_name_tag = 'file_name'
@@ -181,6 +180,10 @@ class DriverScenario:
         self.domain_scenario_grid_x_tag = "area_reference_geo_x"
         self.domain_scenario_grid_y_tag = "area_reference_geo_y"
         self.domain_epsg_code = 'area_epsg_code'
+        self.domain_scenario_area_shape = 'area_reference_shape'
+        self.domain_scenario_idx_unique = 'idx_reference_unique'
+        self.domain_scenario_idx_file = 'idx_reference_file'
+        self.domain_scenario_idx_n = 'idx_reference_n'
 
         self.domain_scenario_hazard_name = 'mappa_h'
         self.domain_scenario_hazard_format = np.float32
@@ -447,8 +450,7 @@ class DriverScenario:
     # Method to dump scenario map
     def dump_scenario_map(self, scenario_map_collection, scenario_info_collection, scenario_dframe_collection):
 
-        time_run = self.time_run
-        time_now = self.time_now
+        time_run, time_now = self.time_run, self.time_now
 
         time_now_string = time_now.strftime(time_format_algorithm)
         geo_data_collection = self.geo_data_collection
@@ -557,30 +559,57 @@ class DriverScenario:
                     domain_geo_y = map_geo_collection[self.domain_scenario_grid_y_tag]
                     domain_epsg_code = map_geo_collection[self.domain_epsg_code]
 
+                    domain_geo_idx_file, domain_geo_idx_n = None, None
+                    if self.domain_scenario_idx_file in list(map_geo_collection.keys()):
+                        domain_geo_idx_file = map_geo_collection[self.domain_scenario_idx_file]
+                    if self.domain_scenario_idx_n in list(map_geo_collection.keys()):
+                        domain_geo_idx_n = map_geo_collection[self.domain_scenario_idx_n]
+
+                    # check geo data format (for generic or saving_memory mode)
+                    if isinstance(domain_geo_data, np.ndarray):
+                        pass
+                    elif isinstance(domain_geo_data, str):
+                        pass
+                    else:
+                        log_stream.error(' ===> Domain geo-data format is not allowed')
+                        raise NotImplementedError('Case not implemented yet')
+
+                    # info start undefined sub-areas
                     log_stream.info(' --------> Find undefined sub-areas ... ')
-                    domain_ids = np.unique(domain_geo_data)
-                    for domain_id in domain_ids:
-                        if domain_id > 0:
 
-                            log_stream.info(' ---------> Sub-Area ID "' + str(domain_id) + '" ... ')
+                    # iterate over section
+                    for domain_section_key, domain_section_fields in domain_info_collection.items():
 
-                            idx_collections = np.argwhere(domain_geo_data == domain_id)
+                        log_stream.info(' ---------> Sub-Area ID "' + str(domain_section_key) + '" ... ')
 
-                            idx_x = idx_collections[:, 0]
-                            idx_y = idx_collections[:, 1]
+                        if domain_section_key in list(domain_geo_idx_n.keys()):
+                            domain_idx_n = domain_geo_idx_n[domain_section_key]
+                        else:
+                            log_stream.error(' ===> Domain section key is not defined in the domain geo-index-n')
+                            raise RuntimeError('Check the algorithm to define the domain geo-index-n')
 
-                            domain_arr_data = domain_map_data[idx_x, idx_y]
-                            domain_unique_data = np.unique(domain_arr_data)
+                        if domain_section_key in list(domain_geo_idx_file.keys()):
+                            idx_file = domain_geo_idx_file[domain_section_key]
+                            idx_collections = read_obj(idx_file)
+                        else:
+                            idx_collections = np.argwhere(domain_geo_data == domain_idx_n)
 
-                            if domain_unique_data.shape[0] == 1 and np.isnan(domain_unique_data[0]):
+                        idx_x = idx_collections[:, 0]
+                        idx_y = idx_collections[:, 1]
 
-                                domain_map_data[idx_x, idx_y] = self.domain_scenario_output_fill_value
-                                log_stream.info(' ---------> Sub-Area ID "' + str(domain_id) +
-                                                '" ... not defined. Initialize with no data value')
-                            else:
-                                log_stream.info(' ---------> Sub-Area ID "' + str(domain_id) +
-                                                '" ... defined by computed values')
+                        domain_arr_data = domain_map_data[idx_x, idx_y]
+                        domain_unique_data = np.unique(domain_arr_data)
 
+                        if domain_unique_data.shape[0] == 1 and np.isnan(domain_unique_data[0]):
+
+                            domain_map_data[idx_x, idx_y] = self.domain_scenario_output_fill_value
+                            log_stream.info(' ---------> Sub-Area ID "' + str(domain_section_key) +
+                                            '" ... not defined. Initialize with no data value')
+                        else:
+                            log_stream.info(' ---------> Sub-Area ID "' + str(domain_section_key) +
+                                            '" ... defined by computed values')
+
+                    # info end undefined sub-areas
                     log_stream.info(' --------> Find undefined sub-areas ... DONE')
 
                     ''' debug
@@ -762,16 +791,49 @@ class DriverScenario:
             # check scenarios datasets
             if domain_scenario_data is not None:
 
+                if self.domain_scenario_area_tag in list(map_geo_data.keys()):
+                    area_obj = map_geo_data[self.domain_scenario_area_tag]
+                    if isinstance(area_obj, np.ndarray):
+
+                        # get map shape
+                        map_shape_data = map_geo_data[self.domain_scenario_area_tag].shape
+
+                        # initialize scenarios data (gridded 2D format)
+                        domain_scenario_merged_default = np.zeros(
+                            [map_shape_data[0], map_shape_data[1]], dtype=np.float32)
+
+                    elif isinstance(area_obj, str):
+
+                        # get map shape
+                        if self.domain_scenario_area_shape in list(map_geo_data.keys()):
+                            map_shape_data = map_geo_data[self.domain_scenario_area_shape]
+                        else:
+                            log_stream.error(' ===> Variable "area_reference_shape" is not defined')
+                            raise RuntimeError('Variable must be defined for the application to avoid memory errors')
+                        # initialize scenarios data (gridded 2D format)
+                        domain_scenario_merged_default = np.zeros(
+                            [map_shape_data[0], map_shape_data[1]], dtype=np.float32)
+
+                    else:
+                        log_stream.error(' ===> Area object is not allowed')
+                        raise NotImplementedError('Case not implemented yet')
+
+                else:
+                    log_stream.error(' ===> Area object is not defined')
+                    raise NotImplementedError('Case not implemented yet')
+
                 # initialize scenarios data (gridded 2D format)
-                domain_scenario_merged_default = np.zeros(
-                    [map_geo_data[self.domain_scenario_area_tag].shape[0],
-                     map_geo_data[self.domain_scenario_area_tag].shape[1]])
                 domain_scenario_merged_default[:, :] = np.nan
 
                 # get domain geographical datasets
-                domain_geo_data = map_geo_data[self.domain_scenario_area_tag]
                 domain_geo_x = map_geo_data[self.domain_scenario_grid_x_tag]
                 domain_geo_y = map_geo_data[self.domain_scenario_grid_y_tag]
+
+                domain_geo_idx_file, domain_geo_idx_n = None, None
+                if self.domain_scenario_idx_file in list(map_geo_data.keys()):
+                    domain_geo_idx_file = map_geo_data[self.domain_scenario_idx_file]
+                if self.domain_scenario_idx_n in list(map_geo_data.keys()):
+                    domain_geo_idx_n = map_geo_data[self.domain_scenario_idx_n]
 
                 # clean old scenario workspace (according with flags)
                 if self.flag_cleaning_anc_scenario_info or self.flag_cleaning_anc_scenario_file or \
@@ -931,10 +993,33 @@ class DriverScenario:
                                     # compare tr value with tr min
                                     if section_scenario_tr_check >= self.tr_min:
 
-                                        # case defined by the available abacus
-                                        section_area_idx = np.argwhere(
-                                            map_geo_data[self.domain_scenario_area_tag] == section_db_id)
-                                        map_shape_data = map_geo_data[self.domain_scenario_area_tag].shape
+                                        # check area_obj format (case for saving memory or not)
+                                        if isinstance(area_obj, np.ndarray):
+
+                                            # compute idx
+                                            # section_area_idx = np.argwhere(map_geo_data[self.domain_scenario_area_tag] == section_db_id)
+                                            section_area_idx = np.argwhere(area_obj == section_db_id)
+
+                                        elif isinstance(area_obj, str):
+
+                                            # define idx loaded from workspace file
+                                            if section_scenario_key in list(domain_geo_idx_file.keys()):
+                                                section_file_idx = domain_geo_idx_file[section_scenario_key]
+
+                                                if os.path.exists(section_file_idx):
+                                                    section_area_idx = read_obj(section_file_idx)
+                                                else:
+                                                    log_stream.error(' ===> Section file "' + section_file_idx +
+                                                                     '" is not available')
+                                                    raise RuntimeError('Section file must be available. Check your data')
+                                            else:
+                                                log_stream.error(' ===> Section idx for "' +
+                                                                 section_scenario_key + '" is not defined')
+                                                raise RuntimeError('Section must be defined for getting indexes')
+
+                                        else:
+                                            log_stream.error(' ===> Area object is not allowed')
+                                            raise NotImplementedError('Case not implemented yet')
 
                                         # scenario tr selection
                                         section_scenario_tr_select = max(
@@ -1011,6 +1096,7 @@ class DriverScenario:
 
                                             # read hazard maps left and right
                                             log_stream.info('   (2a) Read hazard map left')
+
                                             file_data_hazard_left = read_file_hazard(
                                                 file_path_hazard_left,
                                                 file_vars=[self.domain_scenario_hazard_name],
@@ -1018,6 +1104,7 @@ class DriverScenario:
                                                 file_scale_factor=[self.domain_scenario_hazard_scale_factor])
 
                                             log_stream.info('   (2b) Read hazard map right')
+
                                             file_data_hazard_right = read_file_hazard(
                                                 file_path_hazard_right,
                                                 file_vars=[self.domain_scenario_hazard_name],
@@ -1027,6 +1114,7 @@ class DriverScenario:
                                             # get hazard data right
                                             if file_data_hazard_right is not None:
                                                 file_data_h_right = file_data_hazard_right[self.domain_scenario_hazard_name]
+                                                file_data_hazard_right = None
                                                 file_shape_h_right = file_data_h_right.shape
 
                                                 if (map_shape_data[0] != file_shape_h_right[0]) or \
@@ -1048,6 +1136,7 @@ class DriverScenario:
                                             if file_data_hazard_left is not None:
 
                                                 file_data_h_left = file_data_hazard_left[self.domain_scenario_hazard_name]
+                                                file_data_hazard_left = None
                                                 file_shape_h_left = file_data_h_left.shape
                                                 if (map_shape_data[0] != file_shape_h_left[0]) or \
                                                         (map_shape_data[1] != file_shape_h_left[1]):
@@ -1120,6 +1209,14 @@ class DriverScenario:
                                             domain_scenario_merged_filled[idx_x, idx_y] = file_data_h_scenario
                                             domain_scenario_merged_filled[domain_scenario_merged_filled <= 0] = np.nan
 
+                                            # memory cleaning (to reduce memory amount)
+                                            file_data_h, file_data_h_right, file_data_h_left = None, None, None
+                                            file_data_hazard_right = None
+                                            file_data_hazard_left = None
+                                            file_data_h_scenario = None
+                                            idx_x, idx_y = None, None
+                                            section_area_idx = None
+
                                             folder_name, file_name = os.path.split(file_path_scenario_anc_map)
                                             make_folder(folder_name)
 
@@ -1179,6 +1276,14 @@ class DriverScenario:
                                             domain_scenario_merged_out[domain_scenario_merged_out <= 0] = np.nan
                                             # Convert nan(s) to 0 (commented to have the nans in the output)
                                             # domain_scenario_merged_out[np.isnan(domain_scenario_merged_out)] = 0
+
+                                            # memory cleaning (to reduce memory amount)
+                                            file_data_h, file_data_h_right, file_data_h_left = None, None, None
+                                            file_data_hazard_right = None
+                                            file_data_hazard_left = None
+                                            file_data_h_scenario = None
+                                            idx_x, idx_y = None, None
+                                            section_area_idx = None
 
                                             # Delete old map file
                                             if os.path.exists(file_path_scenario_anc_map):
