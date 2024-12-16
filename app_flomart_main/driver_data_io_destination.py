@@ -184,6 +184,8 @@ class DriverScenario:
         self.domain_scenario_idx_unique = 'idx_reference_unique'
         self.domain_scenario_idx_file = 'idx_reference_file'
         self.domain_scenario_idx_n = 'idx_reference_n'
+        self.domain_coord_by, self.domain_coord_ty = 'coord_bottom_y', 'coord_top_y'
+        self.domain_coord_rx, self.domain_coord_lx = 'coord_right_x', 'coord_left_x'
 
         self.domain_scenario_hazard_name = 'mappa_h'
         self.domain_scenario_hazard_format = np.float32
@@ -558,6 +560,10 @@ class DriverScenario:
                     domain_geo_x = map_geo_collection[self.domain_scenario_grid_x_tag]
                     domain_geo_y = map_geo_collection[self.domain_scenario_grid_y_tag]
                     domain_epsg_code = map_geo_collection[self.domain_epsg_code]
+                    domain_coord_by = map_geo_collection[self.domain_coord_by]
+                    domain_coord_ty = map_geo_collection[self.domain_coord_ty]
+                    domain_coord_rx = map_geo_collection[self.domain_coord_rx]
+                    domain_coord_lx = map_geo_collection[self.domain_coord_lx]
 
                     domain_geo_idx_file, domain_geo_idx_n = None, None
                     if self.domain_scenario_idx_file in list(map_geo_collection.keys()):
@@ -707,7 +713,13 @@ class DriverScenario:
                     if self.save_status_scenario_plot_png:
                         if not os.path.exists(file_path_scenario_plot_png):
                             save_file_png(file_path_scenario_plot_png,
-                                          domain_map_data, domain_geo_x, domain_geo_y,
+                                          domain_map_data,
+                                          file_geo_x_west=domain_coord_lx,
+                                          file_geo_x_east=domain_coord_rx,
+                                          file_geo_y_south=domain_coord_by,
+                                          file_geo_y_north=domain_coord_ty,
+                                          file_geo_x=None,  # domain_geo_x,
+                                          file_geo_y=None,  # domain_geo_y,
                                           fig_epsg_code=domain_epsg_code,
                                           scenario_name=domain_name_step,
                                           scenario_time_now_string=time_now_string,
@@ -732,7 +744,13 @@ class DriverScenario:
                     if self.save_status_scenario_plot_tiff:
                         if not os.path.exists(file_path_scenario_plot_tiff):
                             save_file_tiff(file_path_scenario_plot_tiff,
-                                           domain_map_data, domain_geo_x, domain_geo_y,
+                                           domain_map_data,
+                                           file_geo_x_west=domain_coord_lx,
+                                           file_geo_x_east=domain_coord_rx,
+                                           file_geo_y_south=domain_coord_by,
+                                           file_geo_y_north=domain_coord_ty,
+                                           file_geo_x=None,  # domain_geo_x,
+                                           file_geo_y=None,  # domain_geo_y,
                                            file_epsg_code=domain_epsg_code)
                             log_stream.info(' -------> Save file tiff ' + file_name_scenario_plot_tiff +
                                             ' ... DONE')
@@ -828,6 +846,11 @@ class DriverScenario:
                 # get domain geographical datasets
                 domain_geo_x = map_geo_data[self.domain_scenario_grid_x_tag]
                 domain_geo_y = map_geo_data[self.domain_scenario_grid_y_tag]
+
+                domain_coord_by = map_geo_data[self.domain_coord_by]
+                domain_coord_ty = map_geo_data[self.domain_coord_ty]
+                domain_coord_rx = map_geo_data[self.domain_coord_rx]
+                domain_coord_lx = map_geo_data[self.domain_coord_lx]
 
                 domain_geo_idx_file, domain_geo_idx_n = None, None
                 if self.domain_scenario_idx_file in list(map_geo_data.keys()):
@@ -1225,7 +1248,12 @@ class DriverScenario:
 
                                                 save_file_tiff(file_path_scenario_anc_map,
                                                                domain_scenario_merged_filled,
-                                                               domain_geo_x, domain_geo_y,
+                                                               file_geo_x_west=domain_coord_lx,
+                                                               file_geo_x_east=domain_coord_rx,
+                                                               file_geo_y_south=domain_coord_by,
+                                                               file_geo_y_north=domain_coord_ty,
+                                                               file_geo_x=None,  # domain_geo_x,
+                                                               file_geo_y=None,  # domain_geo_y,
                                                                file_epsg_code=domain_epsg_code)
 
                                             elif file_path_scenario_anc_map.endswith('workspace'):
@@ -1295,7 +1323,12 @@ class DriverScenario:
 
                                                 save_file_tiff(file_path_scenario_anc_map,
                                                                domain_scenario_merged_out,
-                                                               domain_geo_x, domain_geo_y,
+                                                               file_geo_x_west=domain_coord_lx,
+                                                               file_geo_x_east=domain_coord_rx,
+                                                               file_geo_y_south=domain_coord_by,
+                                                               file_geo_y_north=domain_coord_ty,
+                                                               file_geo_x=None, #domain_geo_x,
+                                                               file_geo_y=None, #domain_geo_y,
                                                                file_epsg_code=domain_epsg_code)
 
                                             elif file_path_scenario_anc_map.endswith('workspace'):

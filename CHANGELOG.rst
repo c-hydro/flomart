@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 2.2.1 [2024-12-15]
+**************************
+
+- APP: app_flomart_main.py
+	- add method to dump the reference area mask
+	- fix bugs in geographical ancillary and destination boundaries (due to update of preprocessing tool)
+
 Version 2.2.0 [2024-11-29]
 **************************
 

@@ -12,9 +12,11 @@ Version:       '1.1.0'
 import logging
 import re
 
+import rasterio
 import numpy as np
 
-from lib_utils_io import read_mat
+
+from lib_utils_io import read_mat, write_file_tif
 from lib_info_args import logger_name
 
 # Logging
@@ -123,6 +125,33 @@ def read_file_geo(file_name, excluded_fields=None):
     return file_collections
 # -------------------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------------------
+# method to write geo file
+def write_geo_area(file_name, file_data,
+                   file_geo_x_west=None, file_geo_x_east=None, file_geo_y_south=None, file_geo_y_north=None,
+                   file_geo_x=None, file_geo_y=None,
+                   file_epsg_code='EPSG:4326', file_metadata=None):
+
+    file_data_height, file_data_width = file_data.shape
+
+    if file_geo_x is None:
+        file_geo_x = np.linspace(file_geo_x_west, file_geo_x_east, file_data_width)
+    file_geo_x_west = np.min(file_geo_x)
+    file_geo_x_east = np.max(file_geo_x)
+    if file_geo_y is None:
+        file_geo_y = np.linspace(file_geo_y_south, file_geo_y_north, file_data_height)
+    file_geo_y_south = np.min(file_geo_y)
+    file_geo_y_north = np.max(file_geo_y)
+
+    file_data_transform = rasterio.transform.from_bounds(
+        file_geo_x_west, file_geo_y_south, file_geo_x_east, file_geo_y_north,
+        file_data_width, file_data_height)
+
+    write_file_tif(file_name, file_data,
+                   file_data_width, file_data_height, file_data_transform, file_epsg_code,
+                   file_metadata=file_metadata)
+# -------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------
 # Method to check epsg code

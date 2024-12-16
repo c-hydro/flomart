@@ -16,7 +16,7 @@ import numpy as np
 from copy import deepcopy
 
 from lib_utils_section import join_name_and_alias
-from lib_utils_geo import read_file_geo, check_epsg_code
+from lib_utils_geo import read_file_geo, check_epsg_code, write_geo_area
 from lib_utils_hydraulic import read_file_hydraulic, map_description_section_2_hydraulic
 from lib_utils_hydrology_ascii import read_file_hydro_section
 from lib_utils_hydrology_generic import map_description_hydro_2_hydraulic
@@ -46,7 +46,7 @@ class DriverGeo:
                  flag_geo_data='geo_data',
                  flag_hydro_data='hydro_data', flag_hazard_data='hazard_data',
                  flag_geo_data_in='geo_data',
-                 flag_geo_data_out='geo_data',
+                 flag_geo_data_out='geo_data', flag_geo_area_out='geo_area',
                  flag_geo_memory_area_out='geo_memory_area', flag_geo_memory_idx_out='geo_memory_idx',
                  flag_cleaning_geo=True):
 
@@ -57,6 +57,7 @@ class DriverGeo:
 
         self.flag_geo_data_in = flag_geo_data_in
         self.flag_geo_data_out = flag_geo_data_out
+        self.flag_geo_area_out = flag_geo_area_out
         self.flag_geo_memory_area_out = flag_geo_memory_area_out
         self.flag_geo_memory_idx_out = flag_geo_memory_idx_out
 
@@ -105,6 +106,13 @@ class DriverGeo:
         # define outcome datasets
         self.folder_name_geo_data_out = dst_dict[self.flag_geo_data_out][self.folder_name_tag]
         self.file_name_geo_data_out = dst_dict[self.flag_geo_data_out][self.file_name_tag]
+
+        if self.flag_geo_area_out in list(dst_dict.keys()):
+            self.folder_name_geo_area_out = dst_dict[self.flag_geo_area_out][self.folder_name_tag]
+            self.file_name_geo_area_out = dst_dict[self.flag_geo_area_out][self.file_name_tag]
+        else:
+            self.folder_name_geo_area_out = deepcopy(self.folder_name_geo_data_out)
+            self.file_name_geo_area_out = 'area_{domain_name}.tiff'
 
         if self.flag_geo_memory_area_out in list(dst_dict.keys()):
             self.folder_name_geo_memory_area_out = dst_dict[self.flag_geo_memory_area_out][self.folder_name_tag]
@@ -738,6 +746,9 @@ class DriverGeo:
             file_path_geo_data_collections = self.define_domain_collection(
                 domain_name, self.folder_name_geo_data_out, self.file_name_geo_data_out)
 
+            file_path_geo_area_collections = self.define_domain_collection(
+                domain_name, self.folder_name_geo_area_out, self.file_name_geo_area_out)
+
             file_path_geo_memory_area_collections = self.define_domain_collection(
                 domain_name, self.folder_name_geo_memory_area_out, self.file_name_geo_memory_area_out)
 
@@ -746,6 +757,7 @@ class DriverGeo:
                 if not os.path.exists(file_path_geo_memory_area_collections):
                     if os.path.exists(file_path_geo_data_collections):
                         os.remove(file_path_geo_data_collections)
+                        os.remove(file_path_geo_area_collections)
 
             # check datasets availability
             if not os.path.exists(file_path_geo_data_collections):
@@ -769,6 +781,11 @@ class DriverGeo:
                 section_data = self.organize_section_tr(section_data, domain_name)
                 # organize map datasets
                 map_data = self.organize_map_geo(geo_data)
+
+                area_data = map_data['area_reference_id']
+                coord_by, coord_ty = map_data['coord_bottom_y'], map_data['coord_top_y']
+                coord_rx, coord_lx = map_data['coord_right_x'], map_data['coord_left_x']
+                epsg_code = map_data['area_epsg_code']
 
                 # memory saver (organize datasets)
                 if self.memory_saver:
@@ -802,6 +819,18 @@ class DriverGeo:
                 os.makedirs(folder_name_collections, exist_ok=True)
                 # write geographical collections
                 write_obj(file_path_geo_data_collections, obj_data)
+
+                # create folder
+                folder_name_collections, file_name_collections = os.path.split(file_path_geo_area_collections)
+                os.makedirs(folder_name_collections, exist_ok=True)
+
+                write_geo_area(file_name=file_path_geo_area_collections,
+                               file_data=area_data,
+                               file_geo_x_west=coord_lx, file_geo_x_east=coord_rx,
+                               file_geo_y_south=coord_by, file_geo_y_north=coord_ty,
+                               file_geo_x=None,  # obj_data['map_data']['area_reference_geo_x'],
+                               file_geo_y=None,  # obj_data['map_data']['area_reference_geo_y'],
+                               file_epsg_code=epsg_code, file_metadata=None)
 
                 # memory saver (dump datasets)
                 if self.memory_saver:

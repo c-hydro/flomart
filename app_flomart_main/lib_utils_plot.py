@@ -54,15 +54,21 @@ def read_file_tiff(file_name):
 
 # -------------------------------------------------------------------------------------
 # Method to save data values in geotiff format
-def save_file_tiff(file_name, file_data, file_geo_x, file_geo_y, file_metadata=None, file_epsg_code='EPSG:32632'):
+def save_file_tiff(file_name, file_data,
+                   file_geo_x_west, file_geo_x_east, file_geo_y_south, file_geo_y_north,
+                   file_geo_x=None, file_geo_y=None, file_metadata=None, file_epsg_code='EPSG:32632'):
 
     if file_metadata is None:
         file_metadata = {'description': 'data'}
 
     file_data_height, file_data_width = file_data.shape
 
+    if file_geo_x is None:
+        file_geo_x = np.linspace(file_geo_x_west, file_geo_x_east, file_data_width)
     file_geo_x_west = np.min(file_geo_x)
     file_geo_x_east = np.max(file_geo_x)
+    if file_geo_y is None:
+        file_geo_y = np.linspace(file_geo_y_south, file_geo_y_north, file_data_height)
     file_geo_y_south = np.min(file_geo_y)
     file_geo_y_north = np.max(file_geo_y)
 
@@ -85,8 +91,10 @@ def save_file_tiff(file_name, file_data, file_geo_x, file_geo_y, file_metadata=N
 
 # -------------------------------------------------------------------------------------
 # Method to save data values in png format
-def save_file_png(file_name, file_data, file_geo_x, file_geo_y,
-                  fig_epsg_code,
+def save_file_png(file_name, file_data,
+                  file_geo_x_west, file_geo_x_east, file_geo_y_south, file_geo_y_north,
+                  file_geo_x=None, file_geo_y=None,
+                  fig_epsg_code='EPSG:32632',
                   scenario_name='NA',
                   scenario_time_now_string='NA', scenario_time_step_string='NA',
                   fig_color_map_type=None, fig_dpi=150):
@@ -108,7 +116,11 @@ def save_file_png(file_name, file_data, file_geo_x, file_geo_y,
              log_stream.error(' ===> EPSG Code not supported (Only supported "EPSG:32632" and "EPSG:32633")')
              raise NotImplemented('Method to use all epsg codes must be developed')
 
+    if file_geo_x is None:
+        file_geo_x = np.linspace(file_geo_x_west, file_geo_x_east, file_data_width)
 
+    if file_geo_y is None:
+        file_geo_y = np.linspace(file_geo_y_south, file_geo_y_north, file_data_height)
 
     file_lons, file_lats = p(file_geo_x, file_geo_y, inverse=True)
 

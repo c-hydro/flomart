@@ -70,7 +70,13 @@ def write_file_tif(file_name, file_data, file_wide, file_high, file_geotrans, fi
     if isinstance(file_geotrans, Affine):
         file_geotrans = file_geotrans.to_gdal()
 
-    file_crs = rasterio.crs.CRS.from_string(file_proj)
+    if isinstance(file_proj, str):
+        file_crs = rasterio.crs.CRS.from_string(file_proj)
+    elif isinstance(file_proj, int):
+        file_crs = rasterio.crs.CRS.from_epsg(file_proj)
+    else:
+        log_stream.error(' ===> Projection format is not allowed')
+        raise NotImplementedError('Case not implemented yet')
     file_wkt = file_crs.to_wkt()
 
     file_n = file_data.__len__()
