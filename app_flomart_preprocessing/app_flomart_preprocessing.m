@@ -913,7 +913,9 @@ end
 % manually modify "mappa_aree_allargata" in order to include the river 
 % delta or other zones known to be flooded that are not included in the domain:
 if strcmp(domain_name,'Misa')
-        disp('No allargamento');
+         mappa_aree_allargata(3:15,50:82) = quante_sez; %foce
+        mappa_aree_allargata(3:15,70:82) = quante_sez; %foce
+        mappa_aree_allargata(16:32,70:82) = quante_sez; %foce
 elseif strcmp(domain_name,'Foglia')
 %       mappa_aree_allargata(2:6,83:89) = quante_sez;        %foce  GRID FP
 %        mappa_aree_allargata(5:18,161:171) = quante_sez;    %foce GRID MARCHE
